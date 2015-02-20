@@ -21,6 +21,7 @@ public class Migrator {
     public static void main(String [] args) throws IOException, XMLStreamException {
         if (args.length == 1) {
             File foxmlRoot = new File(args[0]);
+            validateDirectory(foxmlRoot);
             System.out.println("Analyzing FOXML in " + foxmlRoot.getPath() + "...");
             Migrator m = new Migrator(new FoxmlDirectoryObjectSource(foxmlRoot),
                     new ConsoleLoggingFedoraObjectHandler());
@@ -29,11 +30,20 @@ public class Migrator {
             File foxmlRoot = new File(args[0]);
             File dsRoot = new File(args[1]);
             File working = new File(args[2]);
+            validateDirectory(foxmlRoot);
+            validateDirectory(dsRoot);
             System.out.println("Analyzing FOXML in " + foxmlRoot.getPath() + "...");
             System.out.println("Analyzing datastreams in " + dsRoot.getPath() + " and building index within " + working);
             Migrator m = new Migrator(new FoxmlDirectoryObjectSource(foxmlRoot, dsRoot, working),
                     new ConsoleLoggingFedoraObjectHandler());
             m.run();
+        }
+    }
+    
+    private static void validateDirectory(File d) {
+        if (!d.exists() || !d.isDirectory()) {
+            System.err.println("No directory found at " + d.getAbsolutePath() + "!");
+            System.exit(-1);
         }
     }
 
