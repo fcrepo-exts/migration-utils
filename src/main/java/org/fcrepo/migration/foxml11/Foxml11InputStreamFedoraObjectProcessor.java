@@ -5,7 +5,7 @@ import org.fcrepo.migration.DatastreamInfo;
 import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.DefaultContentDigest;
 import org.fcrepo.migration.DefaultObjectInfo;
-import org.fcrepo.migration.FedoraObjectHandler;
+import org.fcrepo.migration.StreamingFedoraObjectHandler;
 import org.fcrepo.migration.FedoraObjectProcessor;
 import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.migration.ObjectProperties;
@@ -85,7 +85,7 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
     }
 
     @Override
-    public void processObject(FedoraObjectHandler handler) {
+    public void processObject(StreamingFedoraObjectHandler handler) {
         handler.beginObject(objectInfo);
         Foxml11DatastreamInfo dsInfo = null;
         try {

@@ -180,7 +180,7 @@ public abstract class Example1TestSuite {
         Assert.assertEquals("http://local.fedora.server/fedora", getFetcher().getLastUrl().toExternalForm());
     }
 
-    class SimpleObjectSource implements ObjectSource {
+    public static class SimpleObjectSource implements ObjectSource {
 
         private FedoraObjectProcessor p;
 
@@ -195,7 +195,7 @@ public abstract class Example1TestSuite {
         }
     }
 
-    class DummyHandler implements FedoraObjectHandler {
+    class DummyHandler implements StreamingFedoraObjectHandler {
 
         ObjectInfo objectInfo;
         ObjectProperties properties;

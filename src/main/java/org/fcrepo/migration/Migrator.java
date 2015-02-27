@@ -1,7 +1,7 @@
 package org.fcrepo.migration;
 
 import org.fcrepo.migration.foxml11.FoxmlDirectoryObjectSource;
-import org.fcrepo.migration.handlers.ConsoleLoggingFedoraObjectHandler;
+import org.fcrepo.migration.handlers.ConsoleLoggingStreamingFedoraObjectHandler;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -24,7 +24,7 @@ public class Migrator {
             validateDirectory(foxmlRoot);
             System.out.println("Analyzing FOXML in " + foxmlRoot.getPath() + "...");
             Migrator m = new Migrator(new FoxmlDirectoryObjectSource(foxmlRoot),
-                    new ConsoleLoggingFedoraObjectHandler());
+                    new ConsoleLoggingStreamingFedoraObjectHandler());
             m.run();
         } else if (args.length == 3) {
             File foxmlRoot = new File(args[0]);
@@ -35,7 +35,7 @@ public class Migrator {
             System.out.println("Analyzing FOXML in " + foxmlRoot.getPath() + "...");
             System.out.println("Analyzing datastreams in " + dsRoot.getPath() + " and building index within " + working);
             Migrator m = new Migrator(new FoxmlDirectoryObjectSource(foxmlRoot, dsRoot, working),
-                    new ConsoleLoggingFedoraObjectHandler());
+                    new ConsoleLoggingStreamingFedoraObjectHandler());
             m.run();
         }
     }
@@ -49,9 +49,9 @@ public class Migrator {
 
     private ObjectSource source;
 
-    private FedoraObjectHandler handler;
+    private StreamingFedoraObjectHandler handler;
 
-    public Migrator(ObjectSource source, FedoraObjectHandler handler) {
+    public Migrator(ObjectSource source, StreamingFedoraObjectHandler handler) {
         this.source = source;
         this.handler = handler;
     }

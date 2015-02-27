@@ -61,7 +61,7 @@ public interface DatastreamVersion {
      * Gets access to the content of this datastream.  When text, the
      * encoding can be expected to be UTF-8.
      * @throws IllegalStateException if invoked outside of the call
-     *         to @{link FedoraObjectHandler#processDatastreamVersion}
+     *         to @{link StreamingFedoraObjectHandler#processDatastreamVersion}
      * @throws IOException when unable to access the stream
      */
     public InputStream getContent() throws IOException;

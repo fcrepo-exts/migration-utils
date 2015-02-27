@@ -1,17 +1,17 @@
 package org.fcrepo.migration.handlers;
 
 import org.fcrepo.migration.DatastreamVersion;
-import org.fcrepo.migration.FedoraObjectHandler;
+import org.fcrepo.migration.StreamingFedoraObjectHandler;
 import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.migration.ObjectProperties;
 import org.fcrepo.migration.ObjectProperty;
 
 /**
- * A simple FedoraObjectHandler implementation that simply outputs information
+ * A simple StreamingFedoraObjectHandler implementation that simply outputs information
  * to the console.  This is likely only useful for debugging or testing other
  * code.
  */
-public class ConsoleLoggingFedoraObjectHandler implements FedoraObjectHandler {
+public class ConsoleLoggingStreamingFedoraObjectHandler implements StreamingFedoraObjectHandler {
 
     private long start;
 
