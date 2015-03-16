@@ -1,10 +1,11 @@
 package org.fcrepo.migration;
 
-import org.junit.Before;
-import org.junit.Test;
+import java.io.IOException;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.IOException;
+
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A series of tests that cover all the features used in processing
