@@ -1,11 +1,13 @@
 package org.fcrepo.migration;
 
-import org.fcrepo.migration.foxml11.DirectoryScanningIDResolver;
-import org.junit.Before;
+import java.io.IOException;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.IOException;
+
+import org.junit.Before;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * A series of tests that cover all the features used in processing
@@ -22,9 +24,14 @@ public class FoxmlStorageMigratorTest extends Example1TestSuite {
         if (getResult() == null) {
             this.result = new DummyHandler();
             this.fetcher = new DummyURLFetcher();
-            new Migrator(new SimpleObjectSource("info%3Afedora%2Fexample%3A1", getFetcher(),
+            /* new Migrator(new SimpleObjectSource("info%3Afedora%2Fexample%3A1", getFetcher(),
                     new DirectoryScanningIDResolver(new File("target/index"),
-                    new File("src/test/resources/datastreamStore"))), getResult()).run();
+                    new File("src/test/resources/datastreamStore"))), getResult()).run();*/
+            final ApplicationContext context = new ClassPathXmlApplicationContext("spring/migration-bean.xml");
+            final Migrator m = (Migrator)context.getBean("migratorTest");
+            m.run();
+            ((ConfigurableApplicationContext)context).close();
+
         }
     }
 

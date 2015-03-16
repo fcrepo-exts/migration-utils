@@ -1,11 +1,13 @@
 package org.fcrepo.migration;
 
-import org.fcrepo.migration.foxml11.FoxmlDirectoryObjectSource;
-import org.fcrepo.migration.handlers.ConsoleLoggingStreamingFedoraObjectHandler;
-
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * A class that represents a command-line program to migrate a fedora 3
@@ -18,8 +20,8 @@ import java.io.IOException;
  */
 public class Migrator {
 
-    public static void main(String [] args) throws IOException, XMLStreamException {
-        if (args.length == 1) {
+    public static void main(final String [] args) throws IOException, XMLStreamException {
+        /* if (args.length == 1) {
             File foxmlRoot = new File(args[0]);
             validateDirectory(foxmlRoot);
             System.out.println("Analyzing FOXML in " + foxmlRoot.getPath() + "...");
@@ -37,10 +39,15 @@ public class Migrator {
             Migrator m = new Migrator(new FoxmlDirectoryObjectSource(foxmlRoot, dsRoot, working),
                     new ConsoleLoggingStreamingFedoraObjectHandler());
             m.run();
-        }
+        }*/
+        final ApplicationContext context = new ClassPathXmlApplicationContext("spring/migration-bean.xml");
+        final Migrator m = (Migrator)context.getBean("migrator");
+        System.out.println("After creating bean...");
+        m.run();
+        ((ConfigurableApplicationContext)context).close();
     }
-    
-    private static void validateDirectory(File d) {
+
+    private static void validateDirectory(final File d) {
         if (!d.exists() || !d.isDirectory()) {
             System.err.println("No directory found at " + d.getAbsolutePath() + "!");
             System.exit(-1);
@@ -51,13 +58,37 @@ public class Migrator {
 
     private StreamingFedoraObjectHandler handler;
 
-    public Migrator(ObjectSource source, StreamingFedoraObjectHandler handler) {
+    public Migrator() {
+
+    }
+
+
+    public ObjectSource getSource() {
+        return source;
+    }
+
+
+    public void setSource(final ObjectSource source) {
+        this.source = source;
+    }
+
+
+    public StreamingFedoraObjectHandler getHandler() {
+        return handler;
+    }
+
+
+    public void setHandler(final StreamingFedoraObjectHandler handler) {
+        this.handler = handler;
+    }
+
+    public Migrator(final ObjectSource source, final StreamingFedoraObjectHandler handler) {
         this.source = source;
         this.handler = handler;
     }
 
     public void run() throws XMLStreamException {
-        for (FedoraObjectProcessor o : source) {
+        for (final FedoraObjectProcessor o : source) {
             System.out.println("Processing \"" + o.getObjectInfo().getPid() + "\"...");
             o.processObject(handler);
         }
