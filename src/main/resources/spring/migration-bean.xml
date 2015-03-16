@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+
+    <context:component-scan base-package="org.fcrepo"/>
+
+    <bean id="directoryScanningIDResolver" class="org.fcrepo.migration.foxml11.DirectoryScanningIDResolver">
+        <constructor-arg value="target/index"/>
+        <constructor-arg value ="src/test/resources/datastreamStore" />
+    </bean>
+
+    <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml11.HttpClientURLFetcher">
+    </bean>
+ 
+    <bean id="foxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml11.FoxmlDirectoryObjectSource" >    
+        <property name="resolver" ref="directoryScanningIDResolver"/>
+        <property name="fetcher" ref="httpClientURLFetcher"/>
+        <property name="root" value="src/test/resources/objectStore"/>
+        <constructor-arg value="src/test/resources/objectStore"/>
+        <constructor-arg value="src/test/resources/datastreamStore"/>
+        <constructor-arg value="target/index"/>
+     </bean>
+ 
+    <bean id="consoleLoggingStreamingFedoraObjectHandler" class="org.fcrepo.migration.handlers.ConsoleLoggingStreamingFedoraObjectHandler">
+    </bean>
+
+    <bean id="migrator" class="org.fcrepo.migration.Migrator">
+        <property name="source" ref="foxmlDirectoryObjectSource" />
+        <property name="handler" ref="consoleLoggingStreamingFedoraObjectHandler" />
+    </bean>
+</beans>

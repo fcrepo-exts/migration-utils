@@ -30,17 +30,25 @@ public class DirectoryScanningIDResolver implements InternalIDResolver {
 
     private IndexSearcher searcher;
 
-    public DirectoryScanningIDResolver(File indexDir, File ... dsRoot) throws IOException {
-        Directory dir = FSDirectory.open(indexDir);
+    private String indexDirPath;
+    private String dsRootPath;
+    public DirectoryScanningIDResolver(final String indexDirPath, final String dsRootPath) throws IOException {
+        this(new File(indexDirPath), new File(dsRootPath));
+        this.indexDirPath = indexDirPath;
+        this.dsRootPath = dsRootPath;
+    }
+
+    public DirectoryScanningIDResolver(final File indexDir, final File ... dsRoot) throws IOException {
+        final Directory dir = FSDirectory.open(indexDir);
         if (indexDir.exists()) {
             System.out.println("Index exists at \"" + indexDir.getPath() + "\" and will be used.  "
                     + "To clear index, simply delete this directory and re-run the application.");
         } else {
-            Analyzer analyzer = new StandardAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_4_10_3, analyzer);
+            final Analyzer analyzer = new StandardAnalyzer();
+            final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_4_10_3, analyzer);
             iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-            IndexWriter writer = new IndexWriter(dir, iwc);
-            for (File f : dsRoot) {
+            final IndexWriter writer = new IndexWriter(dir, iwc);
+            for (final File f : dsRoot) {
                 System.out.println("Builidng an index of all the datastreams in \"" + f.getPath() + "\"...");
                 indexDatastreams(writer, f);
             }
@@ -48,14 +56,14 @@ public class DirectoryScanningIDResolver implements InternalIDResolver {
             writer.close();
         }
 
-        IndexReader reader = DirectoryReader.open(FSDirectory.open(indexDir));
+        final IndexReader reader = DirectoryReader.open(FSDirectory.open(indexDir));
         searcher = new IndexSearcher(reader);
     }
 
     @Override
-    public CachedContent resolveInternalID(String id) {
+    public CachedContent resolveInternalID(final String id) {
         try {
-            TopDocs result = searcher.search(new TermQuery(new Term("file", "info:fedora/" + id.replace('+', '/'))), 2);
+            final TopDocs result = searcher.search(new TermQuery(new Term("file", "info:fedora/" + id.replace('+', '/'))), 2);
             if (result.totalHits == 1) {
                 return new FileCachedContent(new File(searcher.doc(result.scoreDocs[0].doc).get("path")));
             } else if (result.totalHits < 1) {
@@ -65,18 +73,18 @@ public class DirectoryScanningIDResolver implements InternalIDResolver {
                         + searcher.doc(result.scoreDocs[0].doc).get("path") + ", "
                         + searcher.doc(result.scoreDocs[1].doc).get("path") + "...)");
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void indexDatastreams(IndexWriter writer, File f) throws IOException {
+    private void indexDatastreams(final IndexWriter writer, final File f) throws IOException {
         if (f.isDirectory()) {
-            for (File child : f.listFiles()) {
+            for (final File child : f.listFiles()) {
                 indexDatastreams(writer, child);
             }
         } else {
-            Document doc = new Document();
+            final Document doc = new Document();
             doc.add(new StringField("path", f.getPath(), Field.Store.YES));
             doc.add(new StringField("file", URLDecoder.decode(f.getName(), "UTF-8"), Field.Store.NO));
             writer.addDocument(doc);

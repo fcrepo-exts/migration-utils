@@ -195,7 +195,7 @@ public abstract class Example1TestSuite {
         }
     }
 
-    class DummyHandler implements StreamingFedoraObjectHandler {
+    public static class DummyHandler implements StreamingFedoraObjectHandler {
 
         ObjectInfo objectInfo;
         ObjectProperties properties;
@@ -237,7 +237,7 @@ public abstract class Example1TestSuite {
         }
     }
 
-    class DummyURLFetcher implements URLFetcher {
+    public static class DummyURLFetcher implements URLFetcher {
 
         private URL lastUrl;
 
@@ -252,7 +252,7 @@ public abstract class Example1TestSuite {
         }
     }
 
-    class DummyIDResolver implements InternalIDResolver {
+    public static class DummyIDResolver implements InternalIDResolver {
         @Override
         public CachedContent resolveInternalID(String id) {
             return null;

@@ -1,33 +1,33 @@
 package org.fcrepo.migration.handlers;
 
-import org.apache.commons.io.IOUtils;
-import org.fcrepo.migration.DatastreamVersion;
-import org.fcrepo.migration.Example1TestSuite;
-import org.fcrepo.migration.FedoraObjectVersionHandler;
-import org.fcrepo.migration.Migrator;
-import org.fcrepo.migration.ObjectVersionReference;
-import org.fcrepo.migration.foxml11.DirectoryScanningIDResolver;
-import org.junit.Assert;
-import org.junit.Test;
-
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.apache.commons.io.IOUtils;
+import org.fcrepo.migration.DatastreamVersion;
+import org.fcrepo.migration.FedoraObjectVersionHandler;
+import org.fcrepo.migration.Migrator;
+import org.fcrepo.migration.ObjectVersionReference;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class VersionAbstractionFedoraObjectHandlerTest {
 
     @Test
     public void testObjectProcessing() throws IOException, XMLStreamException {
-        TestingFedoraObjectVersionHandler vh = new TestingFedoraObjectVersionHandler();
-        new Migrator(new Example1TestSuite.SimpleObjectSource("info%3Afedora%2Fexample%3A1", null,
-                new DirectoryScanningIDResolver(new File("target/index"), 
-                new File("src/test/resources/datastreamStore"))), 
-                new ObjectAbstractionStreamingFedoraObjectHandler(new VersionAbstractionFedoraObjectHandler(vh))).run();
-        Assert.assertEquals("Three versions should have been gleaned.", 6, vh.versions.size());
+        final ApplicationContext context = new ClassPathXmlApplicationContext("spring/version-abstraction.xml");
+        final TestingFedoraObjectVersionHandler vh = (TestingFedoraObjectVersionHandler) context.getBean("versionHandler");
+        final Migrator m = (Migrator) context.getBean("migrator");
+        m.run();
+
+        Assert.assertEquals("Six versions should have been gleaned.", 6, vh.versions.size());
         Assert.assertEquals("2015-01-27T19:07:33.120Z", vh.versions.get(0).getVersionDate());
         Assert.assertEquals("AUDIT.0", vh.versions.get(0).listChangedDatastreams().get(0).getVersionId());
         Assert.assertEquals("DC1.0", vh.versions.get(0).listChangedDatastreams().get(1).getVersionId());
@@ -49,8 +49,8 @@ public class VersionAbstractionFedoraObjectHandlerTest {
     }
 
     /**
-     * An implementation of FedoraObjectVersionHandler which is meant to test the processing 
-     * of a well-known fedora object. 
+     * An implementation of FedoraObjectVersionHandler which is meant to test the processing
+     * of a well-known fedora object.
      */
     private static class TestingFedoraObjectVersionHandler implements FedoraObjectVersionHandler {
 
@@ -61,26 +61,26 @@ public class VersionAbstractionFedoraObjectHandlerTest {
         }
 
         /**
-         * Tests that which is only testable within this method call and 
-         * puts the reference on the versions list for later tests. 
+         * Tests that which is only testable within this method call and
+         * puts the reference on the versions list for later tests.
          */
         @Override
-        public void processObjectVersion(ObjectVersionReference reference) {
+        public void processObjectVersion(final ObjectVersionReference reference) {
             versions.add(reference);
-            for (DatastreamVersion dsv : reference.listChangedDatastreams()) {
+            for (final DatastreamVersion dsv : reference.listChangedDatastreams()) {
                 if (dsv.getDatastreamInfo().getControlGroup().equals("M")) {
                     try {
                         testDatastreamBinary(dsv);
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
             }
         }
-        
-        private void testDatastreamBinary(DatastreamVersion v) throws IOException {
-            File temp = File.createTempFile("temporary", ".file");
-            FileOutputStream fos = new FileOutputStream(temp);
+
+        private void testDatastreamBinary(final DatastreamVersion v) throws IOException {
+            final File temp = File.createTempFile("temporary", ".file");
+            final FileOutputStream fos = new FileOutputStream(temp);
             try {
                 IOUtils.copy(v.getContent(), fos);
             } finally {
@@ -90,5 +90,5 @@ public class VersionAbstractionFedoraObjectHandlerTest {
             temp.delete();
         }
     }
-    
+
 }
