@@ -1,6 +1,5 @@
 package org.fcrepo.migration;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.xml.stream.XMLStreamException;
@@ -47,12 +46,12 @@ public class Migrator {
         ((ConfigurableApplicationContext)context).close();
     }
 
-    private static void validateDirectory(final File d) {
+    /*private static void validateDirectory(final File d) {
         if (!d.exists() || !d.isDirectory()) {
             System.err.println("No directory found at " + d.getAbsolutePath() + "!");
             System.exit(-1);
         }
-    }
+    }*/
 
     private ObjectSource source;
 

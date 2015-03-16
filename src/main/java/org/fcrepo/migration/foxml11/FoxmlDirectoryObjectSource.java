@@ -167,7 +167,6 @@ public class FoxmlDirectoryObjectSource implements ObjectSource {
             stack = new Stack<List<File>>();
             System.out.println("root path " + root.getAbsolutePath() );
             current = new ArrayList<File>(Arrays.asList(root.listFiles()));
-            System.out.println("nm--DFS Iterator");
         }
 
         private boolean advanceToNext() {
