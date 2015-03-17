@@ -17,8 +17,8 @@
  -->
 
     <bean id="directoryScanningIDResolver" class="org.fcrepo.migration.foxml11.DirectoryScanningIDResolver">
-        <constructor-arg value="/Users/xw7/Applications/workspace/migration-utils/target/index"/>
-        <constructor-arg value ="/Users/xw7/Applications/workspace/migration-utils/src/test/resources/datastreamStore" />
+        <constructor-arg value="target/index"/>
+        <constructor-arg value ="src/test/resources/datastreamStore" />
     </bean>
 
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml11.HttpClientURLFetcher">
