@@ -22,13 +22,10 @@ public class FoxmlStorageMigratorTest extends Example1TestSuite {
     @Before
     public synchronized void processFoxml() throws XMLStreamException, IOException {
         if (getResult() == null) {
-            this.result = new DummyHandler();
-            this.fetcher = new DummyURLFetcher();
-            /* new Migrator(new SimpleObjectSource("info%3Afedora%2Fexample%3A1", getFetcher(),
-                    new DirectoryScanningIDResolver(new File("target/index"),
-                    new File("src/test/resources/datastreamStore"))), getResult()).run();*/
-            final ApplicationContext context = new ClassPathXmlApplicationContext("spring/migration-bean.xml");
-            final Migrator m = (Migrator)context.getBean("migratorTest");
+            final ApplicationContext context = new ClassPathXmlApplicationContext("spring/stored-foxml.xml");
+            this.result = (DummyHandler) context.getBean("dummyHandler");
+            this.fetcher = (DummyURLFetcher) context.getBean("dummyFetcher");
+            final Migrator m = (Migrator) context.getBean("migrator");
             m.run();
             ((ConfigurableApplicationContext)context).close();
 

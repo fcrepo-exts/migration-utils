@@ -22,17 +22,12 @@ public class VersionAbstractionFedoraObjectHandlerTest {
 
     @Test
     public void testObjectProcessing() throws IOException, XMLStreamException {
-        final TestingFedoraObjectVersionHandler vh = new TestingFedoraObjectVersionHandler();
-        /*new Migrator(new Example1TestSuite.SimpleObjectSource("info%3Afedora%2Fexample%3A1", null,
-                new DirectoryScanningIDResolver(new File("target/index"),
-                new File("src/test/resources/datastreamStore"))),
-                new ObjectAbstractionStreamingFedoraObjectHandler(new VersionAbstractionFedoraObjectHandler(vh))).run();*/
-
-        final ApplicationContext context = new ClassPathXmlApplicationContext("spring/migration-bean.xml");
-        final Migrator m = (Migrator)context.getBean("migrator");
+        final ApplicationContext context = new ClassPathXmlApplicationContext("spring/version-abstraction.xml");
+        final TestingFedoraObjectVersionHandler vh = (TestingFedoraObjectVersionHandler) context.getBean("versionHandler");
+        final Migrator m = (Migrator) context.getBean("migrator");
         m.run();
 
-        Assert.assertEquals("Three versions should have been gleaned.", 6, vh.versions.size());
+        Assert.assertEquals("Six versions should have been gleaned.", 6, vh.versions.size());
         Assert.assertEquals("2015-01-27T19:07:33.120Z", vh.versions.get(0).getVersionDate());
         Assert.assertEquals("AUDIT.0", vh.versions.get(0).listChangedDatastreams().get(0).getVersionId());
         Assert.assertEquals("DC1.0", vh.versions.get(0).listChangedDatastreams().get(1).getVersionId());

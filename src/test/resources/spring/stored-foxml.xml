@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="migrator" class="org.fcrepo.migration.Migrator">
+        <constructor-arg name="source" ref="simpleObjectSource" />
+        <constructor-arg name="handler" ref="dummyHandler" />
+    </bean>
+
+    <bean id="simpleObjectSource" class="org.fcrepo.migration.Example1TestSuite.SimpleObjectSource">
+        <constructor-arg name="path" value="info%3Afedora%2Fexample%3A1" />
+        <constructor-arg name="f" ref="dummyFetcher" />
+        <constructor-arg name="resolver" ref="directoryScanningIDResolver" />
+    </bean>
+    
+    <bean id="directoryScanningIDResolver" class="org.fcrepo.migration.foxml11.DirectoryScanningIDResolver">
+        <constructor-arg value="target/index"/>
+        <constructor-arg value ="src/test/resources/datastreamStore" />
+    </bean>
+    
+    <bean id="dummyFetcher" class="org.fcrepo.migration.Example1TestSuite.DummyURLFetcher" />
+
+    <bean id="dummyHandler" class="org.fcrepo.migration.Example1TestSuite.DummyHandler" />
+
+</beans>
