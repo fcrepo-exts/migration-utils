@@ -6,6 +6,9 @@ import javax.xml.stream.XMLStreamException;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * A series of tests that cover all the features used in processing
@@ -20,9 +23,12 @@ public class ExportedArchiveFoxmlMigratorTest extends Example1TestSuite {
     @Before
     public synchronized void processFoxml() throws XMLStreamException, IOException {
         if (getResult() == null) {
-            result = new DummyHandler();
-            fetcher = new DummyURLFetcher();
-            new Migrator(new SimpleObjectSource("example1-foxml.xml", getFetcher(), new DummyIDResolver()), getResult()).run();
+            final ApplicationContext context = new ClassPathXmlApplicationContext("spring/exported-foxml.xml");
+            this.result = (DummyHandler) context.getBean("dummyHandler");
+            this.fetcher = (DummyURLFetcher) context.getBean("dummyFetcher");
+            final Migrator m = (Migrator) context.getBean("migrator");
+            m.run();
+            ((ConfigurableApplicationContext) context).close();
         }
     }
 
