@@ -5,7 +5,6 @@ import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 
 import org.junit.Before;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -22,12 +21,12 @@ public class FoxmlStorageMigratorTest extends Example1TestSuite {
     @Before
     public synchronized void processFoxml() throws XMLStreamException, IOException {
         if (getResult() == null) {
-            final ApplicationContext context = new ClassPathXmlApplicationContext("spring/stored-foxml.xml");
+            final ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("spring/stored-foxml.xml");
             this.result = (DummyHandler) context.getBean("dummyHandler");
             this.fetcher = (DummyURLFetcher) context.getBean("dummyFetcher");
             final Migrator m = (Migrator) context.getBean("migrator");
             m.run();
-            ((ConfigurableApplicationContext)context).close();
+            context.close();
 
         }
     }
