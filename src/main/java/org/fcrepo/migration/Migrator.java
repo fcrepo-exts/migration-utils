@@ -1,11 +1,13 @@
 package org.fcrepo.migration;
 
-import java.io.IOException;
-
-import javax.xml.stream.XMLStreamException;
-
+import org.slf4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A class that represents a command-line program to migrate a fedora 3
@@ -18,6 +20,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class Migrator {
 
+    private static final Logger LOGGER = getLogger(Migrator.class);
+    
     public static void main(final String [] args) throws IOException, XMLStreamException {
 
         final ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("spring/migration-bean.xml");
@@ -30,8 +34,14 @@ public class Migrator {
 
     private StreamingFedoraObjectHandler handler;
 
-    public Migrator() {
+    private int limit;
 
+    public Migrator() {
+        limit = -1;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 
     public void setSource(final ObjectSource source) {
@@ -44,13 +54,18 @@ public class Migrator {
     }
 
     public Migrator(final ObjectSource source, final StreamingFedoraObjectHandler handler) {
+        this();
         this.source = source;
         this.handler = handler;
     }
 
     public void run() throws XMLStreamException {
+        int index = 0;
         for (final FedoraObjectProcessor o : source) {
-            System.out.println("Processing \"" + o.getObjectInfo().getPid() + "\"...");
+            if (limit >= 0 && index ++ >= limit) {
+                break;
+            }
+            LOGGER.info("Processing \"" + o.getObjectInfo().getPid() + "\"...");
             o.processObject(handler);
         }
     }

@@ -80,9 +80,20 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
                 return dsIdToVersionListMap.get(datastreamId);
             }
         });
+        cleanForReuse();
     }
 
     @Override
     public void abortObject(ObjectInfo object) {
+        cleanForReuse();
+    }
+
+    /**
+     * Removes any state that's specific to a Fedora 3 object that was processed
+     * so that this Handler may be reused for a different object.
+     */
+    private void cleanForReuse() {
+        this.dsIds.clear();
+        this.dsIdToVersionListMap.clear();
     }
 }

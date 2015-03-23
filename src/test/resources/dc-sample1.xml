@@ -1,0 +1,33 @@
+
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:contributor>Contributor 1</dc:contributor>
+  <dc:contributor>Contributor 2</dc:contributor>
+  <dc:coverage>Coverage 1</dc:coverage>
+  <dc:coverage>Coverage 2</dc:coverage>
+  <dc:creator>Creator 1</dc:creator>
+  <dc:creator>Creator 2</dc:creator>
+  <dc:date>Date 1</dc:date>
+  <dc:date>Date 2</dc:date>
+  <dc:description>Description 1</dc:description>
+  <dc:description>Description 2</dc:description>
+  <dc:format>Format 1</dc:format>
+  <dc:format>Format 2</dc:format>
+  <dc:identifier>Identifier 1</dc:identifier>
+  <dc:identifier>Identifier 2</dc:identifier>
+  <dc:language>Language 1</dc:language>
+  <dc:language>Language 2</dc:language>
+  <dc:publisher>Publisher 1</dc:publisher>
+  <dc:publisher>Publisher 2</dc:publisher>
+  <dc:relation>Relation 1</dc:relation>
+  <dc:relation>Relation 2</dc:relation>
+  <dc:rights>Rights 1</dc:rights>
+  <dc:rights>Rights 2</dc:rights>
+  <dc:source>Source 1</dc:source>
+  <dc:source>Source 2</dc:source>
+  <dc:subject>Subject 1</dc:subject>
+  <dc:subject>Subject 2</dc:subject>
+  <dc:title>Title 1</dc:title>
+  <dc:title>Title 2</dc:title>
+  <dc:type>Type 1</dc:type>
+  <dc:type>Type 2</dc:type>
+</oai_dc:dc>

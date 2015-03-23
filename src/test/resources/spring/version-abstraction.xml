@@ -10,14 +10,14 @@
     </bean>
 
     <bean id="simpleObjectSource" class="org.fcrepo.migration.Example1TestSuite.SimpleObjectSource">
-        <constructor-arg name="path" value="info%3Afedora%2Fexample%3A1" />
+        <constructor-arg name="path" value="objectStore/info%3Afedora%2Fexample%3A1" />
         <constructor-arg name="f"><null /></constructor-arg>
         <constructor-arg name="resolver" ref="directoryScanningIDResolver" />
     </bean>
     
     <bean id="directoryScanningIDResolver" class="org.fcrepo.migration.foxml11.DirectoryScanningIDResolver">
-        <constructor-arg value="target/index"/>
-        <constructor-arg value ="src/test/resources/datastreamStore" />
+        <constructor-arg ref="indexRoot" />
+        <constructor-arg ref="datastreamStore" />
     </bean>
     
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml11.HttpClientURLFetcher">
@@ -33,4 +33,11 @@
     
     <bean id="versionHandler" class="org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandlerTest.TestingFedoraObjectVersionHandler" />
 
+    <bean id="datastreamStore" class="java.io.File">
+        <constructor-arg type="java.lang.String" value="src/test/resources/datastreamStore" />
+    </bean>
+
+    <bean id="indexRoot" class="java.io.File">
+        <constructor-arg type="java.lang.String" value="target/index" />
+    </bean>
 </beans>

@@ -20,38 +20,37 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.slf4j.Logger;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * An InternalIDResolver implementation that generates an index of
- * datastream ids (filenames) to file paths for the contents of one
- * or more datastream directories.
+ * datastream ids (filenames) to file paths for the contents of a
+ * datastream directory.  The directory is expected to contain just
+ * other directories and/or FOXML files.  The FOXML files are expected
+ * to have a filename that is reversibly mapped from a fedora internal
+ * id for that datastream version.
  */
 public class DirectoryScanningIDResolver implements InternalIDResolver {
 
+    private static final Logger LOGGER = getLogger(InternalIDResolver.class);
+    
     private IndexSearcher searcher;
 
-    private String indexDirPath;
-    private String dsRootPath;
-    public DirectoryScanningIDResolver(final String indexDirPath, final String dsRootPath) throws IOException {
-        this(new File(indexDirPath), new File(dsRootPath));
-        this.indexDirPath = indexDirPath;
-        this.dsRootPath = dsRootPath;
-    }
-
-    public DirectoryScanningIDResolver(final File indexDir, final File ... dsRoot) throws IOException {
+    public DirectoryScanningIDResolver(final File indexDir, final File dsRoot) throws IOException {
         final Directory dir = FSDirectory.open(indexDir);
         if (indexDir.exists()) {
-            System.out.println("Index exists at \"" + indexDir.getPath() + "\" and will be used.  "
+            LOGGER.warn("Index exists at \"" + indexDir.getPath() + "\" and will be used.  "
                     + "To clear index, simply delete this directory and re-run the application.");
         } else {
             final Analyzer analyzer = new StandardAnalyzer();
             final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_4_10_3, analyzer);
             iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
             final IndexWriter writer = new IndexWriter(dir, iwc);
-            for (final File f : dsRoot) {
-                System.out.println("Builidng an index of all the datastreams in \"" + f.getPath() + "\"...");
-                indexDatastreams(writer, f);
-            }
+            LOGGER.info("Builidng an index of all the datastreams in \"" + dsRoot.getPath() + "\"...");
+            indexDatastreams(writer, dsRoot);
+
             writer.commit();
             writer.close();
         }

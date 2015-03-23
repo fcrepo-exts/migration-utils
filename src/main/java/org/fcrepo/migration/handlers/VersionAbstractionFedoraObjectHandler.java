@@ -30,10 +30,11 @@ public class VersionAbstractionFedoraObjectHandler implements FedoraObjectHandle
     @Override
     public void processObject(final ObjectReference object) {
         final Map<String, List<DatastreamVersion>> versionMap = buildVersionMap(object);
-        List<String> versionDates = new ArrayList<String>(versionMap.keySet());
+        final List<String> versionDates = new ArrayList<String>(versionMap.keySet());
         Collections.sort(versionDates);
+        final List<ObjectVersionReference> versions = new ArrayList<ObjectVersionReference>();
         for (final String versionDate : versionDates) {
-            ObjectVersionReference ref = new ObjectVersionReference() {
+            versions.add(new ObjectVersionReference() {
                 @Override
                 public ObjectReference getObject() {
                     return object;
@@ -59,9 +60,34 @@ public class VersionAbstractionFedoraObjectHandler implements FedoraObjectHandle
                     return versionMap.get(versionDate);
                 }
 
-            };
-            handler.processObjectVersion(ref);
+                @Override
+                public boolean isLastVersion() {
+                    return versionDates.get(versionDates.size() - 1).equals(versionDate);
+                }
+
+                @Override
+                public boolean isFirstVersion() {
+                    return versionDates.get(0).equals(versionDate);
+                }
+
+                @Override
+                public int getVersionIndex() {
+                    return versionDates.indexOf(versionDate);
+                }
+
+                @Override
+                public boolean wasDatastreamChanged(String dsId) {
+                    for (DatastreamVersion v : listChangedDatastreams()) {
+                        if (v.getDatastreamInfo().getDatastreamId().equals(dsId)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+            });
         }
+        handler.processObjectVersions(versions);
         
     }
     

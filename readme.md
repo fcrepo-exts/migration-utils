@@ -2,32 +2,22 @@ A framework to support migration of data from Fedora 3 to Fedora 4 repositories.
 
 # Overview
 
-The basic program allows for a configuration to define one or more Fedora Object Handlers and
-a repository source.  The handlers will in turn be provided information about each each object
-in the repository under the theory that one ore more Handler implementations may be written to
-achieve whatever complex data migration or analysis is desired.
+The main class (org.fcrepo.migration.Migrator) iterates over all of the fedora
+objects in a configured source (org.fcrepo.migration.ObjectSource) and handles
+them using the configured handler (org.fcrepo.migration.StreamingFedoraObjectHandler).
+The configuration is entirely contained within a Spring XML configuration file in
+src/main/resources/migration-bean.xml.
 
 # Status
 
-Currently this application is far from ready for use, but the basic framework is presented to allow:
-
-1.  testing to ensure that it does indeed completely and accurately parse FOXML from various fedora versions and contexts
-2.  the framework to be discussed and improved before complex mappings and migration scenarios are implemented
+A basic migration scenario is implemented that may serve as a starting point for
+your own migration from Fedora 3.x to Fedora 4.x.
 
 # Usage
 
-To get basic output for a directory of FOXML that have been produced using the REST API's export with the "archive" context:
+To run the migration scenario you have configured in the Spring XML configuration file: 
 
-``` mvn clean compile exec:java -Dexec.mainClass=org.fcrepo.migration.Migrator -Dexec.args="path/to/exported/foxml" ```
-
-To get basic output for a directory of FOXML read from fedora's storage:
-
-``` mvn clean compile exec:java -Dexec.mainClass=org.fcrepo.migration.Migrator -Dexec.args="path/to/fedora/data/objectStore path/to/fedora/data/datastreamStore work/directory" ```
-
-# Development
-
-To do something more sophisticated (like actually migrating or analyzing content) implement
-FedoraObjectHandler and update Migrator before running.
+``` mvn clean compile exec:java -Dexec.mainClass=org.fcrepo.migration.Migrator 
 
 # Additional Documentation
  * [wiki](https://wiki.duraspace.org/display/FF/Fedora+3+to+4+Data+Migration)

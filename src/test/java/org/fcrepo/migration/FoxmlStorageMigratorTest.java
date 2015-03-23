@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -27,7 +28,6 @@ public class FoxmlStorageMigratorTest extends Example1TestSuite {
             final Migrator m = (Migrator) context.getBean("migrator");
             m.run();
             context.close();
-
         }
     }
 

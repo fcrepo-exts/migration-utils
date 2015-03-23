@@ -38,6 +38,26 @@ public interface ObjectVersionReference {
      * from the last version to this one.
      */
     public List<DatastreamVersion> listChangedDatastreams();
-    
 
+    /**
+     * Indicates whether this is the first version. 
+     */
+    public boolean isLastVersion();
+
+    /**
+     * Indicates whether this is the last version.
+     */
+    public boolean isFirstVersion();
+
+    /**
+     * Gets the version index (0 for first, 1 for second, etc.) in chronological
+     * order from oldest to newest.
+     */
+    public int getVersionIndex();
+
+    /**
+     * Determines whether a datastream with the given DSID changed as part of the 
+     * update that contributed to this version.
+     */
+    public boolean wasDatastreamChanged(String dsId);
 }

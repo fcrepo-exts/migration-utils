@@ -65,17 +65,20 @@ public class VersionAbstractionFedoraObjectHandlerTest {
          * puts the reference on the versions list for later tests.
          */
         @Override
-        public void processObjectVersion(final ObjectVersionReference reference) {
-            versions.add(reference);
-            for (final DatastreamVersion dsv : reference.listChangedDatastreams()) {
-                if (dsv.getDatastreamInfo().getControlGroup().equals("M")) {
-                    try {
-                        testDatastreamBinary(dsv);
-                    } catch (final IOException e) {
-                        throw new RuntimeException(e);
+        public void processObjectVersions(Iterable<ObjectVersionReference> versions) {
+            for (ObjectVersionReference version : versions) {
+                this.versions.add(version);
+                for (final DatastreamVersion dsv : version.listChangedDatastreams()) {
+                    if (dsv.getDatastreamInfo().getControlGroup().equals("M")) {
+                        try {
+                            testDatastreamBinary(dsv);
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
+
         }
 
         private void testDatastreamBinary(final DatastreamVersion v) throws IOException {
