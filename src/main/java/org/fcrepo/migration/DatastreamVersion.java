@@ -72,4 +72,18 @@ public interface DatastreamVersion {
      * redirect datastream.
      */
     public String getExternalOrRedirectURL();
+
+    /**
+     * Determines if this is the first version of a datastream.
+     *
+     * @return  True if this is the first version, false otherwise.
+     */
+    public boolean isFirstVersionIn(ObjectReference obj);
+
+    /**
+     * Determines if this is the last version of a datastream.
+     *
+     * @return  True if this is the last version, false otherwise.
+     */
+    public boolean isLastVersionIn(ObjectReference obj);
 }

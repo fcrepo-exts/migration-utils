@@ -5,11 +5,11 @@ import org.fcrepo.migration.DatastreamInfo;
 import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.DefaultContentDigest;
 import org.fcrepo.migration.DefaultObjectInfo;
+import org.fcrepo.migration.ObjectReference;
 import org.fcrepo.migration.StreamingFedoraObjectHandler;
 import org.fcrepo.migration.FedoraObjectProcessor;
 import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.migration.ObjectProperties;
-
 import org.apache.commons.codec.binary.Base64OutputStream;
 
 import javax.xml.bind.JAXBContext;
@@ -24,6 +24,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -378,6 +379,17 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
             }
         }
 
+        @Override
+        public boolean isFirstVersionIn(ObjectReference obj) {
+            List<DatastreamVersion> datastreams = obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
+            return datastreams.indexOf(this) == 0;
+        }
+
+        @Override
+        public boolean isLastVersionIn(ObjectReference obj) {
+            List<DatastreamVersion> datastreams = obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
+            return datastreams.indexOf(this) == datastreams.size() - 1;
+        }
     }
 
     private static Map<String, String> getAttributes(XMLStreamReader r, String ... allowedNames) {
