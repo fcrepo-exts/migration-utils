@@ -6,11 +6,7 @@ A framework to support migration of data from Fedora 3 to Fedora 4 repositories.
 
 ## Overview
 
-The main class (org.fcrepo.migration.Migrator) iterates over all of the fedora
-objects in a configured source (org.fcrepo.migration.ObjectSource) and handles
-them using the configured handler (org.fcrepo.migration.StreamingFedoraObjectHandler).
-The configuration is entirely contained within a Spring XML configuration file in
-src/main/resources/migration-bean.xml.
+The main class (`org.fcrepo.migration.Migrator`) iterates over all of the fedora objects in a configured source (`org.fcrepo.migration.ObjectSource`) and handles them using the configured handler (`org.fcrepo.migration.StreamingFedoraObjectHandler`). The configuration is entirely contained within a Spring XML configuration file in [`src/main/resources/spring/migration-bean.xml`](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml).
 
 ## Status
 
