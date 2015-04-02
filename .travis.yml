@@ -1,0 +1,8 @@
+language: java
+jdk:
+  - oraclejdk7
+before_install:
+  - "echo $JAVA_OPTS"
+  - "export JAVA_OPTS=-Xmx512m"
+notifications:
+  irc: "irc.freenode.org#duraspace-ff"
