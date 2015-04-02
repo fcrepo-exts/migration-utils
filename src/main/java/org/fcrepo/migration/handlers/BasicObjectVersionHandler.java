@@ -110,11 +110,80 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                     } else {
                         FedoraDatastream ds = dsMap.get(v.getDatastreamInfo().getDatastreamId());
                         if (ds == null) {
-                            dsMap.put(v.getDatastreamInfo().getDatastreamId(), repo.createDatastream(idMapper.mapDatastreamPath(v.getDatastreamInfo()), new FedoraContent().setContent(v.getContent()).setContentType(v.getMimeType())));
+                            ds = repo.createDatastream(idMapper.mapDatastreamPath(v.getDatastreamInfo()),
+                                                       new FedoraContent().setContent(v.getContent()).setContentType(v.getMimeType()));
+                            dsMap.put(v.getDatastreamInfo().getDatastreamId(), ds);
                         } else {
                             ds.updateContent(new FedoraContent().setContent(v.getContent()).setContentType(v.getMimeType()));
                         }
-                        // TODO: handle datastream properties
+
+                        //
+                        // Handle datastream properties
+                        //
+                        QuadDataAcc dsTriplesToInsert = new QuadDataAcc();
+                        QuadAcc dsTriplesToRemove = new QuadAcc();
+
+                        // DSID
+                        String dsid = v.getDatastreamInfo().getDatastreamId();
+                        if (dsid != null) {
+                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
+                                                                   NodeFactory.createURI("http://purl.org/dc/terms/identifier"),
+                                                                   NodeFactory.createVariable("o")));
+                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
+                                                                   NodeFactory.createURI("http://purl.org/dc/terms/identifier"),
+                                                                   NodeFactory.createLiteral(dsid)));
+                        }
+
+                        // Label
+                        String label = v.getLabel();
+                        if (label != null) {
+                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
+                                                                   NodeFactory.createURI("http://purl.org/dc/terms/title"),
+                                                                   NodeFactory.createVariable("o")));
+                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
+                                                                   NodeFactory.createURI("http://purl.org/dc/terms/title"),
+                                                                   NodeFactory.createLiteral(label)));
+                        }
+
+                        // Object State 
+                        String state = v.getDatastreamInfo().getState();
+                        if (state != null) {
+                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
+                                                                   NodeFactory.createURI("http://fedora.info/definitions/1/0/access/objState"),
+                                                                   NodeFactory.createVariable("o")));
+                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
+                                                                   NodeFactory.createURI("http://fedora.info/definitions/1/0/access/objState"),
+                                                                   NodeFactory.createLiteral(state)));
+                        }
+
+                        // Created Date
+                        String createdDate = v.getCreated();
+                        if (createdDate != null) {
+                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
+                                                                   NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication"),
+                                                                   NodeFactory.createVariable("o")));
+                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
+                                                                   NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication"),
+                                                                   NodeFactory.createLiteral(createdDate, XSDDatatype.XSDdateTime)));
+                        }
+
+                        // Format URI 
+                        String formatUri = v.getFormatUri();
+                        if (formatUri != null) {
+                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
+                                                                   NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#formatDesignation"),
+                                                                   NodeFactory.createVariable("o")));
+                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
+                                                                   NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#formatDesignation"),
+                                                                   NodeFactory.createLiteral(formatUri)));
+                        }
+
+                        UpdateRequest dsUpdateRequest = UpdateFactory.create();
+                        dsUpdateRequest.add(new UpdateDeleteWhere(dsTriplesToRemove));
+                        dsUpdateRequest.add(new UpdateDataInsert(dsTriplesToInsert));
+                        ByteArrayOutputStream dsSparqlUpdate = new ByteArrayOutputStream();
+                        dsUpdateRequest.output(new IndentedWriter(dsSparqlUpdate));
+                        ds.updateProperties(dsSparqlUpdate.toString("UTF-8"));
                     }
                 }
 
