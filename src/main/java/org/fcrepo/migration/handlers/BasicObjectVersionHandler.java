@@ -13,12 +13,14 @@ import com.hp.hpl.jena.sparql.modify.request.UpdateDataInsert;
 import com.hp.hpl.jena.sparql.modify.request.UpdateDeleteWhere;
 import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
+
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.fcrepo.client.FedoraContent;
 import org.fcrepo.client.FedoraDatastream;
 import org.fcrepo.client.FedoraException;
 import org.fcrepo.client.FedoraObject;
 import org.fcrepo.client.FedoraRepository;
+import org.fcrepo.client.FedoraResource;
 import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationIDMapper;
@@ -29,6 +31,7 @@ import org.fcrepo.migration.foxml11.DC;
 import org.slf4j.Logger;
 
 import javax.xml.bind.JAXBException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -117,89 +120,32 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                             ds.updateContent(new FedoraContent().setContent(v.getContent()).setContentType(v.getMimeType()));
                         }
 
-                        //
-                        // Handle datastream properties
-                        //
-                        QuadDataAcc dsTriplesToInsert = new QuadDataAcc();
-                        QuadAcc dsTriplesToRemove = new QuadAcc();
-
-                        // DSID
-                        String dsid = v.getDatastreamInfo().getDatastreamId();
-                        if (dsid != null) {
-                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
-                                                                   NodeFactory.createURI("http://purl.org/dc/terms/identifier"),
-                                                                   NodeFactory.createVariable("o")));
-                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
-                                                                   NodeFactory.createURI("http://purl.org/dc/terms/identifier"),
-                                                                   NodeFactory.createLiteral(dsid)));
-                        }
-
-                        // Label
-                        String label = v.getLabel();
-                        if (label != null) {
-                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
-                                                                   NodeFactory.createURI("http://purl.org/dc/terms/title"),
-                                                                   NodeFactory.createVariable("o")));
-                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
-                                                                   NodeFactory.createURI("http://purl.org/dc/terms/title"),
-                                                                   NodeFactory.createLiteral(label)));
-                        }
-
-                        // Object State 
-                        String state = v.getDatastreamInfo().getState();
-                        if (state != null) {
-                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
-                                                                   NodeFactory.createURI("http://fedora.info/definitions/1/0/access/objState"),
-                                                                   NodeFactory.createVariable("o")));
-                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
-                                                                   NodeFactory.createURI("http://fedora.info/definitions/1/0/access/objState"),
-                                                                   NodeFactory.createLiteral(state)));
-                        }
-
-                        // Created Date
-                        String createdDate = v.getCreated();
-                        if (createdDate != null) {
-                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
-                                                                   NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication"),
-                                                                   NodeFactory.createVariable("o")));
-                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
-                                                                   NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication"),
-                                                                   NodeFactory.createLiteral(createdDate, XSDDatatype.XSDdateTime)));
-                        }
-
-                        // Format URI 
-                        String formatUri = v.getFormatUri();
-                        if (formatUri != null) {
-                            dsTriplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
-                                                                   NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#formatDesignation"),
-                                                                   NodeFactory.createVariable("o")));
-                            dsTriplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
-                                                                   NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#formatDesignation"),
-                                                                   NodeFactory.createLiteral(formatUri)));
-                        }
-
-                        UpdateRequest dsUpdateRequest = UpdateFactory.create();
-                        dsUpdateRequest.add(new UpdateDeleteWhere(dsTriplesToRemove));
-                        dsUpdateRequest.add(new UpdateDataInsert(dsTriplesToInsert));
-                        ByteArrayOutputStream dsSparqlUpdate = new ByteArrayOutputStream();
-                        dsUpdateRequest.output(new IndentedWriter(dsSparqlUpdate));
-                        ds.updateProperties(dsSparqlUpdate.toString("UTF-8"));
+                        updateDatastreamProperties(v, ds);
                     }
                 }
 
                 if (version.isLastVersion()) {
                     for (ObjectProperty p : version.getObjectProperties().listProperties()) {
-                        triplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"), NodeFactory.createURI(p.getName()), NodeFactory.createVariable("o")));
-                        triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(p.getName()),
-                                isDateProperty(p.getName())
-                                        ? NodeFactory.createLiteral(p.getValue(), XSDDatatype.XSDdateTime)
-                                        : NodeFactory.createLiteral(p.getValue())));
+                        if (isDateProperty(p.getName())) {
+                            updateDateTriple(triplesToRemove,
+                                             triplesToInsert,
+                                             p.getName(),
+                                             p.getValue());
+                        }
+                        else {
+                            updateTriple(triplesToRemove,
+                                         triplesToInsert,
+                                         p.getName(),
+                                         p.getValue());
+                        }
                     }
                 }
 
                 // update the version date
-                triplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"), NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication"), NodeFactory.createVariable("o")));
-                triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI("http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication"), NodeFactory.createLiteral(version.getVersionDate(), XSDDatatype.XSDdateTime)));
+                updateDateTriple(triplesToRemove,
+                                 triplesToInsert,
+                                 "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication",
+                                 version.getVersionDate());
 
                 UpdateRequest request = UpdateFactory.create();
                 request.add(new UpdateDeleteWhere(triplesToRemove));
@@ -226,4 +172,88 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
         return repo.createObject(idMapper.mapObjectPath(object));
     }
 
+    private void updateDatastreamProperties(DatastreamVersion v, FedoraDatastream ds) {
+        QuadDataAcc triplesToInsert = new QuadDataAcc();
+        QuadAcc triplesToRemove = new QuadAcc();
+
+        // DSID
+        String dsid = v.getDatastreamInfo().getDatastreamId();
+        if (dsid != null) {
+            updateTriple(triplesToRemove,
+                         triplesToInsert,
+                         "http://purl.org/dc/terms/identifier",
+                         dsid);
+        }
+
+        // Label
+        String label = v.getLabel();
+        if (label != null) {
+            updateTriple(triplesToRemove,
+                         triplesToInsert,
+                         "http://purl.org/dc/terms/title",
+                         label);
+        }
+
+        // Object State 
+        String state = v.getDatastreamInfo().getState();
+        if (state != null) {
+            updateTriple(triplesToRemove,
+                         triplesToInsert,
+                         "http://fedora.info/definitions/1/0/access/objState",
+                         state);
+        }
+
+        // Created Date
+        String createdDate = v.getCreated();
+        if (createdDate != null) {
+            updateDateTriple(triplesToRemove,
+                             triplesToInsert,
+                             "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication",
+                             createdDate);
+        }
+
+        // Format URI 
+        String formatUri = v.getFormatUri();
+        if (formatUri != null) {
+            updateTriple(triplesToRemove,
+                         triplesToInsert,
+                         "http://www.loc.gov/premis/rdf/v1#formatDesignation",
+                         formatUri);
+        }
+
+        updateResourceProperties(ds, triplesToRemove, triplesToInsert);
+    }
+
+    private void updateResourceProperties(FedoraResource resource, QuadAcc triplesToRemove, QuadDataAcc triplesToInsert) throws RuntimeException {
+        try {
+            UpdateRequest updateRequest = UpdateFactory.create();
+            updateRequest.add(new UpdateDeleteWhere(triplesToRemove));
+            updateRequest.add(new UpdateDataInsert(triplesToInsert));
+            ByteArrayOutputStream sparqlUpdate = new ByteArrayOutputStream();
+            updateRequest.output(new IndentedWriter(sparqlUpdate));
+            resource.updateProperties(sparqlUpdate.toString("UTF-8"));
+        } catch (FedoraException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void updateTriple(QuadAcc triplesToRemove, QuadDataAcc triplesToInsert, String predicate, String object) {
+        triplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
+                                             NodeFactory.createURI(predicate),
+                                             NodeFactory.createVariable("o")));
+        triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
+                                             NodeFactory.createURI(predicate),
+                                             NodeFactory.createLiteral(object)));
+    }
+
+    private void updateDateTriple(QuadAcc triplesToRemove, QuadDataAcc triplesToInsert, String predicate, String object) {
+        triplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
+                                             NodeFactory.createURI(predicate),
+                                             NodeFactory.createVariable("o")));
+        triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
+                                             NodeFactory.createURI(predicate),
+                                             NodeFactory.createLiteral(object, XSDDatatype.XSDdateTime)));
+    }
 }
