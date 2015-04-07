@@ -147,12 +147,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                  "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication",
                                  version.getVersionDate());
 
-                UpdateRequest request = UpdateFactory.create();
-                request.add(new UpdateDeleteWhere(triplesToRemove));
-                request.add(new UpdateDataInsert(triplesToInsert));
-                ByteArrayOutputStream sparqlUpdate = new ByteArrayOutputStream();
-                request.output(new IndentedWriter(sparqlUpdate));
-                object.updateProperties(sparqlUpdate.toString("UTF-8"));
+                updateResourceProperties(object, triplesToRemove, triplesToInsert);
 
                 object.createVersionSnapshot("imported-version-" + String.valueOf(version.getVersionIndex()));
             }
@@ -165,13 +160,19 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     
     private boolean isDateProperty(String uri) {
         return uri.equals("info:fedora/fedora-system:def/model#createdDate") || uri.equals("info:fedora/fedora-system:def/view#lastModifiedDate");
-        
     }
 
     private FedoraObject createObject(ObjectReference object) throws FedoraException {
         return repo.createObject(idMapper.mapObjectPath(object));
     }
 
+    /**
+     * WIP utility function to update datastream properties.
+     *
+     * @param v     Version of the datasream to update.
+     * @param ds    Datastream to update. 
+     * @return void 
+     */
     private void updateDatastreamProperties(DatastreamVersion v, FedoraDatastream ds) {
         QuadDataAcc triplesToInsert = new QuadDataAcc();
         QuadAcc triplesToRemove = new QuadAcc();
@@ -224,22 +225,47 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
         updateResourceProperties(ds, triplesToRemove, triplesToInsert);
     }
 
-    private void updateResourceProperties(FedoraResource resource, QuadAcc triplesToRemove, QuadDataAcc triplesToInsert) throws RuntimeException {
+    /**
+     * Utility function for udpating a FedoraResource's properties.
+     *
+     * @param resource          FedoraResource to update.
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     * @return                  void
+     * @throws RuntimeException Possible FedoraExcpetions and IOExceptions 
+     */
+    private void updateResourceProperties(FedoraResource resource,
+                                          QuadAcc triplesToRemove,
+                                          QuadDataAcc triplesToInsert) throws RuntimeException {
         try {
             UpdateRequest updateRequest = UpdateFactory.create();
             updateRequest.add(new UpdateDeleteWhere(triplesToRemove));
             updateRequest.add(new UpdateDataInsert(triplesToInsert));
             ByteArrayOutputStream sparqlUpdate = new ByteArrayOutputStream();
             updateRequest.output(new IndentedWriter(sparqlUpdate));
-            resource.updateProperties(sparqlUpdate.toString("UTF-8"));
-        } catch (FedoraException e) {
-            throw new RuntimeException(e);
+            //resource.updateProperties(sparqlUpdate.toString("UTF-8"));
+            System.out.println("UPDATING PROPERTIES: ");
+            System.out.println(sparqlUpdate.toString("UTF-8"));
+        //} catch (FedoraException e) {
+            //throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void updateTriple(QuadAcc triplesToRemove, QuadDataAcc triplesToInsert, String predicate, String object) {
+    /**
+     * Utility function for updating a literal triple.
+     *
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     * @param predicate         Predicate of relationship (assumed to be URI).    
+     * @param object            Object of relationship (assumed to be literal).    
+     * @return                  void
+     */
+    private void updateTriple(QuadAcc triplesToRemove,
+                              QuadDataAcc triplesToInsert,
+                              String predicate,
+                              String object) {
         triplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
                                              NodeFactory.createURI(predicate),
                                              NodeFactory.createVariable("o")));
@@ -248,7 +274,19 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                              NodeFactory.createLiteral(object)));
     }
 
-    private void updateDateTriple(QuadAcc triplesToRemove, QuadDataAcc triplesToInsert, String predicate, String object) {
+    /**
+     * Utility function for updating a date literal triple.
+     *
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     * @param predicate         Predicate of relationship (assumed to be URI).    
+     * @param object            Object of relationship (assumed to be literal).    
+     * @return                  void
+     */
+    private void updateDateTriple(QuadAcc triplesToRemove,
+                                  QuadDataAcc triplesToInsert,
+                                  String predicate,
+                                  String object) {
         triplesToRemove.addTriple(new Triple(NodeFactory.createVariable("s"),
                                              NodeFactory.createURI(predicate),
                                              NodeFactory.createVariable("o")));
