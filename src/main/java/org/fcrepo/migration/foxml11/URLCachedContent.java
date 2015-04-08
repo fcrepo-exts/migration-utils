@@ -18,6 +18,10 @@ public class URLCachedContent implements CachedContent {
         this.fetcher = fetcher;
         this.url = url;
     }
+    
+    public URL getURL() {
+        return url;
+    }
 
     @Override
     public InputStream getInputStream() throws IOException {

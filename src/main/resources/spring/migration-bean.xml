@@ -4,15 +4,26 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- Main Migrator -->
-    
+
     <bean id="migrator" class="org.fcrepo.migration.Migrator">
-        <property name="source" ref="nativeFoxmlDirectoryObjectSource" />
+        <property name="source" ref="exportedFoxmlDirectoryObjectSource" />
+
+        <property name="handler" ref="consoleLoggingStreamingFedoraObjectHandler" />
+        <!-- Replacing the above handler with this one will enable the basic
+             migration scenario.  (note, unless you reconfigute it, it will write
+             content to localhost:8080/rest)
         <property name="handler" ref="objectAbstraction" />
+        -->
+
+        <!-- The following is a convenience option for testing that allows you to
+             point to a very large directory, but only ingest as many records as
+             indicated by the 'limit' value.
+         -->
         <property name="limit" value="2" />
     </bean>
 
-    
-    
+
+
     <!--  OBJECT SOURCES : choose one for your migrator  -->
 
     <bean id="nativeFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml11.NativeFoxmlDirectoryObjectSource" >
@@ -20,70 +31,77 @@
         <constructor-arg name="resolver" ref="directoryScanningIDResolver" />
         <property name="fetcher" ref="httpClientURLFetcher"/>
     </bean>
-    
+
     <bean id="exportedFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml11.ArchiveExportedFoxmlDirectoryObjectSource">
         <constructor-arg ref="exportedFoxmlDir"/>
     </bean>
 
     <!-- ... need objects from another source?  Consider writing your own and adding it here, or asking a
          project maintainer to do it for you! -->
-    
-    
-    
+
+
+
     <!-- Streaming OBJECT HANDLERS : choose one for your migrator -->
 
     <!--  This one simply outputs data about each object from the Object Source.  It is
           useful for testing or debugging.  -->
     <bean id="consoleLoggingStreamingFedoraObjectHandler" class="org.fcrepo.migration.handlers.ConsoleLoggingStreamingFedoraObjectHandler" />
-    
+
     <!-- This one provdes a whole-object abstraction to the handler as its single parameter. -->
     <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">
         <constructor-arg ref="versionAbstraction"/>
     </bean>
-    
-    
-    
+
+
+
     <!-- Whole-Object OBJECT HANDLERS: chain one of these to objectAbstraction above. -->
 
     <bean id="versionAbstraction" class="org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler">
         <constructor-arg ref="basicMigration"/>
     </bean>
-    
+
     <!-- ...have your own object-level custom handler??? Add it here and use it above! -->
-    
-    
-    
+
+
+
     <!-- Version-level OBJECT HANDLERS: chain one of these to the versionAbstraction above. -->
-    
+
     <!-- This bean does a basic migration from fedora 3 to fedora 4.  Currently it:
         Converts DC, RELS-EXT and object properties into Fedora 4 RDF properterties.
         Converts all other M or X datastreams into nonRdfResources under the object in Fedora 4
+        Creates nonRdfresources under the object for X and R datastreams that redirect to the external resource.
       -->
     <bean id="basicMigration" class="org.fcrepo.migration.handlers.BasicObjectVersionHandler">
         <constructor-arg name="repo" ref="fedora4Client" />
         <constructor-arg name="idMapper" ref="idMapper" />
+
+        <!-- set these to true if you want to copy the external content into your fedora 4
+             repository at the time of migration -->
+        <property name="importExternal" value="false" />
+        <property name="importRedirect" value="false" />
+
     </bean>
-    
-    
-    
+
+
+
     <!-- ID MAPPERS: defines the IDs that are generated for the new Fedora 4 objects. -->
 
     <bean id="idMapper" class="org.fcrepo.migration.idmapers.SimpleIDMapper">
         <constructor-arg name="rootPath" value="migrated-fedora3" />
         <property name="charDepth" value="2" />
     </bean>
-    
-    
-    
+
+
+
 
     <!-- Pluggable utility beans -->
-    
+
     <!-- The configuration options for a Fedora 4 client to do the updates to Fedora 4 -->
     <bean id="fedora4Client" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
         <constructor-arg name="repositoryURL" value="http://localhost:8080/fcrepo/rest/" />
     </bean>
 
-    <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids --> 
+    <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids -->
     <bean id="directoryScanningIDResolver" class="org.fcrepo.migration.foxml11.DirectoryScanningIDResolver">
         <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
         <constructor-arg name="indexDir" type="java.io.File" ref="indexRoot" />
@@ -95,15 +113,15 @@
 
 
     <!-- Local Environment Configuration -->
-    
+
     <bean id="objectStore" class="java.io.File">
         <constructor-arg type="java.lang.String" value="src/test/resources/objectStore" />
     </bean>
-    
+
     <bean id="datastreamStore" class="java.io.File">
         <constructor-arg type="java.lang.String" value="src/test/resources/datastreamStore" />
     </bean>
-    
+
     <bean id="exportedFoxmlDir" class="java.io.File">
         <constructor-arg type="java.lang.String" value="src/test/resources/exported" />
     </bean>

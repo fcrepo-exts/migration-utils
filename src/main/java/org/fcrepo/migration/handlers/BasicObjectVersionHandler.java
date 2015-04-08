@@ -35,6 +35,7 @@ import javax.xml.bind.JAXBException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -42,21 +43,47 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
 
     private static Logger LOGGER = getLogger(BasicObjectVersionHandler.class);
-    
+
     private FedoraRepository repo;
 
     private MigrationIDMapper idMapper;
+
+    private boolean importExternal;
+
+    private boolean importRedirect;
 
     public BasicObjectVersionHandler(FedoraRepository repo, MigrationIDMapper idMapper) {
         this.repo = repo;
         this.idMapper = idMapper;
     }
 
+    /**
+     * A property setter for a property that determines the handling of External (X)
+     * fedora 3 datastreams.  If true, the content of the URL to which those datastreams
+     * redirect is fetched and ingested as a fedora 4-managed non-RDF resource.  If false
+     * (default), a non-RDF resource is created in fedora 4 that when fetched results in
+     * an HTTP redirect to the external url.
+     */
+    public void setImportExternal(boolean value) {
+        this.importExternal = value;
+    }
+
+    /**
+     * A property setter for a property that determines the handling of Redirect (R)
+     * fedora 3 datastreams.  If true, the content of the URL to which those datastreams
+     * redirect is fetched and ingested as a fedora 4-managed non-RDF resource.  If false
+     * (default), a non-RDF resource is created in fedora 4 that when fetched results in
+     * an HTTP redirect to the external url.
+     */
+    public void setImportRedirect(boolean value) {
+        this.importRedirect = value;
+    }
+
     @Override
     public void processObjectVersions(Iterable<ObjectVersionReference> versions) {
         FedoraObject object = null;
         Map<String, FedoraDatastream> dsMap = new HashMap<String, FedoraDatastream>();
-        
+
         try {
             for (ObjectVersionReference version : versions) {
 
@@ -106,10 +133,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                 throw new RuntimeException("Non-resource subject found: " + s.getSubject().getURI());
                             }
                         }
-                    } else if (v.getDatastreamInfo().getControlGroup().equals("E")) {
-                        // TODO: handle external datastreams
-                    } else if (v.getDatastreamInfo().getControlGroup().equals("R")) {
-                        // TODO: handle redirect datastreams
+                    } else if ((v.getDatastreamInfo().getControlGroup().equals("E") && !importExternal)
+                            || (v.getDatastreamInfo().getControlGroup().equals("R") && !importRedirect)) {
+                        FedoraDatastream ds = repo.createOrUpdateRedirectDatastream(idMapper.mapDatastreamPath(v.getDatastreamInfo()), v.getExternalOrRedirectURL());
                     } else {
                         FedoraDatastream ds = dsMap.get(v.getDatastreamInfo().getDatastreamId());
                         if (ds == null) {
@@ -157,9 +183,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             throw new RuntimeException(e);
         }
     }
-    
+
     private boolean isDateProperty(String uri) {
         return uri.equals("info:fedora/fedora-system:def/model#createdDate") || uri.equals("info:fedora/fedora-system:def/view#lastModifiedDate");
+
     }
 
     private FedoraObject createObject(ObjectReference object) throws FedoraException {
