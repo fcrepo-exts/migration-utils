@@ -66,4 +66,10 @@ public interface DatastreamVersion {
      */
     public InputStream getContent() throws IOException;
 
+    /**
+     * Returns the URL to which an External (X) or Redirect (R) datastream
+     * points.  Throws IllegalStateException if this isn't an external or
+     * redirect datastream.
+     */
+    public String getExternalOrRedirectURL();
 }
