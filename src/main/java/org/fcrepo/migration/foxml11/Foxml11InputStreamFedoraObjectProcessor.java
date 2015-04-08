@@ -369,6 +369,15 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
             return dsContent.getInputStream();
         }
 
+        @Override
+        public String getExternalOrRedirectURL() {
+            if (dsContent instanceof URLCachedContent) {
+                return ((URLCachedContent) dsContent).getURL().toString();
+            } else {
+                throw new IllegalStateException();
+            }
+        }
+
     }
 
     private static Map<String, String> getAttributes(XMLStreamReader r, String ... allowedNames) {
