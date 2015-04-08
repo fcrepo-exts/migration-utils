@@ -239,15 +239,15 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                           QuadDataAcc triplesToInsert) throws RuntimeException {
         try {
             UpdateRequest updateRequest = UpdateFactory.create();
+            updateRequest.setPrefix("dcterms", "http://purl.org/dc/terms/");
+            updateRequest.setPrefix("fedoraaccess", "http://fedora.info/definitions/1/0/access/");
             updateRequest.add(new UpdateDeleteWhere(triplesToRemove));
             updateRequest.add(new UpdateDataInsert(triplesToInsert));
             ByteArrayOutputStream sparqlUpdate = new ByteArrayOutputStream();
             updateRequest.output(new IndentedWriter(sparqlUpdate));
-            //resource.updateProperties(sparqlUpdate.toString("UTF-8"));
-            System.out.println("UPDATING PROPERTIES: ");
-            System.out.println(sparqlUpdate.toString("UTF-8"));
-        //} catch (FedoraException e) {
-            //throw new RuntimeException(e);
+            resource.updateProperties(sparqlUpdate.toString("UTF-8"));
+        } catch (FedoraException e) {
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
