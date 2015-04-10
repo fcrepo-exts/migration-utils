@@ -1,6 +1,7 @@
 package org.fcrepo.migration.handlers;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
+import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -146,7 +147,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                         } else {
                             ds.updateContent(new FedoraContent().setContent(v.getContent()).setContentType(v.getMimeType()));
                         }
-                        updateDatastreamProperties(v, ds);
+                        updateDatastreamProperties(version.getObject(), v, ds);
                     }
                 }
 
@@ -265,13 +266,13 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param ds    Datastream to update. 
      * @return void 
      */
-    protected void updateDatastreamProperties(DatastreamVersion v, FedoraDatastream ds) {
+    protected void updateDatastreamProperties(ObjectReference obj, DatastreamVersion v, FedoraDatastream ds) {
         QuadDataAcc triplesToInsert = new QuadDataAcc();
         QuadAcc triplesToRemove = new QuadAcc();
 
         String createdDate = v.getCreated();
 
-        if (v.isFirstVersion()) {
+        if (v.isFirstVersionIn(obj)) {
             // DSID
             String dsid = v.getDatastreamInfo().getDatastreamId();
             if (dsid != null) {
@@ -345,8 +346,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @throws RuntimeException Possible FedoraExcpetions and IOExceptions 
      */
     protected void updateResourceProperties(FedoraResource resource,
-                                          QuadAcc triplesToRemove,
-                                          QuadDataAcc triplesToInsert) throws RuntimeException {
+                                            QuadAcc triplesToRemove,
+                                            QuadDataAcc triplesToInsert) throws RuntimeException {
         try {
             UpdateRequest updateRequest = UpdateFactory.create();
             updateRequest.setPrefix("dcterms", "http://purl.org/dc/terms/");
@@ -374,9 +375,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @return                  void
      */
     protected void updateTriple(QuadAcc triplesToRemove,
-                              QuadDataAcc triplesToInsert,
-                              String predicate,
-                              String object) {
+                                QuadDataAcc triplesToInsert,
+                                String predicate,
+                                String object) {
         triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""),
                                              NodeFactory.createURI(predicate),
                                              NodeFactory.createVariable("o" + String.valueOf(suffix))));
@@ -396,9 +397,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @return                  void
      */
     protected void updateDateTriple(QuadAcc triplesToRemove,
-                                  QuadDataAcc triplesToInsert,
-                                  String predicate,
-                                  String object) {
+                                    QuadDataAcc triplesToInsert,
+                                    String predicate,
+                                    String object) {
         triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""),
                                              NodeFactory.createURI(predicate),
                                              NodeFactory.createVariable("o" + String.valueOf(suffix))));

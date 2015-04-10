@@ -78,5 +78,5 @@ public interface DatastreamVersion {
      *
      * @return  True if this is the first version, false otherwise.
      */
-    public boolean isFirstVersion();
+    public boolean isFirstVersionIn(ObjectReference obj);
 }
