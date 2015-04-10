@@ -98,7 +98,7 @@
 
     <!-- The configuration options for a Fedora 4 client to do the updates to Fedora 4 -->
     <bean id="fedora4Client" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
-        <constructor-arg name="repositoryURL" value="http://localhost:8080/fcrepo/rest/" />
+        <constructor-arg name="repositoryURL" value="http://localhost:8080/rest/" />
     </bean>
 
     <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids -->
