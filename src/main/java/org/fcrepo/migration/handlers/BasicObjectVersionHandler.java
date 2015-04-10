@@ -161,53 +161,47 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
         }
     }
 
-    private boolean isDateProperty(String uri) {
+    /**
+     * Evaluates if an object/datastream property is a date.
+     *
+     * @param uri   The predicate in question.
+     * @return      True if the property is a date.  False otherwise. 
+     */
+    protected boolean isDateProperty(String uri) {
         return uri.equals("info:fedora/fedora-system:def/model#createdDate") ||
                uri.equals("info:fedora/fedora-system:def/view#lastModifiedDate") ||
                uri.equals("http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication") ||
                uri.equals("http://www.loc.gov/premis/rdf/v1#hasEventDateTime");
     }
 
-    private FedoraObject createObject(ObjectReference object) throws FedoraException {
+    /**
+     * Creates a Container in the Fedora 4 repository using the injected id 
+     * mapper.
+     *
+     * @param object            The ObjectReference from Fedora 3 to create in Fedora 4.
+     * @throws FedoraException  In case there's an issue calling out to Fedora 4.
+     * @return                  The newly created object.
+     */
+    protected FedoraObject createObject(ObjectReference object) throws FedoraException {
         return repo.createObject(idMapper.mapObjectPath(object));
     }
 
-    private void updateObjectProperties(ObjectVersionReference version,
-                                        FedoraObject object,
-                                        QuadAcc triplesToRemove,
-                                        QuadDataAcc triplesToInsert) {
+    /**
+     * Updates object properties after mapping them from 3 to 4.
+     *
+     * @param version           Object version to reference 
+     * @param object            Object to update 
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     * @return                  void
+     */
+    protected void updateObjectProperties(ObjectVersionReference version,
+                                          FedoraObject object,
+                                          QuadAcc triplesToRemove,
+                                          QuadDataAcc triplesToInsert) {
         if (version.isLastVersion()) {
             for (ObjectProperty p : version.getObjectProperties().listProperties()) {
-                String pred = p.getName();
-                String obj = p.getValue();
-
-                // Map dates and object state
-                if (pred.equals("info:fedora/fedora-system:def/model#createdDate")) {
-                    pred = "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication";
-                } else if (pred.equals("info:fedora/fedora-system:def/model#state")) {
-                    pred = "http://fedora.info/definitions/1/0/access/objState";
-                } else if (pred.equals("info:fedora/fedora-system:def/view#lastModifiedDate")) {
-                    pred = "http://www.loc.gov/premis/rdf/v1#hasEventDateTime";
-
-                    // Add the migration event type for the last modified date
-                    updateTriple(triplesToRemove,
-                                 triplesToInsert,
-                                 "http://www.loc.gov/premis/rdf/v1#hasEventType",
-                                 "migration");
-                }
-
-                if (isDateProperty(p.getName())) {
-                    updateDateTriple(triplesToRemove,
-                                     triplesToInsert,
-                                     pred,
-                                     obj);
-                }
-                else {
-                    updateTriple(triplesToRemove,
-                                 triplesToInsert,
-                                 pred,
-                                 obj);
-                }
+                mapObjectProperty(p, triplesToRemove, triplesToInsert);
             }
         }
 
@@ -220,13 +214,58 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     }
 
     /**
+     * WIP function to map object properties from 3 to 4.
+     * Feel free to override this to suit your needs.
+     *
+     * @param p                 Object property to map from 3 to 4.
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     * @return                  void
+     */
+    protected void mapObjectProperty(ObjectProperty p,
+                                     QuadAcc triplesToRemove,
+                                     QuadDataAcc triplesToInsert) {
+        String pred = p.getName();
+        String obj = p.getValue();
+
+        // Map dates and object state
+        if (pred.equals("info:fedora/fedora-system:def/model#createdDate")) {
+            pred = "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication";
+        } else if (pred.equals("info:fedora/fedora-system:def/model#state")) {
+            pred = "http://fedora.info/definitions/1/0/access/objState";
+        } else if (pred.equals("info:fedora/fedora-system:def/view#lastModifiedDate")) {
+            pred = "http://www.loc.gov/premis/rdf/v1#hasEventDateTime";
+
+            // Add the migration event type for the last modified date
+            updateTriple(triplesToRemove,
+                         triplesToInsert,
+                         "http://www.loc.gov/premis/rdf/v1#hasEventType",
+                         "migration");
+        }
+
+        if (isDateProperty(p.getName())) {
+            updateDateTriple(triplesToRemove,
+                             triplesToInsert,
+                             pred,
+                             obj);
+        }
+        else {
+            updateTriple(triplesToRemove,
+                         triplesToInsert,
+                         pred,
+                         obj);
+        }
+    }
+
+    /**
      * WIP utility function to update datastream properties.
+     * Feel free to override this to suit your needs.
      *
      * @param v     Version of the datasream to update.
      * @param ds    Datastream to update. 
      * @return void 
      */
-    private void updateDatastreamProperties(DatastreamVersion v, FedoraDatastream ds) {
+    protected void updateDatastreamProperties(DatastreamVersion v, FedoraDatastream ds) {
         QuadDataAcc triplesToInsert = new QuadDataAcc();
         QuadAcc triplesToRemove = new QuadAcc();
 
@@ -305,7 +344,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @return                  void
      * @throws RuntimeException Possible FedoraExcpetions and IOExceptions 
      */
-    private void updateResourceProperties(FedoraResource resource,
+    protected void updateResourceProperties(FedoraResource resource,
                                           QuadAcc triplesToRemove,
                                           QuadDataAcc triplesToInsert) throws RuntimeException {
         try {
@@ -334,7 +373,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param object            Object of relationship (assumed to be literal).    
      * @return                  void
      */
-    private void updateTriple(QuadAcc triplesToRemove,
+    protected void updateTriple(QuadAcc triplesToRemove,
                               QuadDataAcc triplesToInsert,
                               String predicate,
                               String object) {
@@ -356,7 +395,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param object            Object of relationship (assumed to be literal).    
      * @return                  void
      */
-    private void updateDateTriple(QuadAcc triplesToRemove,
+    protected void updateDateTriple(QuadAcc triplesToRemove,
                                   QuadDataAcc triplesToInsert,
                                   String predicate,
                                   String object) {
