@@ -378,6 +378,10 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
             }
         }
 
+        @Override
+        public boolean isFirstVersion() {
+            return getVersionId().split("\\.")[1].equals("0");
+        }
     }
 
     private static Map<String, String> getAttributes(XMLStreamReader r, String ... allowedNames) {
