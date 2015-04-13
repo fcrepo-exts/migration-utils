@@ -137,7 +137,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                         }
                     } else if ((v.getDatastreamInfo().getControlGroup().equals("E") && !importExternal)
                             || (v.getDatastreamInfo().getControlGroup().equals("R") && !importRedirect)) {
-                        FedoraDatastream ds = repo.createOrUpdateRedirectDatastream(idMapper.mapDatastreamPath(v.getDatastreamInfo()), v.getExternalOrRedirectURL());
+                        repo.createOrUpdateRedirectDatastream(idMapper.mapDatastreamPath(v.getDatastreamInfo()), v.getExternalOrRedirectURL());
                     } else {
                         FedoraDatastream ds = dsMap.get(v.getDatastreamInfo().getDatastreamId());
                         if (ds == null) {
@@ -235,13 +235,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
         } else if (pred.equals("info:fedora/fedora-system:def/model#state")) {
             pred = "http://fedora.info/definitions/1/0/access/objState";
         } else if (pred.equals("info:fedora/fedora-system:def/view#lastModifiedDate")) {
-            pred = "http://www.loc.gov/premis/rdf/v1#hasEventDateTime";
-
-            // Add the migration event type for the last modified date
-            updateTriple(triplesToRemove,
-                         triplesToInsert,
-                         "http://www.loc.gov/premis/rdf/v1#hasEventType",
-                         "migration");
+            // Handle modified date seperately and exit early.
+            updateModifiedDate(triplesToRemove, triplesToInsert, obj);
+            return;
         }
 
         if (isDateProperty(p.getName())) {
@@ -288,19 +284,14 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                  triplesToInsert,
                                  "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication",
                                  createdDate);
-                updateTriple(triplesToRemove,
-                             triplesToInsert,
-                             "http://www.loc.gov/premis/rdf/v1#hasEventType",
-                             "migration");
             }
         }
 
         // Set created date as a modified date no matter what version it is.
         if (createdDate != null) {
-            updateDateTriple(triplesToRemove,
-                             triplesToInsert,
-                             "http://www.loc.gov/premis/rdf/v1#hasEventDateTime",
-                             createdDate);
+            updateModifiedDate(triplesToRemove,
+                               triplesToInsert,
+                               createdDate);
         }
 
         // Label
@@ -405,6 +396,38 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                              NodeFactory.createVariable("o" + String.valueOf(suffix))));
         triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
                                              NodeFactory.createURI(predicate),
+                                             NodeFactory.createLiteral(object, XSDDatatype.XSDdateTime)));
+        suffix++;
+    }
+
+    /**
+     * Utility function for updating last modified date.  Current
+     * implementation utilizes a blank node.
+     *
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     * @param object            Object of relationship (assumed to be literal).    
+     * @return                  void
+     */
+    protected void updateModifiedDate(QuadAcc triplesToRemove,
+                                      QuadDataAcc triplesToInsert,
+                                      String object) {
+        String eventPred = "http://www.loc.gov/premis/rdf/v1#hasEvent";
+        String eventTypePred = "http://www.loc.gov/premis/rdf/v1#hasEventType";
+        String eventDatePred = "http://www.loc.gov/premis/rdf/v1#hasEventDateTime";
+        Node bnode = NodeFactory.createAnon();
+
+        triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""),
+                                             NodeFactory.createURI(eventPred),
+                                             NodeFactory.createVariable("o" + String.valueOf(suffix))));
+        triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
+                                             NodeFactory.createURI(eventPred),
+                                             bnode));
+        triplesToInsert.addTriple(new Triple(bnode,
+                                             NodeFactory.createURI(eventTypePred),
+                                             NodeFactory.createLiteral("migration")));
+        triplesToInsert.addTriple(new Triple(bnode,
+                                             NodeFactory.createURI(eventDatePred),
                                              NodeFactory.createLiteral(object, XSDDatatype.XSDdateTime)));
         suffix++;
     }
