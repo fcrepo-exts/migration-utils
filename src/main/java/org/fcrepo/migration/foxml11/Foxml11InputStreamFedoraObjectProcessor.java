@@ -381,7 +381,14 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
 
         @Override
         public boolean isFirstVersionIn(ObjectReference obj) {
-            return obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId()).indexOf(this) == 0;
+            List<DatastreamVersion> datastreams = obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
+            return datastreams.indexOf(this) == 0;
+        }
+
+        @Override
+        public boolean isLastVersionIn(ObjectReference obj) {
+            List<DatastreamVersion> datastreams = obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
+            return datastreams.indexOf(this) == datastreams.size() - 1;
         }
     }
 

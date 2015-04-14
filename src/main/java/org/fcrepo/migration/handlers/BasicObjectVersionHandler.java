@@ -32,9 +32,15 @@ import org.fcrepo.migration.foxml11.DC;
 import org.slf4j.Logger;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -200,6 +206,16 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                           FedoraObject object,
                                           QuadAcc triplesToRemove,
                                           QuadDataAcc triplesToInsert) {
+        if (version.isFirstVersion()) {
+            // Migration event (current time)
+            String now = getCurrentTimeInXSDDateTime();
+            if (now != null) {
+                addDateEvent(triplesToInsert,
+                             "http://id.loc.gov/vocabulary/preservation/eventType/mig",
+                             getCurrentTimeInXSDDateTime());
+            }
+        }
+
         if (version.isLastVersion()) {
             for (ObjectProperty p : version.getObjectProperties().listProperties()) {
                 mapObjectProperty(p, triplesToRemove, triplesToInsert);
@@ -236,7 +252,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             pred = "http://fedora.info/definitions/1/0/access/objState";
         } else if (pred.equals("info:fedora/fedora-system:def/view#lastModifiedDate")) {
             // Handle modified date seperately and exit early.
-            updateModifiedDate(triplesToRemove, triplesToInsert, obj);
+            addDateEvent(triplesToInsert,
+                         "http://fedora.info/definitions/v4/audit#metadataModification",
+                         obj);
             return;
         }
 
@@ -268,14 +286,14 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
 
         String createdDate = v.getCreated();
 
+        // Get some initial properties
         if (v.isFirstVersionIn(obj)) {
-            // DSID
-            String dsid = v.getDatastreamInfo().getDatastreamId();
-            if (dsid != null) {
-                updateTriple(triplesToRemove,
-                             triplesToInsert,
-                             "http://purl.org/dc/terms/identifier",
-                             dsid);
+            // Migration event (current time)
+            String now = getCurrentTimeInXSDDateTime();
+            if (now != null) {
+                addDateEvent(triplesToInsert,
+                             "http://id.loc.gov/vocabulary/preservation/eventType/mig",
+                             getCurrentTimeInXSDDateTime());
             }
 
             // Created date
@@ -287,41 +305,53 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             }
         }
 
-        // Set created date as a modified date no matter what version it is.
-        if (createdDate != null) {
-            updateModifiedDate(triplesToRemove,
-                               triplesToInsert,
-                               createdDate);
+        // Get the rest of the properties from the last version.
+        if (v.isLastVersionIn(obj)) {
+            // DSID
+            String dsid = v.getDatastreamInfo().getDatastreamId();
+            if (dsid != null) {
+                updateTriple(triplesToRemove,
+                             triplesToInsert,
+                             "http://purl.org/dc/terms/identifier",
+                             dsid);
+            }
+
+            // The created date of the last version is the last modified date.
+            if (createdDate != null) {
+                addDateEvent(triplesToInsert,
+                             "http://fedora.info/definitions/v4/audit#contentModification",
+                             createdDate);
+            }
+
+            // Label
+            String label = v.getLabel();
+            if (label != null) {
+                updateTriple(triplesToRemove,
+                             triplesToInsert,
+                             "http://purl.org/dc/terms/title",
+                             label);
+            }
+
+            // Object State 
+            String state = v.getDatastreamInfo().getState();
+            if (state != null) {
+                updateTriple(triplesToRemove,
+                             triplesToInsert,
+                             "http://fedora.info/definitions/1/0/access/objState",
+                             state);
+            }
+
+            // Format URI 
+            String formatUri = v.getFormatUri();
+            if (formatUri != null) {
+                updateTriple(triplesToRemove,
+                             triplesToInsert,
+                             "http://www.loc.gov/premis/rdf/v1#formatDesignation",
+                             formatUri);
+            }
         }
 
-        // Label
-        String label = v.getLabel();
-        if (label != null) {
-            updateTriple(triplesToRemove,
-                         triplesToInsert,
-                         "http://purl.org/dc/terms/title",
-                         label);
-        }
-
-        // Object State 
-        String state = v.getDatastreamInfo().getState();
-        if (state != null) {
-            updateTriple(triplesToRemove,
-                         triplesToInsert,
-                         "http://fedora.info/definitions/1/0/access/objState",
-                         state);
-        }
-
-        // Format URI 
-        String formatUri = v.getFormatUri();
-        if (formatUri != null) {
-            updateTriple(triplesToRemove,
-                         triplesToInsert,
-                         "http://www.loc.gov/premis/rdf/v1#formatDesignation",
-                         formatUri);
-        }
-
-        // Only do the update if you got stuff to change.
+        // Only do the update if you've got stuff to change.
         if (!triplesToInsert.getQuads().isEmpty() && !triplesToRemove.getQuads().isEmpty()) {
             updateResourceProperties(ds, triplesToRemove, triplesToInsert);
         }
@@ -343,6 +373,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             UpdateRequest updateRequest = UpdateFactory.create();
             updateRequest.setPrefix("dcterms", "http://purl.org/dc/terms/");
             updateRequest.setPrefix("fedoraaccess", "http://fedora.info/definitions/1/0/access/");
+            updateRequest.setPrefix("fedora3model", "info:fedora/fedora-system:def/model#");
             updateRequest.add(new UpdateDeleteWhere(triplesToRemove));
             updateRequest.add(new UpdateDataInsert(triplesToInsert));
             ByteArrayOutputStream sparqlUpdate = new ByteArrayOutputStream();
@@ -401,34 +432,48 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     }
 
     /**
-     * Utility function for updating last modified date.  Current
+     * Utility function for adding a premis date event.  Current
      * implementation utilizes a blank node.
      *
-     * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
-     * @param object            Object of relationship (assumed to be literal).    
+     * @param eventTypeURI      Type of premis event.
+     * @param object            Object of relationship (e.g. the date.  Assumed to be literal).    
      * @return                  void
      */
-    protected void updateModifiedDate(QuadAcc triplesToRemove,
-                                      QuadDataAcc triplesToInsert,
-                                      String object) {
+    protected void addDateEvent(QuadDataAcc triplesToInsert,
+                                String eventTypeURI,
+                                String object) {
         String eventPred = "http://www.loc.gov/premis/rdf/v1#hasEvent";
         String eventTypePred = "http://www.loc.gov/premis/rdf/v1#hasEventType";
         String eventDatePred = "http://www.loc.gov/premis/rdf/v1#hasEventDateTime";
         Node bnode = NodeFactory.createAnon();
 
-        triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""),
-                                             NodeFactory.createURI(eventPred),
-                                             NodeFactory.createVariable("o" + String.valueOf(suffix))));
         triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
                                              NodeFactory.createURI(eventPred),
                                              bnode));
         triplesToInsert.addTriple(new Triple(bnode,
                                              NodeFactory.createURI(eventTypePred),
-                                             NodeFactory.createLiteral("migration")));
+                                             NodeFactory.createURI(eventTypeURI)));
         triplesToInsert.addTriple(new Triple(bnode,
                                              NodeFactory.createURI(eventDatePred),
                                              NodeFactory.createLiteral(object, XSDDatatype.XSDdateTime)));
-        suffix++;
+    }
+
+    /**
+     * Utility function to get the current time properly formatted for SPARQL
+     * or XML.
+     *
+     * @return  String representing current time in XSDdateTime format (null if error).
+     */
+    protected String getCurrentTimeInXSDDateTime() {
+        try {
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(new Date());
+            XMLGregorianCalendar now = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+            return now.toString();
+        } catch (DatatypeConfigurationException e) {
+            LOGGER.error("Error converting date object to proper format!", e); 
+            return null;
+        }
     }
 }
