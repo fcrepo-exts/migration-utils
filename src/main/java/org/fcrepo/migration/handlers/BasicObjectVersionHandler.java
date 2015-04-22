@@ -119,29 +119,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                             throw new RuntimeException("Error parsing DC datastream " + v.getVersionId());
                         }
                     } else if (v.getDatastreamInfo().getDatastreamId().equals("RELS-EXT")) {
-                        // migrate RELS-EXT
-                        final String objectUri = "info:fedora/" + v.getDatastreamInfo().getObjectInfo().getPid();
-                        Model m = ModelFactory.createDefaultModel();
-                        m.read(v.getContent(), null);
-                        StmtIterator statementIt = m.listStatements();
-                        while (statementIt.hasNext()) {
-                            Statement s = statementIt.nextStatement();
-                            if (s.getSubject().getURI().equals(objectUri)) {
-                                final String predicateUri = s.getPredicate().getURI();
-                                triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(predicateUri), NodeFactory.createVariable("o")));
-                                if (s.getObject().isLiteral()) {
-                                    triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(predicateUri), NodeFactory.createLiteral(s.getObject().asLiteral().getString())));
-                                } else if (s.getObject().isURIResource()) {
-                                    triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(predicateUri), NodeFactory.createURI(s.getObject().asResource().getURI())));
-                                } else {
-                                    throw new RuntimeException("No current handling for non-URI, non-Literal subjects in Fedora RELS-EXT.");
-                                }
-                            } else {
-                                throw new RuntimeException("Non-resource subject found: " + s.getSubject().getURI());
-                            }
-                        }
+                        migrateRelsExt(v, triplesToRemove, triplesToInsert);
                     } else if (v.getDatastreamInfo().getDatastreamId().equals("RELS-INT")) {
-                        // migrate RELS-INT
                         migrateRelsInt(v, dsMap);
                     } else if ((v.getDatastreamInfo().getControlGroup().equals("E") && !importExternal)
                             || (v.getDatastreamInfo().getControlGroup().equals("R") && !importRedirect)) {
@@ -367,10 +346,50 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     }
 
     /**
+     * Migrates a RELS-EXT datastream by splitting it apart into triples to
+     * update on the object it describes.
+     *
+     * @param v     Version of the datasream to migrate.
+     * @return      void
+     */
+    protected void migrateRelsExt(DatastreamVersion v, QuadAcc triplesToRemove, QuadDataAcc triplesToInsert) throws IOException, RuntimeException {
+        // Get the identifier for the object this describes
+        final String objectUri = "info:fedora/" + v.getDatastreamInfo().getObjectInfo().getPid();
+
+        // Read the RDF
+        Model m = ModelFactory.createDefaultModel();
+        m.read(v.getContent(), null);
+        StmtIterator statementIt = m.listStatements();
+        while (statementIt.hasNext()) {
+            Statement s = statementIt.nextStatement();
+            if (s.getSubject().getURI().equals(objectUri)) {
+                final String predicateUri = s.getPredicate().getURI();
+                if (s.getObject().isLiteral()) {
+                    mapProperty(predicateUri,
+                                s.getObject().asLiteral().getString(),
+                                triplesToRemove,
+                                triplesToInsert,
+                                true);
+                } else if (s.getObject().isURIResource()) {
+                    mapProperty(predicateUri,
+                                s.getObject().asResource().getURI(),
+                                triplesToRemove,
+                                triplesToInsert,
+                                false);
+                } else {
+                    throw new RuntimeException("No current handling for non-URI, non-Literal subjects in Fedora RELS-INT.");
+                }
+            } else {
+                throw new RuntimeException("Non-resource subject found: " + s.getSubject().getURI());
+            }
+        }
+    }
+
+    /**
      * Migrates a RELS-INT datastream by splitting it apart and updating the
      * other datastreams it describes.
      *
-     * @param v     Version of the datasream to update.
+     * @param v     Version of the datasream to migrate.
      * @param dsMap Map of datastreams indexed by label. 
      * @return      void
      */
