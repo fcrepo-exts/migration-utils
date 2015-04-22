@@ -106,18 +106,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                 for (DatastreamVersion v : version.listChangedDatastreams()) {
                     LOGGER.debug("Considering changed datastream version " + v.getVersionId());
                     if (v.getDatastreamInfo().getDatastreamId().equals("DC")) {
-                        try {
-                            DC dc = DC.parseDC(v.getContent());
-                            for (String uri : dc.getRepresentedElementURIs()) {
-                                triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(uri), NodeFactory.createVariable("o")));
-                                for (String value : dc.getValuesForURI(uri)) {
-                                    triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(uri), NodeFactory.createLiteral(value)));
-                                    LOGGER.debug("Adding " + uri + " value " + value);
-                                }
-                            }
-                        } catch (JAXBException e) {
-                            throw new RuntimeException("Error parsing DC datastream " + v.getVersionId());
-                        }
+                        migrateDc(v, triplesToRemove, triplesToInsert);
                     } else if (v.getDatastreamInfo().getDatastreamId().equals("RELS-EXT")) {
                         migrateRelsExt(v, triplesToRemove, triplesToInsert);
                     } else if (v.getDatastreamInfo().getDatastreamId().equals("RELS-INT")) {
@@ -349,8 +338,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * Migrates a RELS-EXT datastream by splitting it apart into triples to
      * update on the object it describes.
      *
-     * @param v     Version of the datasream to migrate.
-     * @return      void
+     * @param v                 Version of the datasream to migrate.
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     * @return                  void
      */
     protected void migrateRelsExt(DatastreamVersion v, QuadAcc triplesToRemove, QuadDataAcc triplesToInsert) throws IOException, RuntimeException {
         // Get the identifier for the object this describes
@@ -429,6 +420,29 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             }
             
             updateResourceProperties(ds, triplesToRemove, triplesToInsert);
+        }
+    }
+
+    /**
+     * Migrates a DC datastream by shredding it into RDF properties and 
+     * applying them directly to the object.
+     *
+     * @param v                 Version of the datasream to migrate.
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     */
+    protected void migrateDc(DatastreamVersion v, QuadAcc triplesToRemove, QuadDataAcc triplesToInsert) throws IOException, RuntimeException {
+        try {
+            DC dc = DC.parseDC(v.getContent());
+            for (String uri : dc.getRepresentedElementURIs()) {
+                triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(uri), NodeFactory.createVariable("o")));
+                for (String value : dc.getValuesForURI(uri)) {
+                    triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(uri), NodeFactory.createLiteral(value)));
+                    LOGGER.debug("Adding " + uri + " value " + value);
+                }
+            }
+        } catch (JAXBException e) {
+            throw new RuntimeException("Error parsing DC datastream " + v.getVersionId());
         }
     }
 
