@@ -38,7 +38,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -141,6 +140,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                 throw new RuntimeException("Non-resource subject found: " + s.getSubject().getURI());
                             }
                         }
+                    } else if (v.getDatastreamInfo().getDatastreamId().equals("RELS-INT")) {
+                        // migrate RELS-INT
+                        migrateRelsInt(v, dsMap);
                     } else if ((v.getDatastreamInfo().getControlGroup().equals("E") && !importExternal)
                             || (v.getDatastreamInfo().getControlGroup().equals("R") && !importRedirect)) {
                         repo.createOrUpdateRedirectDatastream(idMapper.mapDatastreamPath(v.getDatastreamInfo()), v.getExternalOrRedirectURL());
@@ -218,7 +220,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
 
         if (version.isLastVersion()) {
             for (ObjectProperty p : version.getObjectProperties().listProperties()) {
-                mapObjectProperty(p, triplesToRemove, triplesToInsert);
+                mapProperty(p.getName(), p.getValue(), triplesToRemove, triplesToInsert);
             }
         }
 
@@ -239,12 +241,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param triplesToInsert   List of triples to add to resource.
      * @return                  void
      */
-    protected void mapObjectProperty(ObjectProperty p,
-                                     QuadAcc triplesToRemove,
-                                     QuadDataAcc triplesToInsert) {
-        String pred = p.getName();
-        String obj = p.getValue();
-
+    protected void mapProperty(String pred,
+                               String obj,
+                               QuadAcc triplesToRemove,
+                               QuadDataAcc triplesToInsert) {
         // Map dates and object state
         if (pred.equals("info:fedora/fedora-system:def/model#createdDate")) {
             pred = "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication";
@@ -258,7 +258,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             return;
         }
 
-        if (isDateProperty(p.getName())) {
+        if (isDateProperty(pred)) {
             updateDateTriple(triplesToRemove,
                              triplesToInsert,
                              pred,
@@ -358,6 +358,35 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     }
 
     /**
+     *
+     */
+    protected void migrateRelsInt(DatastreamVersion v, Map<String, FedoraDatastream> dsMap) throws IOException {
+        // Read the RDF.
+        Model m = ModelFactory.createDefaultModel();
+        m.read(v.getContent(), null);
+        StmtIterator statementIt = m.listStatements();
+        while (statementIt.hasNext()) {
+            // Get the datastream this triple describes.
+            Statement s = statementIt.nextStatement();
+            String dsUri = s.getSubject().getURI();
+            String[] splitUri = dsUri.split("/");
+            String dsLabel = splitUri[splitUri.length - 1];
+            FedoraDatastream ds = dsMap.get(dsLabel);
+
+            // Update this datastream with the RELS-INT RDF.
+            QuadDataAcc triplesToInsert = new QuadDataAcc();
+            QuadAcc triplesToRemove = new QuadAcc();
+
+            final String pred = s.getPredicate().getURI();
+            final String obj = s.getObject().asLiteral().getString();
+
+            mapProperty(pred, obj, triplesToRemove, triplesToInsert);
+            
+            updateResourceProperties(ds, triplesToRemove, triplesToInsert);
+        }
+    }
+
+    /**
      * Utility function for udpating a FedoraResource's properties.
      *
      * @param resource          FedoraResource to update.
@@ -378,6 +407,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             updateRequest.add(new UpdateDataInsert(triplesToInsert));
             ByteArrayOutputStream sparqlUpdate = new ByteArrayOutputStream();
             updateRequest.output(new IndentedWriter(sparqlUpdate));
+            //LOGGER.debug("SPARQL: " + sparqlUpdate.toString("UTF-8"));
             resource.updateProperties(sparqlUpdate.toString("UTF-8"));
             suffix = 0;
         } catch (FedoraException e) {
