@@ -38,7 +38,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -107,40 +106,11 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                 for (DatastreamVersion v : version.listChangedDatastreams()) {
                     LOGGER.debug("Considering changed datastream version " + v.getVersionId());
                     if (v.getDatastreamInfo().getDatastreamId().equals("DC")) {
-                        try {
-                            DC dc = DC.parseDC(v.getContent());
-                            for (String uri : dc.getRepresentedElementURIs()) {
-                                triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(uri), NodeFactory.createVariable("o")));
-                                for (String value : dc.getValuesForURI(uri)) {
-                                    triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(uri), NodeFactory.createLiteral(value)));
-                                    LOGGER.debug("Adding " + uri + " value " + value);
-                                }
-                            }
-                        } catch (JAXBException e) {
-                            throw new RuntimeException("Error parsing DC datastream " + v.getVersionId());
-                        }
+                        migrateDc(v, triplesToRemove, triplesToInsert);
                     } else if (v.getDatastreamInfo().getDatastreamId().equals("RELS-EXT")) {
-                        // migrate RELS-EXT
-                        final String objectUri = "info:fedora/" + v.getDatastreamInfo().getObjectInfo().getPid();
-                        Model m = ModelFactory.createDefaultModel();
-                        m.read(v.getContent(), null);
-                        StmtIterator statementIt = m.listStatements();
-                        while (statementIt.hasNext()) {
-                            Statement s = statementIt.nextStatement();
-                            if (s.getSubject().getURI().equals(objectUri)) {
-                                final String predicateUri = s.getPredicate().getURI();
-                                triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(predicateUri), NodeFactory.createVariable("o")));
-                                if (s.getObject().isLiteral()) {
-                                    triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(predicateUri), NodeFactory.createLiteral(s.getObject().asLiteral().getString())));
-                                } else if (s.getObject().isURIResource()) {
-                                    triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(predicateUri), NodeFactory.createURI(s.getObject().asResource().getURI())));
-                                } else {
-                                    throw new RuntimeException("No current handling for non-URI, non-Literal subjects in Fedora RELS-EXT.");
-                                }
-                            } else {
-                                throw new RuntimeException("Non-resource subject found: " + s.getSubject().getURI());
-                            }
-                        }
+                        migrateRelsExt(v, triplesToRemove, triplesToInsert);
+                    } else if (v.getDatastreamInfo().getDatastreamId().equals("RELS-INT")) {
+                        migrateRelsInt(v, dsMap);
                     } else if ((v.getDatastreamInfo().getControlGroup().equals("E") && !importExternal)
                             || (v.getDatastreamInfo().getControlGroup().equals("R") && !importRedirect)) {
                         repo.createOrUpdateRedirectDatastream(idMapper.mapDatastreamPath(v.getDatastreamInfo()), v.getExternalOrRedirectURL());
@@ -218,7 +188,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
 
         if (version.isLastVersion()) {
             for (ObjectProperty p : version.getObjectProperties().listProperties()) {
-                mapObjectProperty(p, triplesToRemove, triplesToInsert);
+                mapProperty(p.getName(), p.getValue(), triplesToRemove, triplesToInsert, true);
             }
         }
 
@@ -231,20 +201,20 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     }
 
     /**
-     * WIP function to map object properties from 3 to 4.
+     * WIP function to map properties from 3 to 4.
      * Feel free to override this to suit your needs.
      *
-     * @param p                 Object property to map from 3 to 4.
+     * @param pred              Predicate of property to map from 3 to 4.
+     * @param obj               Object of property to map from 3 to 4.
      * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
      * @return                  void
      */
-    protected void mapObjectProperty(ObjectProperty p,
-                                     QuadAcc triplesToRemove,
-                                     QuadDataAcc triplesToInsert) {
-        String pred = p.getName();
-        String obj = p.getValue();
-
+    protected void mapProperty(String pred,
+                               String obj,
+                               QuadAcc triplesToRemove,
+                               QuadDataAcc triplesToInsert,
+                               Boolean isLiteral) {
         // Map dates and object state
         if (pred.equals("info:fedora/fedora-system:def/model#createdDate")) {
             pred = "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication";
@@ -258,17 +228,24 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             return;
         }
 
-        if (isDateProperty(p.getName())) {
+        if (isDateProperty(pred)) {
             updateDateTriple(triplesToRemove,
                              triplesToInsert,
                              pred,
                              obj);
         }
         else {
-            updateTriple(triplesToRemove,
-                         triplesToInsert,
-                         pred,
-                         obj);
+            if (isLiteral) {
+                updateLiteralTriple(triplesToRemove,
+                                    triplesToInsert,
+                                    pred,
+                                    obj);
+            } else {
+                updateUriTriple(triplesToRemove,
+                               triplesToInsert,
+                               pred,
+                               obj);
+            }
         }
     }
 
@@ -310,10 +287,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             // DSID
             String dsid = v.getDatastreamInfo().getDatastreamId();
             if (dsid != null) {
-                updateTriple(triplesToRemove,
-                             triplesToInsert,
-                             "http://purl.org/dc/terms/identifier",
-                             dsid);
+                updateLiteralTriple(triplesToRemove,
+                                    triplesToInsert,
+                                    "http://purl.org/dc/terms/identifier",
+                                    dsid);
             }
 
             // The created date of the last version is the last modified date.
@@ -326,34 +303,146 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             // Label
             String label = v.getLabel();
             if (label != null) {
-                updateTriple(triplesToRemove,
-                             triplesToInsert,
-                             "http://purl.org/dc/terms/title",
-                             label);
+                updateLiteralTriple(triplesToRemove,
+                                    triplesToInsert,
+                                    "http://purl.org/dc/terms/title",
+                                    label);
             }
 
             // Object State 
             String state = v.getDatastreamInfo().getState();
             if (state != null) {
-                updateTriple(triplesToRemove,
-                             triplesToInsert,
-                             "http://fedora.info/definitions/1/0/access/objState",
-                             state);
+                updateLiteralTriple(triplesToRemove,
+                                    triplesToInsert,
+                                    "http://fedora.info/definitions/1/0/access/objState",
+                                    state);
             }
 
             // Format URI 
             String formatUri = v.getFormatUri();
             if (formatUri != null) {
-                updateTriple(triplesToRemove,
-                             triplesToInsert,
-                             "http://www.loc.gov/premis/rdf/v1#formatDesignation",
-                             formatUri);
+                updateLiteralTriple(triplesToRemove,
+                                    triplesToInsert,
+                                    "http://www.loc.gov/premis/rdf/v1#formatDesignation",
+                                    formatUri);
             }
         }
 
         // Only do the update if you've got stuff to change.
         if (!triplesToInsert.getQuads().isEmpty() && !triplesToRemove.getQuads().isEmpty()) {
             updateResourceProperties(ds, triplesToRemove, triplesToInsert);
+        }
+    }
+
+    /**
+     * Migrates a RELS-EXT datastream by splitting it apart into triples to
+     * update on the object it describes.
+     *
+     * @param v                 Version of the datasream to migrate.
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     * @return                  void
+     */
+    protected void migrateRelsExt(DatastreamVersion v, QuadAcc triplesToRemove, QuadDataAcc triplesToInsert) throws IOException, RuntimeException {
+        // Get the identifier for the object this describes
+        final String objectUri = "info:fedora/" + v.getDatastreamInfo().getObjectInfo().getPid();
+
+        // Read the RDF
+        Model m = ModelFactory.createDefaultModel();
+        m.read(v.getContent(), null);
+        StmtIterator statementIt = m.listStatements();
+        while (statementIt.hasNext()) {
+            Statement s = statementIt.nextStatement();
+            if (s.getSubject().getURI().equals(objectUri)) {
+                final String predicateUri = s.getPredicate().getURI();
+                if (s.getObject().isLiteral()) {
+                    mapProperty(predicateUri,
+                                s.getObject().asLiteral().getString(),
+                                triplesToRemove,
+                                triplesToInsert,
+                                true);
+                } else if (s.getObject().isURIResource()) {
+                    mapProperty(predicateUri,
+                                s.getObject().asResource().getURI(),
+                                triplesToRemove,
+                                triplesToInsert,
+                                false);
+                } else {
+                    throw new RuntimeException("No current handling for non-URI, non-Literal subjects in Fedora RELS-INT.");
+                }
+            } else {
+                throw new RuntimeException("Non-resource subject found: " + s.getSubject().getURI());
+            }
+        }
+    }
+
+    /**
+     * Migrates a RELS-INT datastream by splitting it apart and updating the
+     * other datastreams it describes.
+     *
+     * @param v     Version of the datasream to migrate.
+     * @param dsMap Map of datastreams indexed by label. 
+     * @return      void
+     */
+    protected void migrateRelsInt(DatastreamVersion v, Map<String, FedoraDatastream> dsMap) throws IOException, RuntimeException {
+        // Read the RDF.
+        Model m = ModelFactory.createDefaultModel();
+        m.read(v.getContent(), null);
+        StmtIterator statementIt = m.listStatements();
+        while (statementIt.hasNext()) {
+            // Get the datastream this triple describes.
+            Statement s = statementIt.nextStatement();
+            String dsUri = s.getSubject().getURI();
+            String[] splitUri = dsUri.split("/");
+            String dsLabel = splitUri[splitUri.length - 1];
+            FedoraDatastream ds = dsMap.get(dsLabel);
+
+            // Update this datastream with the RELS-INT RDF.
+            QuadDataAcc triplesToInsert = new QuadDataAcc();
+            QuadAcc triplesToRemove = new QuadAcc();
+
+            final String pred = s.getPredicate().getURI();
+
+            if (s.getObject().isLiteral()) {
+                mapProperty(pred,
+                            s.getObject().asLiteral().getString(),
+                            triplesToRemove,
+                            triplesToInsert,
+                            true);
+            } else if (s.getObject().isURIResource()) {
+                mapProperty(pred,
+                            s.getObject().asResource().getURI(),
+                            triplesToRemove,
+                            triplesToInsert,
+                            false);
+            } else {
+                throw new RuntimeException("No current handling for non-URI, non-Literal subjects in Fedora RELS-INT.");
+            }
+            
+            updateResourceProperties(ds, triplesToRemove, triplesToInsert);
+        }
+    }
+
+    /**
+     * Migrates a DC datastream by shredding it into RDF properties and 
+     * applying them directly to the object.
+     *
+     * @param v                 Version of the datasream to migrate.
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     */
+    protected void migrateDc(DatastreamVersion v, QuadAcc triplesToRemove, QuadDataAcc triplesToInsert) throws IOException, RuntimeException {
+        try {
+            DC dc = DC.parseDC(v.getContent());
+            for (String uri : dc.getRepresentedElementURIs()) {
+                triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(uri), NodeFactory.createVariable("o")));
+                for (String value : dc.getValuesForURI(uri)) {
+                    triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""), NodeFactory.createURI(uri), NodeFactory.createLiteral(value)));
+                    LOGGER.debug("Adding " + uri + " value " + value);
+                }
+            }
+        } catch (JAXBException e) {
+            throw new RuntimeException("Error parsing DC datastream " + v.getVersionId());
         }
     }
 
@@ -378,6 +467,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             updateRequest.add(new UpdateDataInsert(triplesToInsert));
             ByteArrayOutputStream sparqlUpdate = new ByteArrayOutputStream();
             updateRequest.output(new IndentedWriter(sparqlUpdate));
+            //LOGGER.debug("SPARQL: " + sparqlUpdate.toString("UTF-8"));
             resource.updateProperties(sparqlUpdate.toString("UTF-8"));
             suffix = 0;
         } catch (FedoraException e) {
@@ -396,10 +486,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param object            Object of relationship (assumed to be literal).    
      * @return                  void
      */
-    protected void updateTriple(QuadAcc triplesToRemove,
-                                QuadDataAcc triplesToInsert,
-                                String predicate,
-                                String object) {
+    protected void updateLiteralTriple(QuadAcc triplesToRemove,
+                                       QuadDataAcc triplesToInsert,
+                                       String predicate,
+                                       String object) {
         triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""),
                                              NodeFactory.createURI(predicate),
                                              NodeFactory.createVariable("o" + String.valueOf(suffix))));
@@ -410,7 +500,29 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     }
 
     /**
-     * Utility function for updating a date literal triple.
+     * Utility function for updating a uri triple.
+     *
+     * @param triplesToRemove   List of triples to remove from resource.
+     * @param triplesToInsert   List of triples to add to resource.
+     * @param predicate         Predicate of relationship (assumed to be URI).    
+     * @param object            Object of relationship (assumed to URI).    
+     * @return                  void
+     */
+    protected void updateUriTriple(QuadAcc triplesToRemove,
+                                   QuadDataAcc triplesToInsert,
+                                   String predicate,
+                                   String object) {
+        triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""),
+                                             NodeFactory.createURI(predicate),
+                                             NodeFactory.createVariable("o" + String.valueOf(suffix))));
+        triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
+                                             NodeFactory.createURI(predicate),
+                                             NodeFactory.createURI(object)));
+        suffix++;
+    }
+
+    /**
+     * Utility function for updating a date triple.
      *
      * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
