@@ -35,7 +35,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class DirectoryScanningIDResolver implements InternalIDResolver {
 
     private static final Logger LOGGER = getLogger(InternalIDResolver.class);
-    
+
     private IndexSearcher searcher;
 
     public DirectoryScanningIDResolver(final File indexDir, final File dsRoot) throws IOException {
@@ -66,7 +66,7 @@ public class DirectoryScanningIDResolver implements InternalIDResolver {
             if (result.totalHits == 1) {
                 return new FileCachedContent(new File(searcher.doc(result.scoreDocs[0].doc).get("path")));
             } else if (result.totalHits < 1) {
-                return null;
+                throw new RuntimeException("Unable to resolve internal ID \"" + id + "\"!");
             } else {
                 throw new IllegalStateException(result.totalHits + " files matched the internal id \"" + id + "\".  ("
                         + searcher.doc(result.scoreDocs[0].doc).get("path") + ", "
