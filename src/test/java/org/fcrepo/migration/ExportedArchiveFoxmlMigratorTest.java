@@ -12,6 +12,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * A series of tests that cover all the features used in processing
  * FOXML exported using the context=archive option.
+ * @author mdurbin
  */
 public class ExportedArchiveFoxmlMigratorTest extends Example1TestSuite {
 
@@ -22,7 +23,8 @@ public class ExportedArchiveFoxmlMigratorTest extends Example1TestSuite {
     @Before
     public synchronized void processFoxml() throws XMLStreamException, IOException {
         if (getResult() == null) {
-            final ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("spring/exported-foxml.xml");
+            final ConfigurableApplicationContext context =
+                    new ClassPathXmlApplicationContext("spring/exported-foxml.xml");
             this.result = (DummyHandler) context.getBean("dummyHandler");
             this.fetcher = (DummyURLFetcher) context.getBean("dummyFetcher");
             final Migrator m = (Migrator) context.getBean("migrator");

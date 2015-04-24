@@ -5,13 +5,13 @@ import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * A series of tests that cover all the features used in processing
  * FOXML found in a fedora objectStore directory.
+ * @author mdurbin
  */
 public class FoxmlStorageMigratorTest extends Example1TestSuite {
 
@@ -22,7 +22,8 @@ public class FoxmlStorageMigratorTest extends Example1TestSuite {
     @Before
     public synchronized void processFoxml() throws XMLStreamException, IOException {
         if (getResult() == null) {
-            final ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("spring/stored-foxml.xml");
+            final ConfigurableApplicationContext context =
+                    new ClassPathXmlApplicationContext("spring/stored-foxml.xml");
             this.result = (DummyHandler) context.getBean("dummyHandler");
             this.fetcher = (DummyURLFetcher) context.getBean("dummyFetcher");
             final Migrator m = (Migrator) context.getBean("migrator");

@@ -1,10 +1,9 @@
 package org.fcrepo.migration;
 
-import java.io.InputStream;
-
 /**
  * A default implementation of ObjectInfo that accepts
  * values at construction time.
+ * @author mdurbin
  */
 public class DefaultObjectInfo implements ObjectInfo {
 
@@ -12,7 +11,12 @@ public class DefaultObjectInfo implements ObjectInfo {
 
     private String uri;
 
-    public DefaultObjectInfo(String pid, String uri) {
+    /**
+     * the default object info
+     * @param pid the pid
+     * @param uri the uri
+     */
+    public DefaultObjectInfo(final String pid, final String uri) {
         this.pid = pid;
         this.uri = uri;
     }

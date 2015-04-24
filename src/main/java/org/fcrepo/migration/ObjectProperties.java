@@ -5,6 +5,7 @@ import java.util.List;
 /**
  * An interface defining access to the object-level properties for
  * a fedora 3 object.
+ * @author mdurbin
  */
 public interface ObjectProperties {
 

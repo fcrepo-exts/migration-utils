@@ -1,24 +1,28 @@
 package org.fcrepo.migration.foxml11;
 
+import java.io.InputStream;
+import java.util.List;
+
+import javax.xml.bind.JAXBException;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.xml.bind.JAXBException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.List;
-
+/**
+ *
+ * @author mdurbin
+ *
+ */
 public class DCTest {
-    
+
     private DC dcSample1;
-    
+
     @Before
     public void setUp() throws JAXBException {
-        InputStream dcInputStream = this.getClass().getClassLoader().getResourceAsStream("dc-sample1.xml");
+        final InputStream dcInputStream = this.getClass().getClassLoader().getResourceAsStream("dc-sample1.xml");
         dcSample1 = DC.parseDC(dcInputStream);
     }
-    
+
     @Test
     public void testBasicDCParsing() throws JAXBException, IllegalAccessException {
         Assert.assertEquals("Title 2", dcSample1.title[1]);
@@ -29,7 +33,7 @@ public class DCTest {
     @Test
     public void testHelperMethodContract() throws JAXBException, IllegalAccessException {
         final List<String> uris = dcSample1.getRepresentedElementURIs();
-        for (String uri : uris) {
+        for (final String uri : uris) {
             Assert.assertFalse(dcSample1.getValuesForURI(uri).isEmpty());
         }
     }

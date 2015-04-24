@@ -17,13 +17,18 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
+/**
+ *
+ * @author mdurbin
+ *
+ */
 public class VersionAbstractionFedoraObjectHandlerTest {
 
     @Test
     public void testObjectProcessing() throws IOException, XMLStreamException {
         final ApplicationContext context = new ClassPathXmlApplicationContext("spring/version-abstraction.xml");
-        final TestingFedoraObjectVersionHandler vh = (TestingFedoraObjectVersionHandler) context.getBean("versionHandler");
+        final TestingFedoraObjectVersionHandler vh =
+                (TestingFedoraObjectVersionHandler) context.getBean("versionHandler");
         final Migrator m = (Migrator) context.getBean("migrator");
         m.run();
 
@@ -65,8 +70,8 @@ public class VersionAbstractionFedoraObjectHandlerTest {
          * puts the reference on the versions list for later tests.
          */
         @Override
-        public void processObjectVersions(Iterable<ObjectVersionReference> versions) {
-            for (ObjectVersionReference version : versions) {
+        public void processObjectVersions(final Iterable<ObjectVersionReference> versions) {
+            for (final ObjectVersionReference version : versions) {
                 this.versions.add(version);
                 for (final DatastreamVersion dsv : version.listChangedDatastreams()) {
                     if (dsv.getDatastreamInfo().getControlGroup().equals("M")) {

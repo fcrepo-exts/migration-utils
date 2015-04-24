@@ -1,30 +1,5 @@
 package org.fcrepo.migration.foxml11;
 
-import org.fcrepo.migration.ContentDigest;
-import org.fcrepo.migration.DatastreamInfo;
-import org.fcrepo.migration.DatastreamVersion;
-import org.fcrepo.migration.DefaultContentDigest;
-import org.fcrepo.migration.DefaultObjectInfo;
-import org.fcrepo.migration.ObjectReference;
-import org.fcrepo.migration.StreamingFedoraObjectHandler;
-import org.fcrepo.migration.FedoraObjectProcessor;
-import org.fcrepo.migration.ObjectInfo;
-import org.fcrepo.migration.ObjectProperties;
-import org.apache.commons.codec.binary.Base64OutputStream;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.events.XMLEvent;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,9 +16,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.XMLEvent;
+
+import org.apache.commons.codec.binary.Base64OutputStream;
+import org.fcrepo.migration.ContentDigest;
+import org.fcrepo.migration.DatastreamInfo;
+import org.fcrepo.migration.DatastreamVersion;
+import org.fcrepo.migration.DefaultContentDigest;
+import org.fcrepo.migration.DefaultObjectInfo;
+import org.fcrepo.migration.FedoraObjectProcessor;
+import org.fcrepo.migration.ObjectInfo;
+import org.fcrepo.migration.ObjectProperties;
+import org.fcrepo.migration.ObjectReference;
+import org.fcrepo.migration.StreamingFedoraObjectHandler;
+
 /**
  * A FedoraObjectProcessor implementation that uses the STaX API to process
  * a FOXML1.1 XML InputStream.
+ * @author mdurbin
  */
 public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProcessor {
 
@@ -63,13 +64,21 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
      */
     private ObjectInfo objectInfo;
 
-    public Foxml11InputStreamFedoraObjectProcessor(InputStream is, URLFetcher fetcher, InternalIDResolver resolver) throws XMLStreamException {
+    /**
+     * foxml11 input stream fedora object processor.
+     * @param is the input stream
+     * @param fetcher the fetcher
+     * @param resolver the resolver
+     * @throws XMLStreamException xml stream exception
+     */
+    public Foxml11InputStreamFedoraObjectProcessor(final InputStream is, final URLFetcher fetcher,
+            final InternalIDResolver resolver) throws XMLStreamException {
         this.fetcher = fetcher;
         this.idResolver = resolver;
         final XMLInputFactory factory = XMLInputFactory.newFactory();
         reader = factory.createXMLStreamReader(is);
         reader.nextTag();
-        Map<String, String> attributes = getAttributes(reader, "PID", "VERSION", "FEDORA_URI", "schemaLocation");
+        final Map<String, String> attributes = getAttributes(reader, "PID", "VERSION", "FEDORA_URI", "schemaLocation");
         if (!attributes.get("VERSION").equals("1.1")) {
             throw new RuntimeException("Only FOXML1.1 is currently supported.");
         }
@@ -86,7 +95,7 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
     }
 
     @Override
-    public void processObject(StreamingFedoraObjectHandler handler) {
+    public void processObject(final StreamingFedoraObjectHandler handler) {
         handler.beginObject(objectInfo);
         Foxml11DatastreamInfo dsInfo = null;
         try {
@@ -103,7 +112,7 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
                             && reader.getNamespaceURI().equals(FOXML_11)) {
                         dsInfo = new Foxml11DatastreamInfo(objectInfo, reader);
                     } else if (reader.getLocalName().equals("datastreamVersion")) {
-                        DatastreamVersion v = new Foxml11DatastreamVersion(dsInfo, reader);
+                        final DatastreamVersion v = new Foxml11DatastreamVersion(dsInfo, reader);
                         handler.processDatastreamVersion(v);
                     } else {
                         throw new RuntimeException("Unexpected element! \"" + reader.getLocalName() + "\"!");
@@ -116,7 +125,8 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
                     cleanUpTempFiles();
                 } else {
                     throw new RuntimeException("Unexpected xml structure! \"" + reader.getEventType() + "\" at line "
-                            + reader.getLocation().getLineNumber() + ", column " + reader.getLocation().getColumnNumber()
+                            + reader.getLocation().getLineNumber() + ", column "
+                            + reader.getLocation().getColumnNumber()
                             + "!" + (reader.isCharacters() ? "  \"" + reader.getText() + "\"" : ""));
                 }
                 reader.next();
@@ -129,28 +139,29 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
         } finally {
             try {
                 reader.close();
-            } catch (XMLStreamException e) {
+            } catch (final XMLStreamException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
     private void cleanUpTempFiles() {
-        for (File f : this.tempFiles) {
+        for (final File f : this.tempFiles) {
             f.delete();
         }
     }
 
     private ObjectProperties readProperties() throws JAXBException, XMLStreamException {
-        JAXBContext jc = JAXBContext.newInstance(Foxml11ObjectProperties.class);
-        Unmarshaller unmarshaller = jc.createUnmarshaller();
-        JAXBElement<Foxml11ObjectProperties> p = unmarshaller.unmarshal(reader, Foxml11ObjectProperties.class);
+        final JAXBContext jc = JAXBContext.newInstance(Foxml11ObjectProperties.class);
+        final Unmarshaller unmarshaller = jc.createUnmarshaller();
+        final JAXBElement<Foxml11ObjectProperties> p = unmarshaller.unmarshal(reader, Foxml11ObjectProperties.class);
         return p.getValue();
     }
 
-    private void readUntilClosed(String name, String namespace) throws XMLStreamException {
+    private void readUntilClosed(final String name, final String namespace) throws XMLStreamException {
         while (reader.hasNext()) {
-            if (reader.isEndElement() && reader.getLocalName().equals(name) && reader.getNamespaceURI().equals(namespace)) {
+            if (reader.isEndElement() && reader.getLocalName().equals(name)
+                    && reader.getNamespaceURI().equals(namespace)) {
                 return;
             } else {
                 // skip all other stuff....
@@ -173,10 +184,10 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
 
         private ObjectInfo objectInfo;
 
-        public Foxml11DatastreamInfo(ObjectInfo objectInfo, XMLStreamReader reader) {
+        public Foxml11DatastreamInfo(final ObjectInfo objectInfo, final XMLStreamReader reader) {
             this.objectInfo = objectInfo;
-            Map<String, String> attributes
-                    = getAttributes(reader, "ID", "CONTROL_GROUP", "FEDORA_URI", "STATE", "VERSIONABLE");
+            final Map<String, String> attributes
+            = getAttributes(reader, "ID", "CONTROL_GROUP", "FEDORA_URI", "STATE", "VERSIONABLE");
             id = attributes.get("ID");
             controlGroup = attributes.get("CONTROL_GROUP");
             fedoraUri = attributes.get("FEDORA_URI");
@@ -229,9 +240,17 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
         private ContentDigest contentDigest;
         private CachedContent dsContent;
 
-        public Foxml11DatastreamVersion(DatastreamInfo dsInfo, XMLStreamReader reader) throws XMLStreamException {
+        /**
+         * foxml datastream version.
+         * @param dsInfo the datastream information
+         * @param reader the reader
+         * @throws XMLStreamException xml stream exception
+         */
+        public Foxml11DatastreamVersion(final DatastreamInfo dsInfo,
+                final XMLStreamReader reader) throws XMLStreamException {
             this.dsInfo = dsInfo;
-            Map<String, String> dsAttributes = getAttributes(reader, "ID", "LABEL", "CREATED", "MIMETYPE", "ALT_IDS", "FORMAT_URI", "SIZE");
+            final Map<String, String> dsAttributes = getAttributes(reader, "ID", "LABEL",
+                    "CREATED", "MIMETYPE", "ALT_IDS", "FORMAT_URI", "SIZE");
             id = dsAttributes.get("ID");
             label = dsAttributes.get("LABEL");
             created = dsAttributes.get("CREATED");
@@ -249,20 +268,20 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
                         // skip whitespace...
                     }
                 } else if (reader.isStartElement()) {
-                    String localName = reader.getLocalName();
+                    final String localName = reader.getLocalName();
                     if (localName.equals("contentDigest")) {
-                        Map<String, String> attributes = getAttributes(reader, "TYPE", "DIGEST");
+                        final Map<String, String> attributes = getAttributes(reader, "TYPE", "DIGEST");
                         this.contentDigest = new DefaultContentDigest(attributes.get("TYPE"), attributes.get("DIGEST"));
                     } else if (localName.equals("xmlContent")) {
                         // this XML fragment may not be valid out of context
                         // context, so write it out as a complete XML
                         // file...
                         reader.next();
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        XMLEventReader eventReader = XMLInputFactory.newFactory().createXMLEventReader(reader);
-                        XMLEventWriter eventWriter = XMLOutputFactory.newFactory().createXMLEventWriter(baos);
+                        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        final XMLEventReader eventReader = XMLInputFactory.newFactory().createXMLEventReader(reader);
+                        final XMLEventWriter eventWriter = XMLOutputFactory.newFactory().createXMLEventWriter(baos);
                         while (eventReader.hasNext()) {
-                            XMLEvent event = eventReader.nextEvent();
+                            final XMLEvent event = eventReader.nextEvent();
                             if (event.isEndElement()
                                     && event.asEndElement().getName().getLocalPart().equals("xmlContent")
                                     && event.asEndElement().getName().getNamespaceURI().equals(FOXML_11)) {
@@ -274,32 +293,32 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
                         }
                         try {
                             dsContent = new MemoryCachedContent(new String(baos.toByteArray(), "UTF-8"));
-                        } catch (UnsupportedEncodingException e) {
+                        } catch (final UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
                     } else if (localName.equals("contentLocation")) {
-                        Map<String, String> attributes = getAttributes(reader, "REF", "TYPE");
+                        final Map<String, String> attributes = getAttributes(reader, "REF", "TYPE");
                         if (attributes.get("TYPE").equals("INTERNAL_ID")) {
                             dsContent = idResolver.resolveInternalID(attributes.get("REF"));
                         } else {
                             try {
                                 dsContent = new URLCachedContent(new URL(attributes.get("REF")), fetcher);
-                            } catch (MalformedURLException e) {
+                            } catch (final MalformedURLException e) {
                                 throw new RuntimeException(e);
                             }
                         }
                     } else if (localName.equals("binaryContent")) {
                         try {
-                            File f = File.createTempFile("decoded", "file");
+                            final File f = File.createTempFile("decoded", "file");
                             tempFiles.add(f);
-                            Base64OutputStream out = new Base64OutputStream(new FileOutputStream(f), false);
+                            final Base64OutputStream out = new Base64OutputStream(new FileOutputStream(f), false);
                             while (reader.next() == XMLStreamConstants.CHARACTERS) {
                                 out.write(reader.getText().getBytes("UTF-8"));
                             }
                             out.flush();
                             out.close();
                             dsContent = new FileCachedContent(f);
-                        } catch (IOException e) {
+                        } catch (final IOException e) {
                             throw new RuntimeException(e);
                         }
                         readUntilClosed("binaryContent", FOXML_11);
@@ -312,7 +331,8 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
                     }
                 } else {
                     throw new RuntimeException("Unexpected xml structure! \"" + reader.getEventType() + "\" at line "
-                            + reader.getLocation().getLineNumber() + ", column " + reader.getLocation().getColumnNumber()
+                            + reader.getLocation().getLineNumber() + ", column "
+                            + reader.getLocation().getColumnNumber()
                             + "!" + (reader.isCharacters() ? "  \"" + reader.getText() + "\"" : ""));
                 }
                 reader.next();
@@ -322,7 +342,7 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
 
         @Override
         public DatastreamInfo getDatastreamInfo() {
-           return dsInfo;
+            return dsInfo;
         }
 
         @Override
@@ -380,21 +400,24 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
         }
 
         @Override
-        public boolean isFirstVersionIn(ObjectReference obj) {
-            List<DatastreamVersion> datastreams = obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
+        public boolean isFirstVersionIn(final ObjectReference obj) {
+            final List<DatastreamVersion> datastreams =
+                    obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
             return datastreams.indexOf(this) == 0;
         }
 
         @Override
-        public boolean isLastVersionIn(ObjectReference obj) {
-            List<DatastreamVersion> datastreams = obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
+        public boolean isLastVersionIn(final ObjectReference obj) {
+            final List<DatastreamVersion> datastreams =
+                    obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
             return datastreams.indexOf(this) == datastreams.size() - 1;
         }
     }
 
-    private static Map<String, String> getAttributes(XMLStreamReader r, String ... allowedNames) {
-        HashMap<String, String> result = new HashMap<String, String>();
-        Set<String> allowed = new HashSet<String>(Arrays.asList(allowedNames));
+    private static Map<String, String> getAttributes(final XMLStreamReader r,
+            final String ... allowedNames) {
+        final HashMap<String, String> result = new HashMap<String, String>();
+        final Set<String> allowed = new HashSet<String>(Arrays.asList(allowedNames));
         for (int i = 0; i < r.getAttributeCount(); i ++) {
             final String localName = r.getAttributeLocalName(i);
             final String value = r.getAttributeValue(i);

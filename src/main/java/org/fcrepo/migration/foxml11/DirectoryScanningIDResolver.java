@@ -1,5 +1,7 @@
 package org.fcrepo.migration.foxml11;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -22,8 +24,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 /**
  * An InternalIDResolver implementation that generates an index of
  * datastream ids (filenames) to file paths for the contents of a
@@ -31,6 +31,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * other directories and/or FOXML files.  The FOXML files are expected
  * to have a filename that is reversibly mapped from a fedora internal
  * id for that datastream version.
+ * @author mdurbin
  */
 public class DirectoryScanningIDResolver implements InternalIDResolver {
 
@@ -38,6 +39,12 @@ public class DirectoryScanningIDResolver implements InternalIDResolver {
 
     private IndexSearcher searcher;
 
+    /**
+     * directory scanning ID resolver
+     * @param indexDir the index directory
+     * @param dsRoot the datastream root
+     * @throws IOException IO exception
+     */
     public DirectoryScanningIDResolver(final File indexDir, final File dsRoot) throws IOException {
         final Directory dir = FSDirectory.open(indexDir);
         if (indexDir.exists()) {
@@ -62,7 +69,8 @@ public class DirectoryScanningIDResolver implements InternalIDResolver {
     @Override
     public CachedContent resolveInternalID(final String id) {
         try {
-            final TopDocs result = searcher.search(new TermQuery(new Term("file", "info:fedora/" + id.replace('+', '/'))), 2);
+            final TopDocs result = searcher.search(new TermQuery(new Term("file", "info:fedora/"
+                    + id.replace('+', '/'))), 2);
             if (result.totalHits == 1) {
                 return new FileCachedContent(new File(searcher.doc(result.scoreDocs[0].doc).get("path")));
             } else if (result.totalHits < 1) {

@@ -1,13 +1,14 @@
 package org.fcrepo.migration;
 
 /**
- * An interface whose implementations represent methods to 
- * convert Fedora 3 PIDs into fedora 4 paths. 
+ * An interface whose implementations represent methods to
+ * convert Fedora 3 PIDs into fedora 4 paths.
+ * @author mdurbin
  */
 public interface MigrationIDMapper {
 
     /**
-     * Takes a Fedora 3 Object reference and returns the path 
+     * Takes a Fedora 3 Object reference and returns the path
      * that object would have in Fedora 4.
      * @param object an ObjectReference for a Fedora 3 object.
      * @return a path suitable for use in Fedora 4.
@@ -21,5 +22,5 @@ public interface MigrationIDMapper {
      * @return a path suitable for use in Fedora 4.
      */
     public String mapDatastreamPath(DatastreamInfo dsInfo);
-    
+
 }

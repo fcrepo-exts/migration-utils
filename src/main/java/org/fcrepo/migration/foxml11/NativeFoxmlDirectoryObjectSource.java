@@ -1,21 +1,15 @@
 package org.fcrepo.migration.foxml11;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+
 import org.fcrepo.migration.FedoraObjectProcessor;
 import org.fcrepo.migration.ObjectSource;
 
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
-
 /**
  * An ObjectSource implementation that exposes FOXML from a provided directory.
+ * @author mdurbin
  */
 
 public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
@@ -32,15 +26,20 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
      * all of the datastreams in the provided datastreamStore directory for use
      * resolving internal id references within the foxml.
      * @param objectStore a directory containing just directories and FOXML files
-     * @param resolver an InternalIDResolver implementation that can resolve 
-     *                 references to internally managed datastreams.                 
+     * @param resolver an InternalIDResolver implementation that can resolve
+     *                 references to internally managed datastreams.
      */
-    public NativeFoxmlDirectoryObjectSource(final File objectStore, final InternalIDResolver resolver) throws IOException {
+    public NativeFoxmlDirectoryObjectSource(final File objectStore,
+            final InternalIDResolver resolver) throws IOException {
         this.root = objectStore;
         this.resolver = resolver;
         this.fetcher = new HttpClientURLFetcher();
     }
 
+    /**
+     * set the fetcher.
+     * @param fetcher the fetcher
+     */
     public void setFetcher(final URLFetcher fetcher) {
         this.fetcher = fetcher;
     }
@@ -49,5 +48,5 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
     public Iterator<FedoraObjectProcessor> iterator() {
         return new FoxmlDirectoryDFSIterator(root, resolver, fetcher);
     }
-    
+
 }
