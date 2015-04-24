@@ -7,21 +7,26 @@ import org.fcrepo.migration.ObjectReference;
 /**
  * A simple MigrationIDMapper that converts pids to
  * paths using the following pattern:
- *  
+ *
  * [namespace]/[01]/[23]/[45]/[56] where [namespace] is
  * the pid namespace, [01] is the first two characters in
- * the remainder of the pid, etc.  
- * 
+ * the remainder of the pid, etc.
+ *
  * This implementation ensures easy reversibility in mapping,
  * reasonable use of the hierarchy,
+ * @author mdurbin
  */
 public class SimpleIDMapper implements MigrationIDMapper {
 
     private String rootPath;
 
     private int charDepth;
-    
-    public SimpleIDMapper(String rootPath) {
+
+    /**
+     * simple ID mapper.
+     * @param rootPath the root path
+     */
+    public SimpleIDMapper(final String rootPath) {
         this.rootPath = rootPath;
         charDepth = 2;
     }
@@ -30,15 +35,15 @@ public class SimpleIDMapper implements MigrationIDMapper {
      * Sets the number of characters to use per level when converting
      * a pid to a path.  If it is known that all pids will be numeric,
      * a value or 3 would result in levels containing no more than 1000
-     * children. 
+     * children.
      * @param charDepth the number of characters to include in the
-     *                  path segments created from the pid.                  
+     *                  path segments created from the pid.
      */
-    public void setCharDepth(int charDepth) {
+    public void setCharDepth(final int charDepth) {
         if (charDepth < 1) {
             throw new IllegalArgumentException();
         }
-        this.charDepth = charDepth; 
+        this.charDepth = charDepth;
     }
 
     /**
@@ -48,13 +53,13 @@ public class SimpleIDMapper implements MigrationIDMapper {
     public int getCharDepth() {
         return this.charDepth;
     }
-    
+
     @Override
-    public String mapObjectPath(ObjectReference reference) {
+    public String mapObjectPath(final ObjectReference reference) {
         return pidToPath(reference.getObjectInfo().getPid());
     }
-    
-    private String pidToPath(String pid) {
+
+    private String pidToPath(final String pid) {
         final StringBuffer path = new StringBuffer();
         path.append(rootPath);
         if (!rootPath.endsWith("/")) {
@@ -69,7 +74,7 @@ public class SimpleIDMapper implements MigrationIDMapper {
     }
 
     @Override
-    public String mapDatastreamPath(DatastreamInfo dsInfo) {
+    public String mapDatastreamPath(final DatastreamInfo dsInfo) {
         return pidToPath(dsInfo.getObjectInfo().getPid()) + '/' + dsInfo.getDatastreamId();
     }
 }

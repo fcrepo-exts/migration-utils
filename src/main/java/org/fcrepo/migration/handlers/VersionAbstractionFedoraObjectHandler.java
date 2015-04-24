@@ -1,5 +1,11 @@
 package org.fcrepo.migration.handlers;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectHandler;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
@@ -8,25 +14,24 @@ import org.fcrepo.migration.ObjectProperties;
 import org.fcrepo.migration.ObjectReference;
 import org.fcrepo.migration.ObjectVersionReference;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * A FedoraObjectHandler implementation that analyzes the ObjectReference provided
  * to the processObject method and exposes the version abstraction to a wrapped
  * FedoraObjectVersionHandler implementation.
+ * @author mdurbin
  */
 public class VersionAbstractionFedoraObjectHandler implements FedoraObjectHandler {
 
     private FedoraObjectVersionHandler handler;
 
-    public VersionAbstractionFedoraObjectHandler(FedoraObjectVersionHandler versionHandler) {
+    /**
+     * version abstraction fedora object handler.
+     * @param versionHandler the version handler
+     */
+    public VersionAbstractionFedoraObjectHandler(final FedoraObjectVersionHandler versionHandler) {
         this.handler = versionHandler;
     }
-    
+
     @Override
     public void processObject(final ObjectReference object) {
         final Map<String, List<DatastreamVersion>> versionMap = buildVersionMap(object);
@@ -76,8 +81,8 @@ public class VersionAbstractionFedoraObjectHandler implements FedoraObjectHandle
                 }
 
                 @Override
-                public boolean wasDatastreamChanged(String dsId) {
-                    for (DatastreamVersion v : listChangedDatastreams()) {
+                public boolean wasDatastreamChanged(final String dsId) {
+                    for (final DatastreamVersion v : listChangedDatastreams()) {
                         if (v.getDatastreamInfo().getDatastreamId().equals(dsId)) {
                             return true;
                         }
@@ -88,13 +93,13 @@ public class VersionAbstractionFedoraObjectHandler implements FedoraObjectHandle
             });
         }
         handler.processObjectVersions(versions);
-        
+
     }
-    
-    private Map<String, List<DatastreamVersion>> buildVersionMap(ObjectReference object) {
-        Map<String, List<DatastreamVersion>> versionMap = new HashMap<String, List<DatastreamVersion>>();
-        for (String dsId : object.listDatastreamIds()) {
-            for (DatastreamVersion v : object.getDatastreamVersions(dsId)) {
+
+    private Map<String, List<DatastreamVersion>> buildVersionMap(final ObjectReference object) {
+        final Map<String, List<DatastreamVersion>> versionMap = new HashMap<String, List<DatastreamVersion>>();
+        for (final String dsId : object.listDatastreamIds()) {
+            for (final DatastreamVersion v : object.getDatastreamVersions(dsId)) {
                 final String date = v.getCreated();
                 List<DatastreamVersion> versionsForDate = versionMap.get(date);
                 if (versionsForDate == null) {

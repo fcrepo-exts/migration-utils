@@ -3,6 +3,7 @@ package org.fcrepo.migration;
 /**
  * An interface defining access to information about a fedora datastream's
  * content digest.
+ * @author mdurbin
  */
 public interface ContentDigest {
 

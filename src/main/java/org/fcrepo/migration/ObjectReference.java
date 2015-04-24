@@ -4,7 +4,8 @@ import java.util.List;
 
 /**
  * A reference to a Fedora 3 object.  Through the methods, all metadata and datastream
- * content is available. 
+ * content is available.
+ * @author mdurbin
  */
 public interface ObjectReference {
 
@@ -14,19 +15,19 @@ public interface ObjectReference {
     public ObjectInfo getObjectInfo();
 
     /**
-     * Gets all the object properties. 
+     * Gets all the object properties.
      */
     public ObjectProperties getObjectProperties();
 
     /**
-     * Lists all datastream ids. 
+     * Lists all datastream ids.
      * @return all datastream ids
      */
     public List<String> listDatastreamIds();
 
     /**
      * Gets all versions of the datastream with the given id, from oldest to newest.
-     * @param datastreamId the id (a value returned from listDatastreams()) of the 
+     * @param datastreamId the id (a value returned from listDatastreams()) of the
      *                     datastream whose versions are being requested.
      * @return a list of datastream versions ordered from oldest to newest.
      */

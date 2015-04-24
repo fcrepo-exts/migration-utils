@@ -1,5 +1,10 @@
 package org.fcrepo.migration.handlers;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectHandler;
 import org.fcrepo.migration.ObjectInfo;
@@ -7,47 +12,47 @@ import org.fcrepo.migration.ObjectProperties;
 import org.fcrepo.migration.ObjectReference;
 import org.fcrepo.migration.StreamingFedoraObjectHandler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
- * A StreamingFedoraObjectHandler implementation that caches all the references to 
- * the Fedora 3 object and provides them to a FedoraObjectHandler implementation 
+ * A StreamingFedoraObjectHandler implementation that caches all the references to
+ * the Fedora 3 object and provides them to a FedoraObjectHandler implementation
  * which in turn can process the object as a whole in a random-access fashion rather
- * than as a stream. 
+ * than as a stream.
+ * @author mdurbin
  */
 public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingFedoraObjectHandler {
-    
+
     private FedoraObjectHandler handler;
-    
+
     private ObjectInfo objectInfo;
-    
+
     private ObjectProperties objectProperties;
-    
+
     private List<String> dsIds;
-    
+
     private Map<String, List<DatastreamVersion>> dsIdToVersionListMap;
 
-    public ObjectAbstractionStreamingFedoraObjectHandler(FedoraObjectHandler objectHandler) {
+    /**
+     * the object abstraction streaming fedora object handler.
+     * @param objectHandler the fedora object handler
+     */
+    public ObjectAbstractionStreamingFedoraObjectHandler(final FedoraObjectHandler objectHandler) {
         this.handler = objectHandler;
         this.dsIds = new ArrayList<String>();
         this.dsIdToVersionListMap = new HashMap<String, List<DatastreamVersion>>();
     }
-    
+
     @Override
-    public void beginObject(ObjectInfo object) {
+    public void beginObject(final ObjectInfo object) {
         this.objectInfo = object;
     }
 
     @Override
-    public void processObjectProperties(ObjectProperties properties) {
+    public void processObjectProperties(final ObjectProperties properties) {
         this.objectProperties = properties;
     }
 
     @Override
-    public void processDatastreamVersion(DatastreamVersion dsVersion) {
+    public void processDatastreamVersion(final DatastreamVersion dsVersion) {
         List<DatastreamVersion> versions = dsIdToVersionListMap.get(dsVersion.getDatastreamInfo().getDatastreamId());
         if (versions == null) {
             dsIds.add(dsVersion.getDatastreamInfo().getDatastreamId());
@@ -58,7 +63,7 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
     }
 
     @Override
-    public void completeObject(ObjectInfo object) {
+    public void completeObject(final ObjectInfo object) {
         handler.processObject(new ObjectReference() {
             @Override
             public ObjectInfo getObjectInfo() {
@@ -76,7 +81,7 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
             }
 
             @Override
-            public List<DatastreamVersion> getDatastreamVersions(String datastreamId) {
+            public List<DatastreamVersion> getDatastreamVersions(final String datastreamId) {
                 return dsIdToVersionListMap.get(datastreamId);
             }
         });
@@ -84,7 +89,7 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
     }
 
     @Override
-    public void abortObject(ObjectInfo object) {
+    public void abortObject(final ObjectInfo object) {
         cleanForReuse();
     }
 

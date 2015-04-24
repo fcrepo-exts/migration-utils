@@ -3,14 +3,19 @@ package org.fcrepo.migration;
 /**
  * An interface with methods that are meant to be invoked when processing
  * a fedora 3 object such that every bit of information in that fedora 3
- * object is exposed to the instance implementing this interface. 
+ * object is exposed to the instance implementing this interface.
  *
  * Instances of this class are expected to be used for a single fedora
  * object, and method calls should not require implementations to maintain
  * state.
+ * @author mdurbin
  */
 public interface StreamingFedoraObjectHandler {
 
+    /**
+     * begin object.
+     * @param object the object info
+     */
     public void beginObject(ObjectInfo object);
 
     /**
@@ -22,7 +27,7 @@ public interface StreamingFedoraObjectHandler {
     /**
      * Invoked to allow processing of a datastream by this StreamingFedoraObjectHandler.
      * @param dsVersion an encapsulation of the datastream version.  References to this object must
-     *                  not be used after completeObject() or abortObject() have completed as 
+     *                  not be used after completeObject() or abortObject() have completed as
      *                  the resources exposed may no longer be available.
      */
     public void processDatastreamVersion(DatastreamVersion dsVersion);

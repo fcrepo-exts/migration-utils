@@ -8,12 +8,17 @@ import java.io.InputStream;
 /**
  * A CashedContent implementation that exposes content stored in a
  * file.
+ * @author mdurbin
  */
 public class FileCachedContent implements CachedContent {
 
     private File file;
 
-    public FileCachedContent(File file) {
+    /**
+     * File cached content
+     * @param file the file
+     */
+    public FileCachedContent(final File file) {
         this.file = file;
     }
 

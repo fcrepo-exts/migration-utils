@@ -2,6 +2,7 @@ package org.fcrepo.migration;
 
 /**
  * An interface defining access to information about a fedora datastream.
+ * @author mdurbin
  */
 public interface DatastreamInfo {
 

@@ -6,6 +6,7 @@ import java.io.InputStream;
 /**
  * An interface defining access to information about a version of a
  * fedora datastream.
+ * @author mdurbin
  */
 public interface DatastreamVersion {
 

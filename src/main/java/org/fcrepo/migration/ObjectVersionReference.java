@@ -4,14 +4,15 @@ import java.util.List;
 
 /**
  * Represents a version of a Fedora 3 object.
- * 
+ *
  * TODO: perhaps the audit trail should be parsed and exposed here
+ * @author mdurbin
  */
 public interface ObjectVersionReference {
 
     /**
      * Gets the ObjectReference object that encapsualtes everything about
-     * the underlying Fedora 3 object. 
+     * the underlying Fedora 3 object.
      */
     public ObjectReference getObject();
 
@@ -21,7 +22,7 @@ public interface ObjectVersionReference {
     public ObjectInfo getObjectInfo();
 
     /**
-     * Gets all the object properties.  This is unversioned information. 
+     * Gets all the object properties.  This is unversioned information.
      */
     public ObjectProperties getObjectProperties();
 
@@ -30,7 +31,7 @@ public interface ObjectVersionReference {
      * all Fedora 3 dates are formatted.
      */
     public String getVersionDate();
-    
+
     /**
      * Lists the current version of all datastreams changed from the pervious version
      * to this one.
@@ -40,7 +41,7 @@ public interface ObjectVersionReference {
     public List<DatastreamVersion> listChangedDatastreams();
 
     /**
-     * Indicates whether this is the first version. 
+     * Indicates whether this is the first version.
      */
     public boolean isLastVersion();
 
@@ -56,7 +57,7 @@ public interface ObjectVersionReference {
     public int getVersionIndex();
 
     /**
-     * Determines whether a datastream with the given DSID changed as part of the 
+     * Determines whether a datastream with the given DSID changed as part of the
      * update that contributed to this version.
      */
     public boolean wasDatastreamChanged(String dsId);
