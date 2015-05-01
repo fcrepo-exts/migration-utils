@@ -124,12 +124,14 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                     } else if ((v.getDatastreamInfo().getControlGroup().equals("E") && !importExternal)
                             || (v.getDatastreamInfo().getControlGroup().equals("R") && !importRedirect)) {
                         repo.createOrUpdateRedirectDatastream(
-                                idMapper.mapDatastreamPath(v.getDatastreamInfo()), v.getExternalOrRedirectURL());
+                                idMapper.mapDatastreamPath(v.getDatastreamInfo().getObjectInfo().getPid(),
+                                        v.getDatastreamInfo().getDatastreamId()), v.getExternalOrRedirectURL());
                     } else {
                         FedoraDatastream ds = dsMap.get(v.getDatastreamInfo().getDatastreamId());
                         if (ds == null) {
                             ds = repo.createDatastream(
-                                    idMapper.mapDatastreamPath(v.getDatastreamInfo()),
+                                    idMapper.mapDatastreamPath(v.getDatastreamInfo().getObjectInfo().getPid(),
+                                            v.getDatastreamInfo().getDatastreamId()),
                                     new FedoraContent().setContent(v.getContent()).setContentType(v.getMimeType()));
                             dsMap.put(v.getDatastreamInfo().getDatastreamId(), ds);
                         } else {
@@ -173,7 +175,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @return                  The newly created object.
      */
     protected FedoraObject createObject(final ObjectReference object) throws FedoraException {
-        return repo.createObject(idMapper.mapObjectPath(object));
+        return repo.createObject(idMapper.mapObjectPath(object.getObjectInfo().getPid()));
     }
 
     /**

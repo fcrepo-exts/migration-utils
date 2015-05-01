@@ -1,8 +1,6 @@
 package org.fcrepo.migration.idmapers;
 
-import org.fcrepo.migration.DatastreamInfo;
 import org.fcrepo.migration.MigrationIDMapper;
-import org.fcrepo.migration.ObjectReference;
 
 /**
  * A simple MigrationIDMapper that converts pids to
@@ -55,8 +53,8 @@ public class SimpleIDMapper implements MigrationIDMapper {
     }
 
     @Override
-    public String mapObjectPath(final ObjectReference reference) {
-        return pidToPath(reference.getObjectInfo().getPid());
+    public String mapObjectPath(final String pid) {
+        return pidToPath(pid);
     }
 
     private String pidToPath(final String pid) {
@@ -74,7 +72,7 @@ public class SimpleIDMapper implements MigrationIDMapper {
     }
 
     @Override
-    public String mapDatastreamPath(final DatastreamInfo dsInfo) {
-        return pidToPath(dsInfo.getObjectInfo().getPid()) + '/' + dsInfo.getDatastreamId();
+    public String mapDatastreamPath(final String pid, final String dsid) {
+        return pidToPath(pid) + '/' + dsid;
     }
 }
