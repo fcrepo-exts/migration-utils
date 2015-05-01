@@ -10,19 +10,18 @@
     </bean>
 
     <bean id="simpleObjectSource" class="org.fcrepo.migration.Example1TestSuite.SimpleObjectSource">
-        <constructor-arg name="path" value="objectStore/info%3Afedora%2Fexample%3A1" />
+        <constructor-arg name="path" value="akubraFS/objectStore/info%3Afedora%2Fexample%3A1" />
         <constructor-arg name="f"><null /></constructor-arg>
-        <constructor-arg name="resolver" ref="directoryScanningIDResolver" />
+        <constructor-arg name="resolver" ref="akubraIDResolver" />
     </bean>
-    
-    <bean id="directoryScanningIDResolver" class="org.fcrepo.migration.foxml11.DirectoryScanningIDResolver">
-        <constructor-arg ref="indexRoot" />
+
+    <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml11.AkubraFSIDResolver">
         <constructor-arg ref="datastreamStore" />
     </bean>
-    
+
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml11.HttpClientURLFetcher">
     </bean>
-    
+
     <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">
         <constructor-arg ref="versionAbstraction"/>
     </bean>
@@ -30,11 +29,11 @@
     <bean id="versionAbstraction" class="org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler">
         <constructor-arg ref="versionHandler"/>
     </bean>
-    
+
     <bean id="versionHandler" class="org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandlerTest.TestingFedoraObjectVersionHandler" />
 
     <bean id="datastreamStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/datastreamStore" />
+        <constructor-arg type="java.lang.String" value="src/test/resources/akubraFS/datastreamStore" />
     </bean>
 
     <bean id="indexRoot" class="java.io.File">

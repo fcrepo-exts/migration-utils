@@ -8,9 +8,9 @@ package org.fcrepo.migration.foxml11;
 public interface InternalIDResolver {
 
     /**
-     * resolve internal ID.
-     * @param id the internal ID
-     * @return the cached content
+     * Gets the datastream for an internal ID.
+     * @param id the internal id referenced within a FOXML file.
+     * @return the binary content for the datastream referenced by the internal id
      */
     public CachedContent resolveInternalID(String id);
 }

@@ -487,7 +487,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             updateRequest.add(new UpdateDataInsert(triplesToInsert));
             final ByteArrayOutputStream sparqlUpdate = new ByteArrayOutputStream();
             updateRequest.output(new IndentedWriter(sparqlUpdate));
-            //LOGGER.debug("SPARQL: " + sparqlUpdate.toString("UTF-8"));
+            LOGGER.trace("SPARQL: " + sparqlUpdate.toString("UTF-8"));
             resource.updateProperties(sparqlUpdate.toString("UTF-8"));
             suffix = 0;
         } catch (final FedoraException e) {

@@ -10,12 +10,12 @@
     </bean>
 
     <bean id="simpleObjectSource" class="org.fcrepo.migration.Example1TestSuite.SimpleObjectSource">
-        <constructor-arg name="path" value="akubraFS/objectStore/info%3Afedora%2Fexample%3A1" />
+        <constructor-arg name="path" value="legacyFS/objects/2015/0430/16/01/example_1" />
         <constructor-arg name="f" ref="dummyFetcher" />
-        <constructor-arg name="resolver" ref="idResolver" />
+        <constructor-arg name="resolver" ref="akubraIDResolver" />
     </bean>
 
-    <bean id="idResolver" class="org.fcrepo.migration.foxml11.AkubraFSIDResolver">
+    <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml11.LegacyFSIDResolver">
         <constructor-arg ref="datastreamStore" />
     </bean>
 
@@ -24,7 +24,7 @@
     <bean id="dummyHandler" class="org.fcrepo.migration.Example1TestSuite.DummyHandler" />
 
     <bean id="datastreamStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/akubraFS/datastreamStore" />
+        <constructor-arg type="java.lang.String" value="src/test/resources/legacyFS/datastreams" />
     </bean>
 
     <bean id="indexRoot" class="java.io.File">
