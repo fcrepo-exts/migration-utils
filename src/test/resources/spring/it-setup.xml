@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <context:property-placeholder/>
+
+    <bean id="migrator" class="org.fcrepo.migration.Migrator">
+        <property name="source" ref="exportedFoxmlDirectoryObjectSource" />
+        <property name="handler" ref="objectAbstraction" />
+    </bean>
+
+
+    <bean id="exportedFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml11.ArchiveExportedFoxmlDirectoryObjectSource" >
+        <constructor-arg name="exportDir" ref="exportDir" />
+        <property name="fetcher" ref="httpClientURLFetcher"/>
+    </bean>
+
+    <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">
+        <constructor-arg ref="versionAbstraction"/>
+    </bean>
+
+    <bean id="versionAbstraction" class="org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler">
+        <constructor-arg ref="basicMigration"/>
+    </bean>
+
+    <bean id="basicMigration" class="org.fcrepo.migration.handlers.BasicObjectVersionHandler">
+        <constructor-arg name="repo" ref="fedora4Client" />
+        <constructor-arg name="idMapper" ref="idMapper" />
+        <property name="importExternal" value="false" />
+        <property name="importRedirect" value="false" />
+
+    </bean>
+
+    <bean id="idMapper" class="org.fcrepo.migration.idmapers.SimpleIDMapper">
+        <constructor-arg name="rootPath" value="migrated-fedora3" />
+        <property name="charDepth" value="2" />
+    </bean>
+
+    <bean id="fedora4Client" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
+        <constructor-arg name="repositoryURL" value="http://localhost:${fcrepo.dynamic.test.port:8080}/fcrepo-webapp/rest/" />
+    </bean>
+
+    <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml11.HttpClientURLFetcher" />
+
+    <bean id="exportDir" class="java.io.File">
+        <constructor-arg type="java.lang.String" value="src/test/resources/exported" />
+    </bean>
+
+</beans>

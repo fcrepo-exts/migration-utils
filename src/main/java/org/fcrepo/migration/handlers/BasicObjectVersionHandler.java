@@ -110,21 +110,13 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
 
                 final String objectPath = idMapper.mapObjectPath(version.getObjectInfo().getPid());
                 if (object == null) {
-                    try {
-                        object = repo.createObject(objectPath);
-                    } catch (FedoraException ex) {
-                        // perhaps the resource already exists for a good reason....
-                        if (repo.exists(objectPath)) {
-                            object = repo.getObject(objectPath);
-                            if (isPlaceholder(object)) {
-                                // this is cool, the object was created just as a placeholder
-                                // for outbound relationships on other objects.
-                            } else {
-                                throw new RuntimeException("An object already exists at \"" + objectPath + "\"!", ex);
-                            }
-                        } else {
-                            throw ex;
+                    if (repo.exists(objectPath)) {
+                        object = repo.getObject(objectPath);
+                        if (!isPlaceholder(object)) {
+                            throw new RuntimeException("An object already exists at \"" + objectPath + "\"!");
                         }
+                    } else {
+                        object = repo.createObject(objectPath);
                     }
                 }
 
