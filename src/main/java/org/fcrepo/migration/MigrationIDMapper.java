@@ -3,24 +3,34 @@ package org.fcrepo.migration;
 /**
  * An interface whose implementations represent methods to
  * convert Fedora 3 PIDs into fedora 4 paths.
+ *
+ * At one point it was thought that this should be more sophisticated
+ * to support more advanced mapping (ie, passing more information about
+ * the object, but in order to use this to resolve the "fedora:info/pid"
+ * URI's within fedora's RELS-EXT we only have the pid.  Therefore
+ * implementations that need to do something more sophisticated, should
+ * build a mapping using whatever tooling it needs (and has available)
+ * such that it can return the result with just the PID.
+ *
  * @author mdurbin
  */
 public interface MigrationIDMapper {
 
     /**
-     * Takes a Fedora 3 Object reference and returns the path
+     * Takes a Fedora 3 pid and returns the path
      * that object would have in Fedora 4.
-     * @param object an ObjectReference for a Fedora 3 object.
+     * @param pid a PID for a Fedora 3 object.
      * @return a path suitable for use in Fedora 4.
      */
-    public String mapObjectPath(ObjectReference object);
+    public String mapObjectPath(String pid);
 
     /**
-     * Takes a Fedora 3 DatastreamInfo object and returns the path
+     * Takes a Fedora 3 PID and DSID and returns the path
      * that datastream would have in Fedora 4.
-     * @param dsInfo a DatastreamInfo for a Fedora 3 datastream
+     * @param pid a PID for the Fedora 3 object
+     * @param dsid the DS id for the Fedora 3 datastream
      * @return a path suitable for use in Fedora 4.
      */
-    public String mapDatastreamPath(DatastreamInfo dsInfo);
+    public String mapDatastreamPath(String pid, String dsid);
 
 }

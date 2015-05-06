@@ -21,6 +21,7 @@ import org.fcrepo.client.FedoraException;
 import org.fcrepo.client.FedoraObject;
 import org.fcrepo.client.FedoraRepository;
 import org.fcrepo.client.FedoraResource;
+import org.fcrepo.kernel.RdfLexicon;
 import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationIDMapper;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -106,8 +108,16 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                         + version.getObjectInfo().getPid()
                         + " version at " + version.getVersionDate() + ".");
 
+                final String objectPath = idMapper.mapObjectPath(version.getObjectInfo().getPid());
                 if (object == null) {
-                    object = createObject(version.getObject());
+                    if (repo.exists(objectPath)) {
+                        object = repo.getObject(objectPath);
+                        if (!isPlaceholder(object)) {
+                            throw new RuntimeException("An object already exists at \"" + objectPath + "\"!");
+                        }
+                    } else {
+                        object = repo.createObject(objectPath);
+                    }
                 }
 
                 final QuadDataAcc triplesToInsert = new QuadDataAcc();
@@ -124,12 +134,14 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                     } else if ((v.getDatastreamInfo().getControlGroup().equals("E") && !importExternal)
                             || (v.getDatastreamInfo().getControlGroup().equals("R") && !importRedirect)) {
                         repo.createOrUpdateRedirectDatastream(
-                                idMapper.mapDatastreamPath(v.getDatastreamInfo()), v.getExternalOrRedirectURL());
+                                idMapper.mapDatastreamPath(v.getDatastreamInfo().getObjectInfo().getPid(),
+                                        v.getDatastreamInfo().getDatastreamId()), v.getExternalOrRedirectURL());
                     } else {
                         FedoraDatastream ds = dsMap.get(v.getDatastreamInfo().getDatastreamId());
                         if (ds == null) {
                             ds = repo.createDatastream(
-                                    idMapper.mapDatastreamPath(v.getDatastreamInfo()),
+                                    idMapper.mapDatastreamPath(v.getDatastreamInfo().getObjectInfo().getPid(),
+                                            v.getDatastreamInfo().getDatastreamId()),
                                     new FedoraContent().setContent(v.getContent()).setContentType(v.getMimeType()));
                             dsMap.put(v.getDatastreamInfo().getDatastreamId(), ds);
                         } else {
@@ -165,18 +177,6 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     }
 
     /**
-     * Creates a Container in the Fedora 4 repository using the injected id
-     * mapper.
-     *
-     * @param object            The ObjectReference from Fedora 3 to create in Fedora 4.
-     * @throws FedoraException  In case there's an issue calling out to Fedora 4.
-     * @return                  The newly created object.
-     */
-    protected FedoraObject createObject(final ObjectReference object) throws FedoraException {
-        return repo.createObject(idMapper.mapObjectPath(object));
-    }
-
-    /**
      * Updates object properties after mapping them from 3 to 4.
      *
      * @param version           Object version to reference
@@ -188,7 +188,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     protected void updateObjectProperties(final ObjectVersionReference version,
             final FedoraObject object,
             final QuadAcc triplesToRemove,
-            final QuadDataAcc triplesToInsert) {
+            final QuadDataAcc triplesToInsert) throws FedoraException {
         if (version.isFirstVersion()) {
             // Migration event (current time)
             final String now = getCurrentTimeInXSDDateTime();
@@ -227,7 +227,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                final String obj,
                                final QuadAcc triplesToRemove,
                                final QuadDataAcc triplesToInsert,
-                               final Boolean isLiteral) {
+                               final Boolean isLiteral) throws FedoraException {
         String pred = origPred;
         // Map dates and object state
         if (pred.equals("info:fedora/fedora-system:def/model#createdDate")) {
@@ -358,7 +358,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @return                  void
      */
     protected void migrateRelsExt(final DatastreamVersion v, final QuadAcc triplesToRemove,
-                                  final QuadDataAcc triplesToInsert) throws IOException, RuntimeException {
+                                  final QuadDataAcc triplesToInsert) throws IOException, FedoraException {
         // Get the identifier for the object this describes
         final String objectUri = "info:fedora/" + v.getDatastreamInfo().getObjectInfo().getPid();
 
@@ -401,7 +401,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @return      void
      */
     protected void migrateRelsInt(final DatastreamVersion v, final Map<String, FedoraDatastream> dsMap)
-            throws IOException, RuntimeException {
+            throws IOException, RuntimeException, FedoraException {
         // Read the RDF.
         final Model m = ModelFactory.createDefaultModel();
         m.read(v.getContent(), null);
@@ -531,14 +531,59 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     protected void updateUriTriple(final QuadAcc triplesToRemove,
                                    final QuadDataAcc triplesToInsert,
                                    final String predicate,
-                                   final String object) {
+                                   final String object) throws FedoraException {
+        final String newObjectUri = resolveInternalURI(object);
         triplesToRemove.addTriple(new Triple(NodeFactory.createURI(""),
                                              NodeFactory.createURI(predicate),
                                              NodeFactory.createVariable("o" + String.valueOf(suffix))));
         triplesToInsert.addTriple(new Triple(NodeFactory.createURI(""),
                                              NodeFactory.createURI(predicate),
-                                             NodeFactory.createURI(object)));
+                                             NodeFactory.createURI(newObjectUri)));
         suffix++;
+    }
+
+    /**
+     * Takes a URI (String) and if it appears to be an internal Fedora URI ("info:fedora/pid")
+     * the migrated URI for that resource is returned (and a placeholder is created in the
+     * repository if it doesn't already exist).  Otherwise the value is returned unmodified.
+     */
+    protected String resolveInternalURI(final String uri) throws FedoraException {
+        if (uri.startsWith("info:fedora/")) {
+            final String path = idMapper.mapObjectPath(uri.substring("info:fedora/".length()));
+            createPlaceholder(path);
+            return repo.getRepositoryUrl() + path;
+        }
+        return uri;
+    }
+
+    /**
+     * Creates an empty object in fedora 4 at the given path such that
+     * relationships to that object from other objects may be created before
+     * that object is migrated.
+     */
+    protected void createPlaceholder(final String path) throws FedoraException {
+        if (!repo.exists(path)) {
+            repo.createObject(path);
+        }
+    }
+
+    /**
+     * Determines whether the given fedora object is a placeholder object
+     * created earlier to support the inclusion of a relationship to that
+     * object (rather than a previously existing object).  The current
+     * implementation bases it's assessment on whether any version
+     * snapshots have been made, since they are expected to be made for
+     * all migrated objects and NOT for any placeholder objects.
+     */
+    protected boolean isPlaceholder(final FedoraObject o) throws FedoraException {
+        final Iterator<Triple> properties = o.getProperties();
+        while (properties.hasNext()) {
+            final Triple t = properties.next();
+            if (t.predicateMatches(RdfLexicon.HAS_VERSION_HISTORY.asNode())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
