@@ -21,7 +21,7 @@ Background work
   * Will you be migrating from from a native fcrepo3 filesystem?
     * If so, fcrepo3 should not be running, and you will need to determine if you're using legacy or akubra storage
 * Determine your fcrepo4 url (ex: http://localhost:8080/rest/, http://yourHostName.ca:8080/fcrepo/rest/)
-* PID MAPPER (TODO)
+* There is currently only one implemented pid-mapping strategy, but you can configure it to put all of your migrated content under a given path ([line 90](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L90), sets that value to "migrated-fedora3").
 
 Getting started:
 * Clone the repository `https://github.com/fcrepo4-labs/migration-utils.git`
