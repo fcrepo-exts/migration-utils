@@ -13,7 +13,6 @@
              migration scenario.  (note, unless you reconfigute it, it will write
              content to localhost:8080/rest)
         <property name="handler" ref="objectAbstraction" />
-        -->
 
         <!-- The following is a convenience option for testing that allows you to
              point to a very large directory, but only ingest as many records as
@@ -28,7 +27,7 @@
 
     <bean id="nativeFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml11.NativeFoxmlDirectoryObjectSource" >
         <constructor-arg name="objectStore" ref="objectStore" />
-        <constructor-arg name="resolver" ref="directoryScanningIDResolver" />
+        <constructor-arg name="resolver" ref="akubraIDResolver" />
         <property name="fetcher" ref="httpClientURLFetcher"/>
     </bean>
 
@@ -101,11 +100,30 @@
         <constructor-arg name="repositoryURL" value="http://localhost:8080/rest/" />
     </bean>
 
-    <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids -->
-    <bean id="directoryScanningIDResolver" class="org.fcrepo.migration.foxml11.DirectoryScanningIDResolver">
+    <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids
+         as encoded for fedora installations using the akubra-fs storage.
+     -->
+    <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml11.AkubraFSIDResolver">
         <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
-        <constructor-arg name="indexDir" type="java.io.File" ref="indexRoot" />
+
+        <!-- Add the following line back in if you wish to maintain a cache of the internal id mapping between
+             runs of this application.  This will save substantial time at startup, but is not appropriate if
+             the repository changes.  -->
+        <!--<constructor-arg name="indexDir" type="java.io.File" ref="indexRoot" />-->
     </bean>
+
+    <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids
+     as encoded for fedora installations using the akubra-fs storage.
+     -->
+    <bean id="legacyIDResolver" class="org.fcrepo.migration.foxml11.LegacyFSIDResolver">
+        <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
+
+        <!-- Add the following line back in if you wish to maintain a cache of the internal id mapping between
+             runs of this application.  This will save substantial time at startup, but is not appropriate if
+             the repository changes.  -->
+        <!--<constructor-arg name="indexDir" type="java.io.File" ref="indexRoot" />-->
+    </bean>
+
 
     <!-- A bean that defines the codebase used to make HTTP requests to fetch content at URLs. -->
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml11.HttpClientURLFetcher" />
@@ -115,11 +133,11 @@
     <!-- Local Environment Configuration -->
 
     <bean id="objectStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/objectStore" />
+        <constructor-arg type="java.lang.String" value="src/test/resources/akubraFS/objectStore" />
     </bean>
 
     <bean id="datastreamStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/datastreamStore" />
+        <constructor-arg type="java.lang.String" value="src/test/resources/akubraFS/datastreamStore" />
     </bean>
 
     <bean id="exportedFoxmlDir" class="java.io.File">
@@ -127,7 +145,7 @@
     </bean>
 
     <bean id="indexRoot" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="target/work/index" />
+        <constructor-arg type="java.lang.String" value="index" />
     </bean>
 
 

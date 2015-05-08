@@ -1,11 +1,6 @@
 package org.fcrepo.migration.foxml11;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URLDecoder;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -24,6 +19,11 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
+
+import static org.slf4j.LoggerFactory.getLogger;
+
 /**
  * An InternalIDResolver implementation that generates an index of
  * datastream ids (filenames) to file paths for the contents of a
@@ -33,19 +33,51 @@ import org.slf4j.Logger;
  * id for that datastream version.
  * @author mdurbin
  */
-public class DirectoryScanningIDResolver implements InternalIDResolver {
+public abstract class DirectoryScanningIDResolver implements InternalIDResolver {
 
     private static final Logger LOGGER = getLogger(InternalIDResolver.class);
 
+    /**
+     * A lucene IndexSearcher over an index maintained by this class.
+     * For every file found in the datastream directory a document exists
+     * in this index that contains an "id" field and a "path" field.  The
+     * id field is the internal id, the path field is the full path to the
+     * file containing that datastream content.
+     */
     private IndexSearcher searcher;
 
     /**
      * directory scanning ID resolver
-     * @param indexDir the index directory
+     * @param cachedIndexDir the index directory.  If it exists, the old cache will be used, if it doesn't a new
+     *                 cache will be built at that location.  If it is null, a new cache will be built in
+     *                 the temp file space that will be deleted upon application shutdown.
      * @param dsRoot the datastream root
      * @throws IOException IO exception
      */
-    public DirectoryScanningIDResolver(final File indexDir, final File dsRoot) throws IOException {
+    public DirectoryScanningIDResolver(final File cachedIndexDir, final File dsRoot) throws IOException {
+        final File indexDir;
+        if (cachedIndexDir == null) {
+            final File temp = File.createTempFile("tempfile", "basedir");
+            temp.delete();
+            temp.mkdir();
+            indexDir = new File(temp, "index");
+            LOGGER.info("No index directory specified.  Creating temporary index at \""
+                    + indexDir.getAbsolutePath() + "\".");
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        LOGGER.info("Deleting index directory at \"" + indexDir.getAbsolutePath() + "\"...");
+                        FileUtils.deleteDirectory(indexDir);
+                    } catch (IOException e) {
+                        LOGGER.error("Unable to delete index directory at \"" + indexDir.getAbsolutePath() + "\"!", e);
+                        e.printStackTrace();
+                    }
+                }
+            }));
+        } else {
+            indexDir = cachedIndexDir;
+        }
         final Directory dir = FSDirectory.open(indexDir);
         if (indexDir.exists()) {
             LOGGER.warn("Index exists at \"" + indexDir.getPath() + "\" and will be used.  "
@@ -69,8 +101,7 @@ public class DirectoryScanningIDResolver implements InternalIDResolver {
     @Override
     public CachedContent resolveInternalID(final String id) {
         try {
-            final TopDocs result = searcher.search(new TermQuery(new Term("file", "info:fedora/"
-                    + id.replace('+', '/'))), 2);
+            final TopDocs result = searcher.search(new TermQuery(new Term("id", id)), 2);
             if (result.totalHits == 1) {
                 return new FileCachedContent(new File(searcher.doc(result.scoreDocs[0].doc).get("path")));
             } else if (result.totalHits < 1) {
@@ -93,9 +124,15 @@ public class DirectoryScanningIDResolver implements InternalIDResolver {
         } else {
             final Document doc = new Document();
             doc.add(new StringField("path", f.getPath(), Field.Store.YES));
-            doc.add(new StringField("file", URLDecoder.decode(f.getName(), "UTF-8"), Field.Store.NO));
+            doc.add(new StringField("id", getInternalIdForFile(f), Field.Store.YES));
+            LOGGER.trace("Added \"" + getInternalIdForFile(f) + "\"");
             writer.addDocument(doc);
         }
     }
+
+    /**
+     * Determines the internal id for the given file.
+     */
+    protected abstract String getInternalIdForFile(File f);
 
 }
