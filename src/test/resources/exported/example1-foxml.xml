@@ -124,7 +124,7 @@
 <foxml:datastream ID="DS2" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
 <foxml:datastreamVersion ID="DS2.0" LABEL="Example Managed binary datastream" CREATED="2015-01-27T19:09:18.112Z" MIMETYPE="image/jpeg" SIZE="46168">
 <foxml:contentDigest TYPE="MD5" DIGEST="d4f18b8b9c64466819ddaad46228fb9b"/>
-<foxml:binaryContent> 
+<foxml:binaryContent>
               /9j/4AAQSkZJRgABAQEBXgFeAAD/4aAVRXhpZgAASUkqAAgAAAANAA4BAgAgAAAAqgAAAA8BAgAFAAAA
               ygAAABABAgAJAAAA0AAAABIBAwABAAAAAQAAABoBBQABAAAA2gAAABsBBQABAAAA4gAAACgBAwABAAAA
               AgAAADEBAgAMAAAA6gAAADIBAgAUAAAA9gAAABMCAwABAAAAAgAAAGmHBAABAAAAdAEAACWIBAABAAAA
@@ -895,17 +895,17 @@
               8Marovam/qA69f0xKGvphz2xKn0pbeL1igmWyTQT4wPF1AuQja9jJ+oYmcxeWJFqcLD1MyTmz5YXqQ/e
               sOkDyqDzEUsKhsuh4b3IY9Ig4gXVHbrHhrGqcjs48ymor0LH8y9KrrS/mIG2y9NopRphXSJVyzG0uO8M
               UxWI1LpxE7lmYs8MpwK7TgbRw1BBy6wEwp//2Q==
-</foxml:binaryContent> 
+</foxml:binaryContent>
 </foxml:datastreamVersion>
 </foxml:datastream>
 <foxml:datastream ID="DS3" STATE="A" CONTROL_GROUP="R" VERSIONABLE="true">
-<foxml:datastreamVersion ID="DS3.0" LABEL="Example Redirect datastream." CREATED="2015-01-27T19:14:05.948Z" MIMETYPE="text/html">
-<foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/fedora/describe"/>
+<foxml:datastreamVersion ID="DS3.0" LABEL="Example Redirect datastream." CREATED="2015-01-27T19:14:05.948Z" MIMETYPE="image/jpeg">
+<foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/fedora/get/example:1/DS2"/>
 </foxml:datastreamVersion>
 </foxml:datastream>
 <foxml:datastream ID="DS4" STATE="A" CONTROL_GROUP="E" VERSIONABLE="true">
-<foxml:datastreamVersion ID="DS4.0" LABEL="Example External datastream." CREATED="2015-01-27T19:14:38.999Z" MIMETYPE="text/html">
-<foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/fedora"/>
+<foxml:datastreamVersion ID="DS4.0" LABEL="Example External datastream." CREATED="2015-01-27T19:14:38.999Z" MIMETYPE="image/jpeg">
+<foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/fedora/objects/example:1/datastreams/DS2/content"/>
 </foxml:datastreamVersion>
 </foxml:datastream>
 </foxml:digitalObject>

@@ -20,6 +20,8 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
 
     private File root;
 
+    private String localFedoraServer;
+
     /**
      * A constructor for use with the data storage directories that underly a
      * fedora 3.x repository.  First, this constructor will build an index of
@@ -28,12 +30,15 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
      * @param objectStore a directory containing just directories and FOXML files
      * @param resolver an InternalIDResolver implementation that can resolve
      *                 references to internally managed datastreams.
+     * @param localFedoraServer the domain and port for the server that hosted the fedora objects in the format
+     *                          "localhost:8080".
      */
     public NativeFoxmlDirectoryObjectSource(final File objectStore,
-            final InternalIDResolver resolver) throws IOException {
+            final InternalIDResolver resolver, final String localFedoraServer) throws IOException {
         this.root = objectStore;
         this.resolver = resolver;
         this.fetcher = new HttpClientURLFetcher();
+        this.localFedoraServer = localFedoraServer;
     }
 
     /**
@@ -46,7 +51,7 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
 
     @Override
     public Iterator<FedoraObjectProcessor> iterator() {
-        return new FoxmlDirectoryDFSIterator(root, resolver, fetcher);
+        return new FoxmlDirectoryDFSIterator(root, resolver, fetcher, localFedoraServer);
     }
 
 }

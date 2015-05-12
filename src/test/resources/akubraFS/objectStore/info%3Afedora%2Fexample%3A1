@@ -134,13 +134,13 @@ xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.opena
 </foxml:datastreamVersion>
 </foxml:datastream>
 <foxml:datastream ID="DS3" STATE="A" CONTROL_GROUP="R" VERSIONABLE="true">
-<foxml:datastreamVersion ID="DS3.0" LABEL="Example Redirect datastream." CREATED="2015-01-27T19:14:05.948Z" MIMETYPE="text/html">
-<foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/fedora/describe"/>
+<foxml:datastreamVersion ID="DS3.0" LABEL="Example Redirect datastream." CREATED="2015-01-27T19:14:05.948Z" MIMETYPE="image/jpeg">
+<foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/fedora/get/example:1/DS2"/>
 </foxml:datastreamVersion>
 </foxml:datastream>
 <foxml:datastream ID="DS4" STATE="A" CONTROL_GROUP="E" VERSIONABLE="true">
-<foxml:datastreamVersion ID="DS4.0" LABEL="Example External datastream." CREATED="2015-01-27T19:14:38.999Z" MIMETYPE="text/html">
-<foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/fedora"/>
+<foxml:datastreamVersion ID="DS4.0" LABEL="Example External datastream." CREATED="2015-01-27T19:14:38.999Z" MIMETYPE="image/jpeg">
+<foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/fedora/objects/example:1/datastreams/DS2/content"/>
 </foxml:datastreamVersion>
 </foxml:datastream>
 </foxml:digitalObject>

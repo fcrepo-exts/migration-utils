@@ -27,15 +27,18 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
     private InternalIDResolver resolver;
     private URLFetcher fetcher;
 
+    private String localFedoraServer;
+
     /**
      * foxml directory DFS iterator.
      * @param root the root file
      * @param fetcher the fetcher
      */
-    public FoxmlDirectoryDFSIterator(final File root, final URLFetcher fetcher) {
+    public FoxmlDirectoryDFSIterator(final File root, final URLFetcher fetcher, final String localFedoraServer) {
         stack = new Stack<List<File>>();
         current = new ArrayList<File>(Arrays.asList(root.listFiles()));
         this.fetcher = fetcher;
+        this.localFedoraServer = localFedoraServer;
     }
 
     /**
@@ -43,9 +46,12 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
      * @param root the root file
      * @param resolver the resolver
      * @param fetcher the fetcher
+     * @param localFedoraServer the domain and port for the server that hosted the fedora objects in the format
+     *                          "localhost:8080".
      */
-    public FoxmlDirectoryDFSIterator(final File root, final InternalIDResolver resolver, final URLFetcher fetcher) {
-        this(root, fetcher);
+    public FoxmlDirectoryDFSIterator(final File root, final InternalIDResolver resolver, final URLFetcher fetcher,
+                                     final String localFedoraServer) {
+        this(root, fetcher, localFedoraServer);
         this.resolver = resolver;
     }
 
@@ -79,7 +85,7 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
         } else {
             try {
                 return new Foxml11InputStreamFedoraObjectProcessor(
-                        new FileInputStream(current.remove(0)), fetcher, resolver);
+                        new FileInputStream(current.remove(0)), fetcher, resolver, localFedoraServer);
             } catch (final XMLStreamException e) {
                 throw new RuntimeException(e);
             } catch (final FileNotFoundException e) {

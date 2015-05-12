@@ -164,10 +164,11 @@ public abstract class Example1TestSuite {
         Assert.assertEquals("DS3.0", ds3.getVersionId());
         Assert.assertEquals("Example Redirect \u007Fdatastream.", ds3.getLabel());
         Assert.assertEquals("2015-01-27T19:14:05.948Z", ds3.getCreated());
-        Assert.assertEquals("text/html", ds3.getMimeType());
+        Assert.assertEquals("image/jpeg", ds3.getMimeType());
         Assert.assertEquals(-1, ds3.getSize());
         ds3.getContent().close();
-        Assert.assertEquals("http://local.fedora.server/fedora/describe", getFetcher().getLastUrl().toExternalForm());
+        Assert.assertEquals("http://" + SimpleObjectSource.LOCAL_FEDORA_SERVER + "/fedora/get/example:1/DS2",
+                getFetcher().getLastUrl().toExternalForm());
     }
 
     @Test
@@ -180,20 +181,24 @@ public abstract class Example1TestSuite {
         Assert.assertEquals("DS4.0", ds4.getVersionId());
         Assert.assertEquals("Example External datastream.", ds4.getLabel());
         Assert.assertEquals("2015-01-27T19:14:38.999Z", ds4.getCreated());
-        Assert.assertEquals("text/html", ds4.getMimeType());
+        Assert.assertEquals("image/jpeg", ds4.getMimeType());
         Assert.assertEquals(-1, ds4.getSize());
         ds4.getContent().close();
-        Assert.assertEquals("http://local.fedora.server/fedora", getFetcher().getLastUrl().toExternalForm());
+        Assert.assertEquals("http://" + SimpleObjectSource.LOCAL_FEDORA_SERVER
+                        + "/fedora/objects/example:1/datastreams/DS2/content",
+                getFetcher().getLastUrl().toExternalForm());
     }
 
     public static class SimpleObjectSource implements ObjectSource {
+
+        private static final String LOCAL_FEDORA_SERVER = "replaced-local-fedora-server";
 
         private FedoraObjectProcessor p;
 
         public SimpleObjectSource(final String path, final URLFetcher f,
                 final InternalIDResolver resolver) throws XMLStreamException {
             p = new Foxml11InputStreamFedoraObjectProcessor(getClass().getClassLoader().getResourceAsStream(path),
-                    f, resolver);
+                    f, resolver, LOCAL_FEDORA_SERVER);
         }
 
         @Override
