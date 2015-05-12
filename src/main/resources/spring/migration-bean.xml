@@ -13,7 +13,7 @@
              migration scenario.  (note, unless you reconfigute it, it will write
              content to localhost:8080/rest)
         <property name="handler" ref="objectAbstraction" />
-
+        -->
         <!-- The following is a convenience option for testing that allows you to
              point to a very large directory, but only ingest as many records as
              indicated by the 'limit' value.
@@ -28,11 +28,13 @@
     <bean id="nativeFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml11.NativeFoxmlDirectoryObjectSource" >
         <constructor-arg name="objectStore" ref="objectStore" />
         <constructor-arg name="resolver" ref="akubraIDResolver" />
+        <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <property name="fetcher" ref="httpClientURLFetcher"/>
     </bean>
 
     <bean id="exportedFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml11.ArchiveExportedFoxmlDirectoryObjectSource">
-        <constructor-arg ref="exportedFoxmlDir"/>
+        <constructor-arg name="exportDir" ref="exportedFoxmlDir"/>
+        <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
     </bean>
 
     <!-- ... need objects from another source?  Consider writing your own and adding it here, or asking a
@@ -73,6 +75,7 @@
     <bean id="basicMigration" class="org.fcrepo.migration.handlers.BasicObjectVersionHandler">
         <constructor-arg name="repo" ref="fedora4Client" />
         <constructor-arg name="idMapper" ref="idMapper" />
+        <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
 
         <!-- set these to true if you want to copy the external content into your fedora 4
              repository at the time of migration -->
@@ -85,7 +88,8 @@
 
     <!-- ID MAPPERS: defines the IDs that are generated for the new Fedora 4 objects. -->
 
-    <bean id="idMapper" class="org.fcrepo.migration.idmapers.SimpleIDMapper">
+    <bean id="idMapper" class="org.fcrepo.migration.idmappers.SimpleIDMapper">
+        <constructor-arg name="baseUrl" ref="fedora4Url" />
         <constructor-arg name="rootPath" value="migrated-fedora3" />
         <property name="charDepth" value="2" />
     </bean>
@@ -97,7 +101,7 @@
 
     <!-- The configuration options for a Fedora 4 client to do the updates to Fedora 4 -->
     <bean id="fedora4Client" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
-        <constructor-arg name="repositoryURL" value="http://localhost:8080/rest/" />
+        <constructor-arg name="repositoryURL" ref="fedora4Url" />
     </bean>
 
     <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids
@@ -132,6 +136,10 @@
 
     <!-- Local Environment Configuration -->
 
+    <bean id="fedora4Url" class="java.lang.String">
+        <constructor-arg value="http://localhost:8080/rest/" />
+    </bean>
+
     <bean id="objectStore" class="java.io.File">
         <constructor-arg type="java.lang.String" value="src/test/resources/akubraFS/objectStore" />
     </bean>
@@ -148,5 +156,15 @@
         <constructor-arg type="java.lang.String" value="index" />
     </bean>
 
+    <!--
+      The host and port for the fedora 3 server from which you're migrating content.  This server
+      does not have to be running for all migration configurations, only if you have redirect or
+      external datastreams that resolve to other spots in the repository, AND you wish to copy
+      the content (rather than migrate the redirect).  Unless both of those conditions apply,
+      it doesn't matter what value you have in this variable.
+      -->
+    <bean id="localFedoraServer" class="java.lang.String">
+        <constructor-arg value="localhost:8080" />
+    </bean>
 
 </beans>

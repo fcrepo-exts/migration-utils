@@ -18,13 +18,19 @@ public class ArchiveExportedFoxmlDirectoryObjectSource implements ObjectSource {
     private File root;
 
     private URLFetcher fetcher;
+
+    private String localFedoraServer;
+
     /**
      * archive exported foxml directory object source.
      * @param exportDir the export directory
+     * @param localFedoraServer the domain and port for the server that hosted the fedora objects in the format
+     *                          "localhost:8080".
      */
-    public ArchiveExportedFoxmlDirectoryObjectSource(final File exportDir) {
+    public ArchiveExportedFoxmlDirectoryObjectSource(final File exportDir, final String localFedoraServer) {
         this.root = exportDir;
         this.fetcher = new HttpClientURLFetcher();
+        this.localFedoraServer = localFedoraServer;
     }
 
     /**
@@ -37,6 +43,6 @@ public class ArchiveExportedFoxmlDirectoryObjectSource implements ObjectSource {
 
     @Override
     public Iterator<FedoraObjectProcessor> iterator() {
-        return new FoxmlDirectoryDFSIterator(root, fetcher);
+        return new FoxmlDirectoryDFSIterator(root, fetcher, localFedoraServer);
     }
 }

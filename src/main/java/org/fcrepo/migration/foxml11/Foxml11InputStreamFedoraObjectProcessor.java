@@ -52,6 +52,8 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
 
     private URLFetcher fetcher;
 
+    private String localFedoraServer;
+
     private InternalIDResolver idResolver;
 
     private XMLStreamReader reader;
@@ -69,12 +71,15 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
      * @param is the input stream
      * @param fetcher the fetcher
      * @param resolver the resolver
+     * @param localFedoraServer the host and port (formatted like "localhost:8080") of the fedora 3 server
+     *                          from which the content exposed by the "is" parameter comes.
      * @throws XMLStreamException xml stream exception
      */
     public Foxml11InputStreamFedoraObjectProcessor(final InputStream is, final URLFetcher fetcher,
-            final InternalIDResolver resolver) throws XMLStreamException {
+            final InternalIDResolver resolver, final String localFedoraServer) throws XMLStreamException {
         this.fetcher = fetcher;
         this.idResolver = resolver;
+        this.localFedoraServer = localFedoraServer;
         final XMLInputFactory factory = XMLInputFactory.newFactory();
         reader = factory.createXMLStreamReader(is);
         reader.nextTag();
@@ -302,7 +307,11 @@ public class Foxml11InputStreamFedoraObjectProcessor implements FedoraObjectProc
                             dsContent = idResolver.resolveInternalID(attributes.get("REF"));
                         } else {
                             try {
-                                dsContent = new URLCachedContent(new URL(attributes.get("REF")), fetcher);
+                                String ref = attributes.get("REF");
+                                if (ref.contains("local.fedora.server")) {
+                                    ref = ref.replace("local.fedora.server", localFedoraServer);
+                                }
+                                dsContent = new URLCachedContent(new URL(ref), fetcher);
                             } catch (final MalformedURLException e) {
                                 throw new RuntimeException(e);
                             }

@@ -23,12 +23,14 @@ import org.fcrepo.client.FedoraRepository;
 import org.fcrepo.client.FedoraResource;
 import org.fcrepo.kernel.RdfLexicon;
 import org.fcrepo.migration.DatastreamVersion;
+import org.fcrepo.migration.ExternalContentURLMapper;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationIDMapper;
 import org.fcrepo.migration.ObjectProperty;
 import org.fcrepo.migration.ObjectReference;
 import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.foxml11.DC;
+import org.fcrepo.migration.urlmappers.SelfReferencingURLMapper;
 import org.slf4j.Logger;
 
 import javax.xml.bind.JAXBException;
@@ -66,14 +68,18 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
 
     private boolean importRedirect;
 
+    private ExternalContentURLMapper externalContentUrlMapper;
+
     /**
      * Basic object version handler.
      * @param repo the fedora repository
      * @param idMapper the id mapper
      */
-    public BasicObjectVersionHandler(final FedoraRepository repo, final MigrationIDMapper idMapper) {
+    public BasicObjectVersionHandler(final FedoraRepository repo, final MigrationIDMapper idMapper,
+                                     final String localFedoraServer) {
         this.repo = repo;
         this.idMapper = idMapper;
+        this.externalContentUrlMapper = new SelfReferencingURLMapper(localFedoraServer, idMapper);
     }
 
     /**
@@ -137,7 +143,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                             || (v.getDatastreamInfo().getControlGroup().equals("R") && !importRedirect)) {
                         repo.createOrUpdateRedirectDatastream(
                                 idMapper.mapDatastreamPath(v.getDatastreamInfo().getObjectInfo().getPid(),
-                                        v.getDatastreamInfo().getDatastreamId()), v.getExternalOrRedirectURL());
+                                        v.getDatastreamInfo().getDatastreamId()),
+                                externalContentUrlMapper.mapURL(v.getExternalOrRedirectURL()));
                     } else {
                         FedoraDatastream ds = dsMap.get(v.getDatastreamInfo().getDatastreamId());
                         if (ds == null) {

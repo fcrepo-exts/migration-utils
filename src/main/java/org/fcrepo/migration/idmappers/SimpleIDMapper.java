@@ -1,4 +1,4 @@
-package org.fcrepo.migration.idmapers;
+package org.fcrepo.migration.idmappers;
 
 import org.fcrepo.migration.MigrationIDMapper;
 
@@ -16,6 +16,8 @@ import org.fcrepo.migration.MigrationIDMapper;
  */
 public class SimpleIDMapper implements MigrationIDMapper {
 
+    private String baseUrl;
+
     private String rootPath;
 
     private int charDepth;
@@ -24,7 +26,8 @@ public class SimpleIDMapper implements MigrationIDMapper {
      * simple ID mapper.
      * @param rootPath the root path
      */
-    public SimpleIDMapper(final String rootPath) {
+    public SimpleIDMapper(final String baseUrl, final String rootPath) {
+        this.baseUrl = baseUrl;
         this.rootPath = rootPath;
         charDepth = 2;
     }
@@ -74,5 +77,10 @@ public class SimpleIDMapper implements MigrationIDMapper {
     @Override
     public String mapDatastreamPath(final String pid, final String dsid) {
         return pidToPath(pid) + '/' + dsid;
+    }
+
+    @Override
+    public String getBaseURL() {
+        return this.baseUrl;
     }
 }
