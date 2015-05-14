@@ -41,6 +41,49 @@ To run the migration scenario you have configured in the Spring XML configuratio
 mvn clean compile exec:java -Dexec.mainClass=org.fcrepo.migration.Migrator 
 ```
 
+## Property Mappings
+
+### fcrepo3 Object properties to fcrepo4
+
+| fcrepo 3         | fcrepo4                             | Example                  |
+|------------------|-------------------------------------|--------------------------|
+| PID              | dcterms:identifier                  | yul:328697               |
+| state            | objState‡                           | Active                   |
+| label            | dcterms:title                       | Elvis Presley            |
+| createDate       | premis:hasDateCreatedByApplication  | 2015-03-16T20:11:06.683Z |
+| lastModifiedDate | metadataModification                | 2015-03-16T20:11:06.683Z |
+| ownerId          | fedora:createdBy‡                   | nruest                   |
+
+### fcrepo3 Datastream properties to fcrepo4
+
+| fcrepo3       | fcrepo4                                                      | Example                                        |
+|---------------|--------------------------------------------------------------|------------------------------------------------|
+| DSID          | dcterms:identifier                                           | OBJ                                            |
+| Label         | dcterms:title                                                | ASC19109.tif                                   |
+| MIME Type     | ebucore:hasMimeType†                                         | image/tiff                                     |
+| State         | objState‡                                                    | Active                                         |
+| Created       | fedora:created‡                                              | 2015-03-16T20:11:06.683Z                       |
+|               | fedora:lastModified‡                                         |                                                |
+| Versionable   | fedora:hasVersions‡                                          | true                                           |
+| Format URI    | premis:formatDesignation                                     | info:pronom/fmt/156                            |
+| Alternate IDs | dcterms:identifier                                           |                                                |
+| Access URL    | dcterms:identifier                                           |                                                |
+| Checksum      | premis:hasMessageDigestAlgorithm + premis:hasMessageDigest†  | SHA1, c91342b705b15cb4f6ac5362cc6a47d9425aec86 |
+
+### auditTrail mapping
+
+| fcrepo3 event                      | fcrepo4 Event Type                              |
+|------------------------------------|-------------------------------------------------|
+| addDatastream                      | premis:create†                                  |
+| modifyDatastreamByReference        | audit:contentModification/metadataModification† |
+| modifyObject                       | audit:resourceModification†                     |
+| modifyObject (checksum validation) | premis:validation†                              |
+| modifyDatastreamByValue            | audit:contentModification/metadataModification† |
+| purgeDatastream                    | audit:contentRemoval†                           |
+
+† Not yet implemented 
+‡ Immutable
+
 ## Additional Documentation
  
  * [wiki](https://wiki.duraspace.org/display/FF/Fedora+3+to+4+Data+Migration)
