@@ -37,10 +37,12 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -123,7 +125,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                 final QuadDataAcc triplesToInsert = new QuadDataAcc();
                 final QuadAcc triplesToRemove = new QuadAcc();
 
-                for (final DatastreamVersion v : version.listChangedDatastreams()) {
+                for (final DatastreamVersion v : withRELSINTLast(version.listChangedDatastreams())) {
                     LOGGER.debug("Considering changed datastream version " + v.getVersionId());
                     if (v.getDatastreamInfo().getDatastreamId().equals("DC")) {
                         migrateDc(v, triplesToRemove, triplesToInsert);
@@ -161,6 +163,17 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private List<DatastreamVersion> withRELSINTLast(final List<DatastreamVersion> orig) {
+        final List<DatastreamVersion> versionsWithRELSINTLast = new ArrayList<DatastreamVersion>(orig);
+        for (int i = 0; i < versionsWithRELSINTLast.size(); i ++) {
+            if (versionsWithRELSINTLast.get(i).getDatastreamInfo().getDatastreamId().equals("RELS-INT")) {
+                versionsWithRELSINTLast.add(versionsWithRELSINTLast.remove(i));
+                break;
+            }
+        }
+        return versionsWithRELSINTLast;
     }
 
     /**
@@ -413,6 +426,12 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             final String[] splitUri = dsUri.split("/");
             final String dsLabel = splitUri[splitUri.length - 1];
             final FedoraDatastream ds = dsMap.get(dsLabel);
+            if (ds == null) {
+                throw new RuntimeException("Unable to link resouces: The datastream \"" + dsLabel
+                        + "\" referenced in the RDF datastream \"" + v.getDatastreamInfo().getDatastreamId() + "\" on "
+                        + v.getDatastreamInfo().getObjectInfo().getPid() + " did not exist at "
+                        + v.getCreated() + "!");
+            }
 
             // Update this datastream with the RELS-INT RDF.
             final QuadDataAcc triplesToInsert = new QuadDataAcc();

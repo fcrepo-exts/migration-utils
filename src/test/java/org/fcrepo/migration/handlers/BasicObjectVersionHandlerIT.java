@@ -37,6 +37,7 @@ public class BasicObjectVersionHandlerIT {
     public void testObjectsWereCreated() throws FedoraException {
         Assert.assertTrue(repo.exists("migrated-fedora3/example/1"));
         Assert.assertTrue(repo.exists("migrated-fedora3/example/2"));
+        Assert.assertTrue(repo.exists("migrated-fedora3/example/3"));
     }
 
     @Test
