@@ -59,7 +59,7 @@ mvn clean compile exec:java -Dexec.mainClass=org.fcrepo.migration.Migrator
 | fcrepo3       | fcrepo4                                                      | Example                                        |
 |---------------|--------------------------------------------------------------|------------------------------------------------|
 | DSID          | dcterms:identifier                                           | OBJ                                            |
-| Label         | fedora3model:label‡                                          | ASC19109.tif                                   |
+| Label         | dcterms:title‡                                               | ASC19109.tif                                   |
 | MIME Type     | ebucore:hasMimeType†                                         | image/tiff                                     |
 | State         | fedoraaccess:objState                                        | Active                                         |
 | Created       | premis:hasDateCreatedByApplication                           | 2015-03-16T20:11:06.683Z                       |
