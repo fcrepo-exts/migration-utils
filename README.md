@@ -48,41 +48,42 @@ mvn clean compile exec:java -Dexec.mainClass=org.fcrepo.migration.Migrator
 | fcrepo 3         | fcrepo4                             | Example                  |
 |------------------|-------------------------------------|--------------------------|
 | PID              | dcterms:identifier                  | yul:328697               |
-| state            | objState‡                           | Active                   |
-| label            | dcterms:title                       | Elvis Presley            |
+| state            | fedoraaccess:objState               | Active                   |
+| label            | fedora3model:label†                 | Elvis Presley            |
 | createDate       | premis:hasDateCreatedByApplication  | 2015-03-16T20:11:06.683Z |
 | lastModifiedDate | metadataModification                | 2015-03-16T20:11:06.683Z |
-| ownerId          | fedora:createdBy‡                   | nruest                   |
+| ownerId          | fedora3model:ownerId†               | nruest                   |
 
 ### fcrepo3 Datastream properties to fcrepo4
 
 | fcrepo3       | fcrepo4                                                      | Example                                        |
 |---------------|--------------------------------------------------------------|------------------------------------------------|
 | DSID          | dcterms:identifier                                           | OBJ                                            |
-| Label         | dcterms:title                                                | ASC19109.tif                                   |
+| Label         | fedora3model:label‡                                          | ASC19109.tif                                   |
 | MIME Type     | ebucore:hasMimeType†                                         | image/tiff                                     |
-| State         | objState‡                                                    | Active                                         |
-| Created       | fedora:created‡                                              | 2015-03-16T20:11:06.683Z                       |
-|               | fedora:lastModified‡                                         |                                                |
+| State         | fedoraaccess:objState                                        | Active                                         |
+| Created       | premis:hasDateCreatedByApplication                           | 2015-03-16T20:11:06.683Z                       |
 | Versionable   | fedora:hasVersions‡                                          | true                                           |
-| Format URI    | premis:formatDesignation                                     | info:pronom/fmt/156                            |
-| Alternate IDs | dcterms:identifier                                           |                                                |
-| Access URL    | dcterms:identifier                                           |                                                |
-| Checksum      | premis:hasMessageDigestAlgorithm + premis:hasMessageDigest†  | SHA1, c91342b705b15cb4f6ac5362cc6a47d9425aec86 |
+| Format URI    | premis:formatDesignation‡                                    | info:pronom/fmt/156                            |
+| Alternate IDs | dcterms:identifier‡                                          |                                                |
+| Access URL    | dcterms:identifier‡                                          |                                                |
+| Checksum      | premis:hasMessageDigestAlgorithm + premis:hasMessageDigest‡  | SHA1, c91342b705b15cb4f6ac5362cc6a47d9425aec86 |
 
 ### auditTrail mapping
 
 | fcrepo3 event                      | fcrepo4 Event Type                              |
 |------------------------------------|-------------------------------------------------|
-| addDatastream                      | premis:create†                                  |
-| modifyDatastreamByReference        | audit:contentModification/metadataModification† |
-| modifyObject                       | audit:resourceModification†                     |
-| modifyObject (checksum validation) | premis:validation†                              |
-| modifyDatastreamByValue            | audit:contentModification/metadataModification† |
-| purgeDatastream                    | audit:contentRemoval†                           |
+| addDatastream                      | premis:create‡                                  |
+| modifyDatastreamByReference        | audit:contentModification/metadataModification‡ |
+| modifyObject                       | audit:resourceModification‡                     |
+| modifyObject (checksum validation) | premis:validation‡                              |
+| modifyDatastreamByValue            | audit:contentModification/metadataModification‡ |
+| purgeDatastream                    | audit:contentRemoval‡                           |
 
-† Not yet implemented 
-‡ Immutable
+† The `fedora3model` namespace is not a published namespace. It is a representation of the fcrepo3 namespace `info:fedora/fedora-system:def/model`.
+‡ Not yet implemented
+
+**Note**: All fcrepo3 DC (Dublin Core) datastream values are mapped as dcterms properties on the Object in fcrepo4. The same goes for any properties in the RELS-EXT and RELS-INT datastreams.
 
 ## Additional Documentation
  
