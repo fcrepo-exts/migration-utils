@@ -46,7 +46,7 @@ public class SelfReferencingURLMapper implements ExternalContentURLMapper {
      * @param idMapper the MigrationIDMapper used for the current migration scenario
      */
     public SelfReferencingURLMapper(final String localFedoraServer, final MigrationIDMapper idMapper) {
-        this.contentPatterns = new ArrayList<Pattern>();
+        this.contentPatterns = new ArrayList<>();
         this.contentPatterns.add(parsePattern(OLD_DS_CONTENT_URL_PATTERN, localFedoraServer));
         this.contentPatterns.add(parsePattern(NEW_DS_CONTENT_URL_PATTERN, localFedoraServer));
         this.idMapper = idMapper;
