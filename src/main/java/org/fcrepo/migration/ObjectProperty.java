@@ -8,12 +8,12 @@ package org.fcrepo.migration;
 public interface ObjectProperty {
 
     /**
-     * Gets the property name.
+     * @return the property name.
      */
     public String getName();
 
     /**
-     * Gets the property value.
+     * @return the property value.
      */
     public String getValue();
 }

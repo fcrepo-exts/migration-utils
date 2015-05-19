@@ -14,6 +14,7 @@ public interface ContentDigest {
 
     /**
      * Gets the value of the content digest.
+     * @return content digest
      */
     public String getDigest();
 }

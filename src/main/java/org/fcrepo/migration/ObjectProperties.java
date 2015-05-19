@@ -10,7 +10,7 @@ import java.util.List;
 public interface ObjectProperties {
 
     /**
-     * Gets the properties for the object.
+     * @return the properties for the object.
      */
     public List<? extends ObjectProperty> listProperties();
 

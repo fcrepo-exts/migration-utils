@@ -8,12 +8,12 @@ package org.fcrepo.migration;
 public interface ObjectInfo {
 
     /**
-     * Returns the pid of the object.
+     * @return  the pid of the object.
      */
     public String getPid();
 
     /**
-     * Gets the Fedora URI of the object (or null if none is available in
+     * @return the Fedora URI of the object (or null if none is available in
      * the source).
      */
     public String getFedoraURI();
