@@ -11,23 +11,23 @@ import java.util.List;
 public interface ObjectVersionReference {
 
     /**
-     * Gets the ObjectReference object that encapsualtes everything about
+     * @return the ObjectReference object that encapsulates everything about
      * the underlying Fedora 3 object.
      */
     public ObjectReference getObject();
 
     /**
-     * Gets all the basic object information.  This is unversioned information.
+     * @return all the basic object information.  This is unversioned information.
      */
     public ObjectInfo getObjectInfo();
 
     /**
-     * Gets all the object properties.  This is unversioned information.
+     * @return all the object properties.  This is unversioned information.
      */
     public ObjectProperties getObjectProperties();
 
     /**
-     * Gets the lastModifiedDate proeperty for this version.  This is formatted as
+     * @return the lastModifiedDate proeperty for this version.  This is formatted as
      * all Fedora 3 dates are formatted.
      */
     public String getVersionDate();
@@ -41,23 +41,25 @@ public interface ObjectVersionReference {
     public List<DatastreamVersion> listChangedDatastreams();
 
     /**
-     * Indicates whether this is the first version.
+     * @return true if this is the first version.
      */
     public boolean isLastVersion();
 
     /**
-     * Indicates whether this is the last version.
+     * @return true if this is the last version.
      */
     public boolean isFirstVersion();
 
     /**
-     * Gets the version index (0 for first, 1 for second, etc.) in chronological
+     * @return the version index (0 for first, 1 for second, etc.) in chronological
      * order from oldest to newest.
      */
     public int getVersionIndex();
 
     /**
-     * Determines whether a datastream with the given DSID changed as part of the
+     * @param dsId of datastream to be tested for change.
+     *
+     * @return true if datastream with the given DSID changed as part of the
      * update that contributed to this version.
      */
     public boolean wasDatastreamChanged(String dsId);

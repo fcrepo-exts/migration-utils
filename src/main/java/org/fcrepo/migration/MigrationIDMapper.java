@@ -34,7 +34,7 @@ public interface MigrationIDMapper {
     public String mapDatastreamPath(String pid, String dsid);
 
     /**
-     * Gets the fedora 4 base URL.  Paths returned by
+     * @return  the fedora 4 base URL.  Paths returned by
      * {@link #mapDatastreamPath} and {@link #mapObjectPath}
      * appended to this value will be resolvable URLs in the
      * fedora 4 repository.

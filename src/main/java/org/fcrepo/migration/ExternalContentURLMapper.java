@@ -11,7 +11,9 @@ package org.fcrepo.migration;
 public interface ExternalContentURLMapper {
 
     /**
-     * Gets the String containing a URL that should be used instead of the given String
+     * @param url to be mapped
+     *
+     * @return the String containing a URL that should be used instead of the given String
      * for migrated external or redirect datastreams.
      */
     public String mapURL(String url);

@@ -88,6 +88,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * redirect is fetched and ingested as a fedora 4-managed non-RDF resource.  If false
      * (default), a non-RDF resource is created in fedora 4 that when fetched results in
      * an HTTP redirect to the external url.
+     *
+     * @param value indicating if content is external
      */
     public void setImportExternal(final boolean value) {
         this.importExternal = value;
@@ -99,6 +101,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * redirect is fetched and ingested as a fedora 4-managed non-RDF resource.  If false
      * (default), a non-RDF resource is created in fedora 4 that when fetched results in
      * an HTTP redirect to the external url.
+     *
+     * @param value indicating if content is imported
      */
     public void setImportRedirect(final boolean value) {
         this.importRedirect = value;
@@ -203,7 +207,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param object            Object to update
      * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
-     * @return                  void
+     *
+     * @throws FedoraException on error
      */
     protected void updateObjectProperties(final ObjectVersionReference version,
             final FedoraObject object,
@@ -241,7 +246,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param obj               Object of property to map from 3 to 4.
      * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
-     * @return                  void
+     *
+     * @throws FedoraException on error
      */
     protected void mapProperty(final String origPred,
                                final String obj,
@@ -288,7 +294,6 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      *
      * @param v     Version of the datasream to update.
      * @param ds    Datastream to update.
-     * @return void
      */
     protected void updateDatastreamProperties(final ObjectReference obj,
             final DatastreamVersion v, final FedoraDatastream ds) {
@@ -375,7 +380,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param v                 Version of the datasream to migrate.
      * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
-     * @return                  void
+     *
+     * @throws IOException on error
+     * @throws FedoraException on error
      */
     protected void migrateRelsExt(final DatastreamVersion v, final QuadAcc triplesToRemove,
                                   final QuadDataAcc triplesToInsert) throws IOException, FedoraException {
@@ -418,7 +425,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      *
      * @param v     Version of the datasream to migrate.
      * @param dsMap Map of datastreams indexed by label.
-     * @return      void
+     *
+     * @throws java.io.IOException on error
+     * @throws java.lang.RuntimeException on error
+     * @throws org.fcrepo.client.FedoraException on error
      */
     protected void migrateRelsInt(final DatastreamVersion v, final Map<String, FedoraDatastream> dsMap)
             throws IOException, RuntimeException, FedoraException {
@@ -473,6 +483,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param v                 Version of the datasream to migrate.
      * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
+     *
+     * @throws java.io.IOException on error
+     * @throws java.lang.RuntimeException on error
      */
     protected void migrateDc(final DatastreamVersion v, final QuadAcc triplesToRemove,
                              final QuadDataAcc triplesToInsert) throws IOException, RuntimeException {
@@ -498,7 +511,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param resource          FedoraResource to update.
      * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
-     * @return                  void
+     *
      * @throws RuntimeException Possible FedoraExcpetions and IOExceptions
      */
     protected void updateResourceProperties(final FedoraResource resource,
@@ -530,7 +543,6 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param triplesToInsert   List of triples to add to resource.
      * @param predicate         Predicate of relationship (assumed to be URI).
      * @param object            Object of relationship (assumed to be literal).
-     * @return                  void
      */
     protected void updateLiteralTriple(final QuadAcc triplesToRemove,
                                        final QuadDataAcc triplesToInsert,
@@ -552,7 +564,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param triplesToInsert   List of triples to add to resource.
      * @param predicate         Predicate of relationship (assumed to be URI).
      * @param object            Object of relationship (assumed to URI).
-     * @return                  void
+     *
+     * @throws org.fcrepo.client.FedoraException on error
      */
     protected void updateUriTriple(final QuadAcc triplesToRemove,
                                    final QuadDataAcc triplesToInsert,
@@ -572,6 +585,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * Takes a URI (String) and if it appears to be an internal Fedora URI ("info:fedora/pid")
      * the migrated URI for that resource is returned (and a placeholder is created in the
      * repository if it doesn't already exist).  Otherwise the value is returned unmodified.
+     *
+     * @param uri to be resolved
+     *
+     * @throws org.fcrepo.client.FedoraException on error
      */
     protected String resolveInternalURI(final String uri) throws FedoraException {
         if (uri.startsWith("info:fedora/")) {
@@ -586,6 +603,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * Creates an empty object in fedora 4 at the given path such that
      * relationships to that object from other objects may be created before
      * that object is migrated.
+     *
+     * @param path of placeholder resource
+     *
+     * @throws org.fcrepo.client.FedoraException
      */
     protected void createPlaceholder(final String path) throws FedoraException {
         if (!repo.exists(path)) {
@@ -600,6 +621,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * implementation bases it's assessment on whether any version
      * snapshots have been made, since they are expected to be made for
      * all migrated objects and NOT for any placeholder objects.
+     *
+     * @param o to be tested as a placeholder resource
+     *
+     * @throws org.fcrepo.client.FedoraException
      */
     protected boolean isPlaceholder(final FedoraObject o) throws FedoraException {
         final Iterator<Triple> properties = o.getProperties();
@@ -619,7 +644,6 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param triplesToInsert   List of triples to add to resource.
      * @param predicate         Predicate of relationship (assumed to be URI).
      * @param object            Object of relationship (assumed to be literal).
-     * @return                  void
      */
     protected void updateDateTriple(final QuadAcc triplesToRemove,
             final QuadDataAcc triplesToInsert,
@@ -641,7 +665,6 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param triplesToInsert   List of triples to add to resource.
      * @param eventTypeURI      Type of premis event.
      * @param object            Object of relationship (e.g. the date.  Assumed to be literal).
-     * @return                  void
      */
     protected void addDateEvent(final QuadDataAcc triplesToInsert,
             final String eventTypeURI,

@@ -10,12 +10,12 @@ import java.util.List;
 public interface ObjectReference {
 
     /**
-     * Gets all the basic object information.
+     * @return all the basic object information.
      */
     public ObjectInfo getObjectInfo();
 
     /**
-     * Gets all the object properties.
+     * @return all the object properties.
      */
     public ObjectProperties getObjectProperties();
 
