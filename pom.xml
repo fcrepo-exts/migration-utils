@@ -5,7 +5,7 @@
 
   <groupId>org.fcrepo.migration</groupId>
   <artifactId>migration-utils</artifactId>
-  <version>4.1.2-SNAPSHOT</version>
+  <version>4.2.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>migration-utils</name>
@@ -83,12 +83,12 @@
     <dependency>
       <groupId>org.fcrepo</groupId>
       <artifactId>fcrepo-client-impl</artifactId>
-      <version>4.1.2-SNAPSHOT</version>
+      <version>4.2.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.fcrepo</groupId>
       <artifactId>fcrepo-client</artifactId>
-      <version>4.1.2-SNAPSHOT</version>
+      <version>4.2.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
