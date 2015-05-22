@@ -133,7 +133,8 @@ public class Migrator {
             line = reader.readLine();
         }
 
-        sb.append("~~~~~~~~~~~~~~\n");
+        sb.append("~~~~~~~~~~~~~~\n\n");
+        sb.append("See top of this output for details.\n");
         sb.append("============================\n");
         System.out.println(sb.toString());
     }
