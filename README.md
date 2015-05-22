@@ -24,8 +24,8 @@ Background work
 * There is currently only one implemented pid-mapping strategy, but you can configure it to put all of your migrated content under a given path ([line 93](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L93), sets that value to "migrated-fedora3").
 
 Getting started:
-* Clone the repository `https://github.com/fcrepo4-labs/migration-utils.git`
-* Edit the Spring XML configuration in your editor of choice (`src/main/resources/spring/migration-bean.xml`).
+* [Download](https://github.com/fcrepo4-labs/migration-utils/releases) the executable jar file
+* Create a local copy of the example [configuration file](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml) and update as described below:
   * If you are migrating from exported FOXML, you will leave [line 9](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L9).
   * If you are migrating from a native fcrepo3 file system, you will need to change `exportedFoxmlDirectoryObjectSource` to `nativeFoxmlDirectoryObjectSource` in [line 9](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L9).
   * If you are migrating from a native fcrepo3 file system, you will need to set the paths to the `objectStore` and `datastreamStore` ([Lines 143-139](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L143-L149)).
@@ -38,7 +38,7 @@ Getting started:
 To run the migration scenario you have configured in the Spring XML configuration file:
 
 ```
-mvn clean compile exec:java -Dexec.mainClass=org.fcrepo.migration.Migrator
+java -jar migration-utils-{version}-driver.jar <relative-or-absolute-path-to-configuration-file>
 ```
 
 ## Property Mappings

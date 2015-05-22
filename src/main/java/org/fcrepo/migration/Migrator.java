@@ -2,13 +2,17 @@ package org.fcrepo.migration;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.slf4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 
 /**
  * A class that represents a command-line program to migrate a fedora 3
@@ -31,8 +35,13 @@ public class Migrator {
      * @throws XMLStreamException xml stream exception
      */
     public static void main(final String [] args) throws IOException, XMLStreamException {
+        // Single arg with path to properties file is required
+        if (args.length != 1) {
+            printHelp();
+            return;
+        }
 
-        final ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("spring/migration-bean.xml");
+        final ConfigurableApplicationContext context = new FileSystemXmlApplicationContext(args[0]);
         final Migrator m = context.getBean("migrator", Migrator.class);
         m.run();
         context.close();
@@ -101,4 +110,33 @@ public class Migrator {
             o.processObject(handler);
         }
     }
+
+    private static void printHelp() throws IOException {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("============================\n");
+        sb.append("Please provide the directory path to a configuration file!");
+        sb.append("\n");
+        sb.append("See: https://github.com/fcrepo4-labs/migration-utils/blob/master/");
+        sb.append("src/main/resources/spring/migration-bean.xml");
+        sb.append("\n\n");
+        sb.append("The configuration file should contain the following (with appropriate values):");
+        sb.append("\n");
+        sb.append("~~~~~~~~~~~~~~\n");
+
+        final ClassPathResource resource = new ClassPathResource("spring/migration-bean.xml");
+        final InputStream example = resource.getInputStream();
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(example));
+        String line = reader.readLine();
+        while (null != line) {
+            sb.append(line);
+            sb.append("\n");
+            line = reader.readLine();
+        }
+
+        sb.append("~~~~~~~~~~~~~~\n\n");
+        sb.append("See top of this output for details.\n");
+        sb.append("============================\n");
+        System.out.println(sb.toString());
+    }
+
 }
