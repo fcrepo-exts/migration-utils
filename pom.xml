@@ -275,6 +275,30 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.5.4</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assembly/driver.xml</descriptor>
+          </descriptors>
+          <archive>
+            <manifest>
+              <mainClass>org.fcrepo.migration.Migrator</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
