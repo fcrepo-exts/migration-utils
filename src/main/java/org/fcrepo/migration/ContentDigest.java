@@ -9,6 +9,8 @@ public interface ContentDigest {
 
     /**
      * Gets the type: one of several defined in the fedora foxml schema.
+     *
+     * @return string containing the type
      */
     public String getType();
 

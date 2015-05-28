@@ -15,6 +15,7 @@ public class LegacyFSIDResolver extends DirectoryScanningIDResolver {
      * Basic constructor.
      * @param indexDir A directory that will serve as a lucene index directory to cache ID resolution.
      * @param dsRoot the root directory of the AkubraFS datastream store.
+     * @throws IOException
      */
     public LegacyFSIDResolver(final File indexDir, final File dsRoot) throws IOException {
         super(indexDir, dsRoot);
@@ -23,6 +24,7 @@ public class LegacyFSIDResolver extends DirectoryScanningIDResolver {
     /**
      * Basic constructor.
      * @param dsRoot the root directory of the AkubraFS datastream store.
+     * @throws IOException
      */
     public LegacyFSIDResolver(final File dsRoot) throws IOException {
         super(null, dsRoot);

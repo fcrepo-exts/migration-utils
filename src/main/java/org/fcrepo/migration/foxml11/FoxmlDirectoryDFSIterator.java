@@ -33,6 +33,7 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
      * foxml directory DFS iterator.
      * @param root the root file
      * @param fetcher the fetcher
+     * @param localFedoraServer uri to local fedora server
      */
     public FoxmlDirectoryDFSIterator(final File root, final URLFetcher fetcher, final String localFedoraServer) {
         stack = new Stack<List<File>>();

@@ -74,6 +74,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * Basic object version handler.
      * @param repo the fedora repository
      * @param idMapper the id mapper
+     * @param localFedoraServer uri to fedora server
      */
     public BasicObjectVersionHandler(final FedoraRepository repo, final MigrationIDMapper idMapper,
                                      final String localFedoraServer) {
@@ -246,6 +247,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param obj               Object of property to map from 3 to 4.
      * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
+     * @param isLiteral		TRUE if obj is a literal triple, FALSE if a URI
      *
      * @throws FedoraException on error
      */
@@ -292,6 +294,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * WIP utility function to update datastream properties.
      * Feel free to override this to suit your needs.
      *
+     * @param obj   Object to operate upon
      * @param v     Version of the datasream to update.
      * @param ds    Datastream to update.
      */
@@ -588,6 +591,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      *
      * @param uri to be resolved
      *
+     * @return string which is either the migrated URI or the unmodified URI
+     *
      * @throws org.fcrepo.client.FedoraException on error
      */
     protected String resolveInternalURI(final String uri) throws FedoraException {
@@ -623,6 +628,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * all migrated objects and NOT for any placeholder objects.
      *
      * @param o to be tested as a placeholder resource
+     *
+     * @return TRUE if the object is a placeholder obj, FALSE if its an actual migrated object
      *
      * @throws org.fcrepo.client.FedoraException
      */

@@ -4,5 +4,10 @@ jdk:
 before_install:
   - "echo $JAVA_OPTS"
   - "export JAVA_OPTS=-Xmx512m"
+
+script:
+  - mvn javadoc:jar
+  - mvn javadoc:test-aggregate
+
 notifications:
   irc: "irc.freenode.org#fcrepo"
