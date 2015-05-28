@@ -247,7 +247,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param obj               Object of property to map from 3 to 4.
      * @param triplesToRemove   List of triples to remove from resource.
      * @param triplesToInsert   List of triples to add to resource.
-     * @param isLiteral		TRUE if obj is a literal triple, FALSE if a URI
+     * @param isLiteral         TRUE if obj is a literal triple, FALSE if a URI
      *
      * @throws FedoraException on error
      */
