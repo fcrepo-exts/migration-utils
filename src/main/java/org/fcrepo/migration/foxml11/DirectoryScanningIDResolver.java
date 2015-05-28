@@ -132,6 +132,9 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
 
     /**
      * Determines the internal id for the given file.
+     *
+     * @param f file to check for
+     * @return string containing internal id for the file
      */
     protected abstract String getInternalIdForFile(File f);
 
