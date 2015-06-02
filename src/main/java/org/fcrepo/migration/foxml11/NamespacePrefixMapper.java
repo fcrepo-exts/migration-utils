@@ -20,8 +20,8 @@ public class NamespacePrefixMapper {
     Properties namespacePrefixes;
 
     /**
-     * Constructor.  Namespace properties file gets injected in via Spring.
-     * @param namespaceFile
+     * Constructor.
+     * @param namespaceFile Namespace properties file that gets injected in via Spring
      * @throws IOException
      */
     public NamespacePrefixMapper(final File namespaceFile) throws IOException {
@@ -32,8 +32,8 @@ public class NamespacePrefixMapper {
     }
 
     /**
-     * Adds all the namespace prefixes provided in the properties file to the provided SPARQL update.
-     * @param updateRequest
+     * Declares all the namespace prefixes provided in the properties file.
+     * @param updateRequest SPARQL update query that needs declared prefixes
      */
     public void setPrefixes(final UpdateRequest updateRequest) {
         namespacePrefixes.forEach((prefix,namespace) -> {
