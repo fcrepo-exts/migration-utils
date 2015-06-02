@@ -11,22 +11,33 @@ import java.util.Properties;
 import com.hp.hpl.jena.update.UpdateRequest;
 
 /**
- * Utility bean to set 
+ * Utility bean to set namespace prefixes in a SPARQL update.
  * @author danny
  *
  */
 public class NamespacePrefixMapper {
-    
+
     Properties namespacePrefixes;
-    
-    public NamespacePrefixMapper(File namespaceFile) throws IOException {
+
+    /**
+     * Constructor.  Namespace properties file gets injected in via Spring.
+     * @param namespaceFile
+     * @throws IOException
+     */
+    public NamespacePrefixMapper(final File namespaceFile) throws IOException {
         namespacePrefixes = new Properties();
-        FileInputStream namespaceInputStream = new FileInputStream(namespaceFile);
+        final FileInputStream namespaceInputStream = new FileInputStream(namespaceFile);
         namespacePrefixes.load(namespaceInputStream);
         namespaceInputStream.close();
     }
-    
-    public void setPrefixes(UpdateRequest updateRequest) {
-        namespacePrefixes.forEach((prefix,namespace) -> updateRequest.setPrefix((String) prefix, (String) namespace));
+
+    /**
+     * Adds all the namespace prefixes provided in the properties file to the provided SPARQL update.
+     * @param updateRequest
+     */
+    public void setPrefixes(final UpdateRequest updateRequest) {
+        namespacePrefixes.forEach((prefix,namespace) -> {
+            updateRequest.setPrefix((String) prefix, (String) namespace);
+        });
     }
 }

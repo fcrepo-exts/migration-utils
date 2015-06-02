@@ -72,7 +72,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     private boolean importRedirect;
 
     private ExternalContentURLMapper externalContentUrlMapper;
-    
+
     private NamespacePrefixMapper namespacePrefixMapper;
 
     /**
@@ -80,7 +80,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param repo the fedora repository
      * @param idMapper the id mapper
      */
-    public BasicObjectVersionHandler(final FedoraRepository repo, 
+    public BasicObjectVersionHandler(final FedoraRepository repo,
                                      final MigrationIDMapper idMapper,
                                      final String localFedoraServer,
                                      final NamespacePrefixMapper namespacePrefixMapper) {
