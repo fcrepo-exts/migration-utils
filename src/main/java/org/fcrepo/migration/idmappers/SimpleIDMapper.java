@@ -24,6 +24,7 @@ public class SimpleIDMapper implements MigrationIDMapper {
 
     /**
      * simple ID mapper.
+     * @param baseUrl the base url for the server
      * @param rootPath the root path
      */
     public SimpleIDMapper(final String baseUrl, final String rootPath) {
@@ -50,6 +51,7 @@ public class SimpleIDMapper implements MigrationIDMapper {
     /**
      * Gets the number of characters to use per level when converting
      * a pid to a path.
+     * @return number of characters per level
      */
     public int getCharDepth() {
         return this.charDepth;

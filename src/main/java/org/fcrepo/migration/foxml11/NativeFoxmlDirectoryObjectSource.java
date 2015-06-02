@@ -32,6 +32,7 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
      *                 references to internally managed datastreams.
      * @param localFedoraServer the domain and port for the server that hosted the fedora objects in the format
      *                          "localhost:8080".
+     * @throws IOException
      */
     public NativeFoxmlDirectoryObjectSource(final File objectStore,
             final InternalIDResolver resolver, final String localFedoraServer) throws IOException {
