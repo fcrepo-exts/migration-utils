@@ -14,6 +14,7 @@ import com.hp.hpl.jena.sparql.modify.request.UpdateDataInsert;
 import com.hp.hpl.jena.sparql.modify.request.UpdateDeleteWhere;
 import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
+
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.fcrepo.client.FedoraContent;
 import org.fcrepo.client.FedoraDatastream;
@@ -30,6 +31,7 @@ import org.fcrepo.migration.ObjectProperty;
 import org.fcrepo.migration.ObjectReference;
 import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.foxml11.DC;
+import org.fcrepo.migration.foxml11.NamespacePrefixMapper;
 import org.fcrepo.migration.urlmappers.SelfReferencingURLMapper;
 import org.slf4j.Logger;
 
@@ -37,6 +39,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,17 +73,22 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
 
     private ExternalContentURLMapper externalContentUrlMapper;
 
+    private NamespacePrefixMapper namespacePrefixMapper;
+
     /**
      * Basic object version handler.
      * @param repo the fedora repository
      * @param idMapper the id mapper
      * @param localFedoraServer uri to fedora server
      */
-    public BasicObjectVersionHandler(final FedoraRepository repo, final MigrationIDMapper idMapper,
-                                     final String localFedoraServer) {
+    public BasicObjectVersionHandler(final FedoraRepository repo,
+                                     final MigrationIDMapper idMapper,
+                                     final String localFedoraServer,
+                                     final NamespacePrefixMapper namespacePrefixMapper) {
         this.repo = repo;
         this.idMapper = idMapper;
         this.externalContentUrlMapper = new SelfReferencingURLMapper(localFedoraServer, idMapper);
+        this.namespacePrefixMapper = namespacePrefixMapper;
     }
 
     /**
@@ -509,7 +517,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     }
 
     /**
-     * Utility function for udpating a FedoraResource's properties.
+     * Utility function for updating a FedoraResource's properties.
      *
      * @param resource          FedoraResource to update.
      * @param triplesToRemove   List of triples to remove from resource.
@@ -522,9 +530,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             final QuadDataAcc triplesToInsert) throws RuntimeException {
         try {
             final UpdateRequest updateRequest = UpdateFactory.create();
-            updateRequest.setPrefix("dcterms", "http://purl.org/dc/terms/");
-            updateRequest.setPrefix("fedoraaccess", "http://fedora.info/definitions/1/0/access/");
-            updateRequest.setPrefix("fedora3model", "info:fedora/fedora-system:def/model#");
+            namespacePrefixMapper.setPrefixes(updateRequest);
             updateRequest.add(new UpdateDeleteWhere(triplesToRemove));
             updateRequest.add(new UpdateDataInsert(triplesToInsert));
             final ByteArrayOutputStream sparqlUpdate = new ByteArrayOutputStream();

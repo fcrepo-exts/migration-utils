@@ -16,7 +16,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>4.1.1.RELEASE</spring.version>
     <jena.version>2.12.1</jena.version>
-    <checkstyle.plugin.version>2.14</checkstyle.plugin.version>
+    <checkstyle.plugin.version>2.15</checkstyle.plugin.version>
   </properties>
 
   <scm>

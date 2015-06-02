@@ -76,6 +76,7 @@
         <constructor-arg name="repo" ref="fedora4Client" />
         <constructor-arg name="idMapper" ref="idMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
+        <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
 
         <!-- set these to true if you want to copy the external content into your fedora 4
              repository at the time of migration -->
@@ -128,11 +129,13 @@
         <!--<constructor-arg name="indexDir" type="java.io.File" ref="indexRoot" />-->
     </bean>
 
-
     <!-- A bean that defines the codebase used to make HTTP requests to fetch content at URLs. -->
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml11.HttpClientURLFetcher" />
 
-
+    <!-- A utility bean to map namespace prefixes -->
+    <bean id="namespacePrefixMapper" class="org.fcrepo.migration.foxml11.NamespacePrefixMapper">
+        <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
+    </bean>
 
     <!-- Local Environment Configuration -->
 
@@ -154,6 +157,10 @@
 
     <bean id="indexRoot" class="java.io.File">
         <constructor-arg type="java.lang.String" value="index" />
+    </bean>
+
+    <bean id="namespaceFile" class="java.io.File">
+        <constructor-arg type="java.lang.String" value="src/main/resources/namespaces.properties"/>
     </bean>
 
     <!--
