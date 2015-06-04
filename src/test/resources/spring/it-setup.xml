@@ -27,7 +27,7 @@
     </bean>
 
     <bean id="basicMigration" class="org.fcrepo.migration.handlers.BasicObjectVersionHandler">
-        <constructor-arg name="repo" ref="fedora4Client" />
+        <constructor-arg name="client" ref="fedora4Client" />
         <constructor-arg name="idMapper" ref="idMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
@@ -47,7 +47,11 @@
         <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
     </bean>
 
-    <bean id="fedora4Client" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
+    <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.DefaultFedora4Client">
+        <constructor-arg name="repo" ref="repo" />
+    </bean>
+
+    <bean id="repo" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
         <constructor-arg name="repositoryURL" ref="fedora4Url" />
     </bean>
 

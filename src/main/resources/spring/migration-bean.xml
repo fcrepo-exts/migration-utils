@@ -73,7 +73,7 @@
         Creates nonRdfresources under the object for X and R datastreams that redirect to the external resource.
       -->
     <bean id="basicMigration" class="org.fcrepo.migration.handlers.BasicObjectVersionHandler">
-        <constructor-arg name="repo" ref="fedora4Client" />
+        <constructor-arg name="client" ref="fedora4Client" />
         <constructor-arg name="idMapper" ref="idMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
@@ -95,13 +95,10 @@
         <property name="charDepth" value="2" />
     </bean>
 
-
-
-
     <!-- Pluggable utility beans -->
 
     <!-- The configuration options for a Fedora 4 client to do the updates to Fedora 4 -->
-    <bean id="fedora4Client" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
+    <bean id="repo" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
         <constructor-arg name="repositoryURL" ref="fedora4Url" />
     </bean>
 
@@ -174,4 +171,7 @@
         <constructor-arg value="localhost:8080" />
     </bean>
 
+    <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.DefaultFedora4Client">
+        <constructor-arg name="repo" ref="repo" />
+    </bean>
 </beans>
