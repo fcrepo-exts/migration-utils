@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.fcrepo.migration.foxml11;
 
 import java.io.File;
@@ -17,7 +14,7 @@ import com.hp.hpl.jena.update.UpdateRequest;
  */
 public class NamespacePrefixMapper {
 
-    Properties namespacePrefixes;
+    private Properties namespacePrefixes;
 
     /**
      * Constructor.
