@@ -160,7 +160,7 @@
     </bean>
 
     <bean id="namespaceFile" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/namespaces.properties"/>
+        <constructor-arg type="java.lang.String" value="src/main/resources/namespaces.properties"/>
     </bean>
 
     <!--

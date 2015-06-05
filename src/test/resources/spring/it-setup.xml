@@ -46,7 +46,7 @@
     <bean id="namespacePrefixMapper" class="org.fcrepo.migration.foxml11.NamespacePrefixMapper">
         <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
     </bean>
-    
+
     <bean id="fedora4Client" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
         <constructor-arg name="repositoryURL" ref="fedora4Url" />
     </bean>
@@ -66,6 +66,6 @@
     </bean>
 
     <bean id="namespaceFile" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/namespaces.properties"/>
+        <constructor-arg type="java.lang.String" value="src/main/resources/namespaces.properties"/>
     </bean>
 </beans>
