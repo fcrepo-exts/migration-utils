@@ -40,8 +40,10 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -453,12 +455,15 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             final String dsUri = s.getSubject().getURI();
             final String[] splitUri = dsUri.split("/");
             final String dsLabel = splitUri[splitUri.length - 1];
-            final FedoraDatastream ds = dsMap.get(dsLabel);
+            FedoraDatastream ds = dsMap.get(dsLabel);
             if (ds == null) {
-                throw new RuntimeException("Unable to link resouces: The datastream \"" + dsLabel
+                ds = createDSPlaceholder(
+                        idMapper.mapDatastreamPath(v.getDatastreamInfo().getObjectInfo().getPid(), dsLabel));
+                dsMap.put(dsLabel, ds);
+                LOGGER.warn("The datastream \"" + dsLabel
                         + "\" referenced in the RDF datastream \"" + v.getDatastreamInfo().getDatastreamId() + "\" on "
                         + v.getDatastreamInfo().getObjectInfo().getPid() + " did not exist at "
-                        + v.getCreated() + "!");
+                        + v.getCreated() + ", making a placeholder!");
             }
 
             // Update this datastream with the RELS-INT RDF.
@@ -622,6 +627,19 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     protected void createPlaceholder(final String path) throws FedoraException {
         if (!repo.exists(path)) {
             repo.createObject(path);
+        }
+    }
+
+    protected FedoraDatastream createDSPlaceholder(final String path) throws FedoraException {
+        if (!repo.exists(path)) {
+            try {
+                return repo.createDatastream(path, new FedoraContent().setContent(
+                        new ByteArrayInputStream("placeholder".getBytes("UTF-8"))).setContentType("text/plain"));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return repo.getDatastream(path);
         }
     }
 
