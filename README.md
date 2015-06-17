@@ -33,7 +33,7 @@ Getting started:
   * Set your fcrepo4 url ([Line 143](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L143)).
   * If you would like to run the migration in test mode (console logging), you will leave [lines 11-16](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L11-L16) as is.
   * If you would like to run the migration, you will need to comment out or remove [line 9](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L11), and uncomment [line 15](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L15).
-  * To set what namespace prefixes get declared, provide a properties file like [this](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/test/resources/namespaces.properties), and set the path to it at [line 163](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L163).
+  * To set what namespace prefixes get declared, provide a properties file like [this](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/namespaces.properties), and set the path to it at [line 163](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml#L163).
 
 
 To run the migration scenario you have configured in the Spring XML configuration file:
