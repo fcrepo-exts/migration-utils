@@ -2,3 +2,5 @@ target/
 .idea
 migration-bean.xml*
 *~
+id-index
+id-minter.log

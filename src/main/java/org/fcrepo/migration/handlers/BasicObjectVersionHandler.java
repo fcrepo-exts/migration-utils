@@ -119,7 +119,11 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                 if (objectPath == null) {
                     objectPath = idMapper.mapObjectPath(version.getObjectInfo().getPid());
                     if (!f4client.exists(objectPath)) {
-                        f4client.createResource(objectPath);
+                        f4client.createPlaceholder(objectPath);
+                    } else if (!f4client.isPlaceholder(objectPath)) {
+                        LOGGER.warn(objectPath + " already exists, skipping migration of "
+                                + version.getObject().getObjectInfo().getPid() + "!");
+                        return;
                     }
                 }
 
@@ -419,7 +423,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             final String dsId = splitUri[splitUri.length - 1];
             final String dsPath = idMapper.mapDatastreamPath(v.getDatastreamInfo().getObjectInfo().getPid(), dsId);
             if (!f4client.exists(dsPath)) {
-                createDSPlaceholder(dsPath);
+                f4client.createDSPlaceholder(dsPath);
                 LOGGER.warn("The datastream \"" + dsId
                         + "\" referenced in the RDF datastream \"" + v.getDatastreamInfo().getDatastreamId() + "\" on "
                         + v.getDatastreamInfo().getObjectInfo().getPid() + " did not exist at "
@@ -573,31 +577,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     protected String resolveInternalURI(final String uri) {
         if (uri.startsWith("info:fedora/")) {
             final String path = idMapper.mapObjectPath(uri.substring("info:fedora/".length()));
-            createPlaceholder(path);
+            f4client.createPlaceholder(path);
             return f4client.getRepositoryUrl() + path;
         }
         return uri;
-    }
-
-    /**
-     * Creates an empty object in fedora 4 at the given path such that
-     * relationships to that object from other objects may be created before
-     * that object is migrated.
-     *
-     * @param path of placeholder resource
-     *
-     * @throws org.fcrepo.client.FedoraException
-     */
-    protected void createPlaceholder(final String path) {
-        if (!f4client.exists(path)) {
-            f4client.createResource(path);
-        }
-    }
-
-    protected void createDSPlaceholder(final String path) {
-        if (!f4client.exists(path)) {
-            f4client.createNonRDFResource(path);
-        }
     }
 
     /**

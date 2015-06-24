@@ -36,10 +36,9 @@
 
     </bean>
 
-    <bean id="idMapper" class="org.fcrepo.migration.idmappers.SimpleIDMapper">
-        <constructor-arg name="baseUrl" ref="fedora4Url" />
-        <constructor-arg name="rootPath" value="migrated-fedora3" />
-        <property name="charDepth" value="2" />
+    <bean id="idMapper" class="org.fcrepo.migration.idmappers.OpaqueIDMapper">
+        <constructor-arg name="cachedIDIndexDir"><null /></constructor-arg>
+        <constructor-arg name="f4Client" ref="fedora4Client" />
     </bean>
 
 	<!-- A utility bean to map namespace prefixes -->
