@@ -408,7 +408,6 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      *
      * @throws java.io.IOException on error
      * @throws java.lang.RuntimeException on error
-     * @throws org.fcrepo.client.FedoraException on error
      */
     protected void migrateRelsInt(final DatastreamVersion v) throws IOException, RuntimeException {
         // Read the RDF.
@@ -546,8 +545,6 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param triplesToInsert   List of triples to add to resource.
      * @param predicate         Predicate of relationship (assumed to be URI).
      * @param object            Object of relationship (assumed to URI).
-     *
-     * @throws org.fcrepo.client.FedoraException on error
      */
     protected void updateUriTriple(final QuadAcc triplesToRemove,
                                    final QuadDataAcc triplesToInsert,
@@ -571,8 +568,6 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param uri to be resolved
      *
      * @return string which is either the migrated URI or the unmodified URI
-     *
-     * @throws org.fcrepo.client.FedoraException on error
      */
     protected String resolveInternalURI(final String uri) {
         if (uri.startsWith("info:fedora/")) {

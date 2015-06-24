@@ -144,7 +144,7 @@ public class DefaultFedora4Client implements Fedora4Client {
     }
 
     /**
-     * {@InheritDoc}
+     * {@inheritDoc}
      *
      * The current implementation uses the lazy approach of assuming any
      * resource that has versions is not a placeholder and otherwise is.
