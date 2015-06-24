@@ -24,12 +24,6 @@ public interface Fedora4Client {
     public void createResource(String path);
 
     /**
-     * Creates a new non-RDF resource at the given path.
-     * @param path the path to the new resource
-     */
-    public void createNonRDFResource(String path);
-
-    /**
      * Gets the repository URL (to which paths can be appended to reference resources).
      * @return the repository URL
      */
@@ -70,4 +64,37 @@ public interface Fedora4Client {
      * @param sparqlUpdate the sparql update statements to be applied
      */
     public void updateNonRDFResourceProperties(String path, String sparqlUpdate);
+
+    /**
+     * Creates a placeholder resource at the given path (or at a server-assigned path,
+     * if no path is given) if no resource exists at that path.  If a resource already
+     * exists, this method returns the path to that resource which may or may not be
+     * a placeholder.  If none exists, this method creates a new resource that should
+     * should be distinguishable from resources that have already been migrated as well
+     * as resources created using another process.
+     * @param path a path at which to create a placeholder resource (or null to create
+     *             a placeholder resource at a server-assigned path).
+     * @return the path of the placeholder resource that was created
+     */
+    public String createPlaceholder(String path);
+
+    /**
+     * Creates a placeholder non-RDF resource at the given path (or at a server-assigned
+     * path, if no path is given) if no resource exists at that path.  If a resource
+     * already exists, this method returns the path to that resource which may or may not
+     * be a placeholder.  If none exists, this method creates a new resource that should
+     * should be distinguishable from resources that have already been migrated as well
+     * as resources created using another process.
+     * @param path a path at which to create a placeholder resource (or null to create
+     *             a placeholder resource at a server-assigned path).
+     * @return the path of the placeholder resource that was created
+     */
+    public String createDSPlaceholder(String path);
+
+    /**
+     * Determines whether the resource at the given path is a placeholder or not.
+     * @param path a path of a resource (expected to exist)
+     * @return true if it's a placeholder, false otherwise
+     */
+    public boolean isPlaceholder(String path);
 }

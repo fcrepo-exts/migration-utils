@@ -12,8 +12,13 @@ import org.fcrepo.migration.MigrationIDMapper;
  *
  * This implementation ensures easy reversibility in mapping,
  * reasonable use of the hierarchy,
+ *
+ * This approach is deprecated due to issues described here:
+ * https://jira.duraspace.org/browse/FCREPO-1547
+ *
  * @author mdurbin
  */
+@Deprecated
 public class SimpleIDMapper implements MigrationIDMapper {
 
     private String baseUrl;

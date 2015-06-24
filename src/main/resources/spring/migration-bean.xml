@@ -8,11 +8,11 @@
     <bean id="migrator" class="org.fcrepo.migration.Migrator">
         <property name="source" ref="exportedFoxmlDirectoryObjectSource" />
 
-        <property name="handler" ref="consoleLoggingStreamingFedoraObjectHandler" />
+        <!--<property name="handler" ref="consoleLoggingStreamingFedoraObjectHandler" />-->
         <!-- Replacing the above handler with this one will enable the basic
              migration scenario.  (note, unless you reconfigute it, it will write
-             content to localhost:8080/rest)
-        <property name="handler" ref="objectAbstraction" />
+             content to localhost:8080/rest)                                               -->
+        <property name="handler" ref="objectAbstraction" />                                   <!--
         -->
         <!-- The following is a convenience option for testing that allows you to
              point to a very large directory, but only ingest as many records as
@@ -74,7 +74,7 @@
       -->
     <bean id="basicMigration" class="org.fcrepo.migration.handlers.BasicObjectVersionHandler">
         <constructor-arg name="client" ref="fedora4Client" />
-        <constructor-arg name="idMapper" ref="idMapper" />
+        <constructor-arg name="idMapper" ref="opaqueIDMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
 
@@ -85,14 +85,29 @@
 
     </bean>
 
-
-
     <!-- ID MAPPERS: defines the IDs that are generated for the new Fedora 4 objects. -->
 
-    <bean id="idMapper" class="org.fcrepo.migration.idmappers.SimpleIDMapper">
+    <!-- The following ID mapper take advantage of hierarchy in ways that
+         isn't well supported in Fedora 4 and may exposes problems.  It shouldn't
+         be used until the following issue has been resolved:
+
+         https://jira.duraspace.org/browse/FCREPO-1547
+
+    <bean id="deprecatedIDMapper" class="org.fcrepo.migration.idmappers.SimpleIDMapper">
         <constructor-arg name="baseUrl" ref="fedora4Url" />
         <constructor-arg name="rootPath" value="migrated-fedora3" />
         <property name="charDepth" value="2" />
+    </bean>
+    -->
+
+    <!--
+       Mints a new fedora 4 path for each PID encountered during the migration.
+       The mappings are persisted in a lucene index configured in the "idIndex"
+       bean.  Furthermore, a file id-minter.log will contain the mapping as well.
+    -->
+    <bean id="opaqueIDMapper" class="org.fcrepo.migration.idmappers.OpaqueIDMapper">
+        <constructor-arg name="cachedIDIndexDir" ref="idIndex" />
+        <constructor-arg name="f4Client" ref="fedora4Client" />
     </bean>
 
     <!-- Pluggable utility beans -->
@@ -154,6 +169,16 @@
 
     <bean id="indexRoot" class="java.io.File">
         <constructor-arg type="java.lang.String" value="index" />
+    </bean>
+
+    <!--
+        Used by the id mapper, this is the index containing information about all created
+        migrated resources in the fedora 4 repository.  Deleting this directory will erase
+        all information about pids mapped in previous runs of this application and may
+        result in re-migration of objects!
+      -->
+    <bean id="idIndex" class="java.io.File">
+        <constructor-arg type="java.lang.String" value="id-index" />
     </bean>
 
     <bean id="namespaceFile" class="java.io.File">

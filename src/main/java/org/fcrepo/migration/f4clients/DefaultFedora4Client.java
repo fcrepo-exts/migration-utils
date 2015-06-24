@@ -1,13 +1,16 @@
 package org.fcrepo.migration.f4clients;
 
+import com.hp.hpl.jena.graph.Triple;
 import org.fcrepo.client.FedoraContent;
 import org.fcrepo.client.FedoraException;
 import org.fcrepo.client.FedoraRepository;
+import org.fcrepo.kernel.RdfLexicon;
 import org.fcrepo.migration.Fedora4Client;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Iterator;
 
 /**
  * A Fedora4Client implementation built on top of the fcrepo4-client
@@ -41,18 +44,6 @@ public class DefaultFedora4Client implements Fedora4Client {
         try {
             repo.createObject(path);
         } catch (FedoraException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void createNonRDFResource(final String path) {
-        try {
-            repo.createDatastream(path, new FedoraContent().setContent(
-                    new ByteArrayInputStream("placeholder".getBytes("UTF-8"))).setContentType("text/plain"));
-        } catch (FedoraException e) {
-            throw new RuntimeException(e);
-        } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
@@ -107,6 +98,71 @@ public class DefaultFedora4Client implements Fedora4Client {
     public void updateNonRDFResourceProperties(final String path, final String sparqlUpdate) {
         try {
             repo.getDatastream(path).updateProperties(sparqlUpdate);
+        } catch (FedoraException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String createPlaceholder(final String path) {
+        try {
+            if (!repo.exists(path)) {
+                if (path == null || path.length() == 0) {
+                    return repo.createResource(null).getPath();
+                } else {
+                    return repo.createObject(path).getPath();
+                }
+            } else {
+                return path;
+            }
+        } catch (FedoraException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String createDSPlaceholder(final String path) {
+        try {
+            if (!repo.exists(path)) {
+                if (path == null || path.length() == 0) {
+                    return repo.createResource(null).getPath();
+                } else {
+                    try {
+                        return repo.createDatastream(path,
+                                new FedoraContent().setContent(
+                                        new ByteArrayInputStream("placeholder".getBytes("UTF-8")))
+                                        .setContentType("text/plain")).getPath();
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        } catch (FedoraException e) {
+            throw new RuntimeException(e);
+        }
+        return path;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * The current implementation uses the lazy approach of assuming any
+     * resource that has versions is not a placeholder and otherwise is.
+     *
+     * TODO: make some migration-specific RDF assertion to more clearly mark
+     *       placeholders.
+     */
+    @Override
+    public boolean isPlaceholder(final String path) {
+        try {
+            final Iterator<Triple> properties = repo.getObject(path).getProperties();
+            while (properties.hasNext()) {
+                final Triple t = properties.next();
+                if (t.predicateMatches(RdfLexicon.HAS_VERSION_HISTORY.asNode())) {
+                    return false;
+                }
+            }
+            return true;
         } catch (FedoraException e) {
             throw new RuntimeException(e);
         }

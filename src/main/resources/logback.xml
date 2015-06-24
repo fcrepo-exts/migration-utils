@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE configuration>
 <configuration>
+    <!--
+      This special purpose log file retains an emergency record of all
+      the pid mappings during migration operations that use the
+      OpaqueIDMapper.
+    -->
+    <appender name="IDFILE" class="ch.qos.logback.core.FileAppender">
+        <file>id-minter.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%m%n</pattern>
+        </encoder>
+    </appender>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%p %d{HH:mm:ss.SSS} \(%c{0}\) %m%n</pattern>
         </encoder>
     </appender>
+
+    <logger name="id-mapper" class="id-mapper" additivity="false" level="INFO">
+        <appender-ref ref="IDFILE"/>
+    </logger>
 
     <logger name="org.fcrepo.migration" additivity="false" level="DEBUG">
         <appender-ref ref="STDOUT"/>
