@@ -19,7 +19,7 @@
 </foxml:datastreamVersion>
 </foxml:datastream>
 <foxml:datastream ID="DS0" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
-<foxml:datastreamVersion ID="DS0.0" LABEL="Example Managed binary datastream" CREATED="2015-05-13T19:51:09.487Z" MIMETYPE="text/xml" SIZE="30">
+<foxml:datastreamVersion ID="DS0.0" LABEL="Example Managed binary datastream" CREATED="2015-05-13T19:51:09.488Z" MIMETYPE="text/xml" SIZE="30">
 <foxml:xmlContent>
 <test>XMLish content.</test>
 </foxml:xmlContent>
