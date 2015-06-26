@@ -13,10 +13,10 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
-import org.fcrepo.migration.foxml11.CachedContent;
-import org.fcrepo.migration.foxml11.Foxml11InputStreamFedoraObjectProcessor;
-import org.fcrepo.migration.foxml11.InternalIDResolver;
-import org.fcrepo.migration.foxml11.URLFetcher;
+import org.fcrepo.migration.foxml.CachedContent;
+import org.fcrepo.migration.foxml.FoxmlInputStreamFedoraObjectProcessor;
+import org.fcrepo.migration.foxml.InternalIDResolver;
+import org.fcrepo.migration.foxml.URLFetcher;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -197,7 +197,7 @@ public abstract class Example1TestSuite {
 
         public SimpleObjectSource(final String path, final URLFetcher f,
                 final InternalIDResolver resolver) throws XMLStreamException {
-            p = new Foxml11InputStreamFedoraObjectProcessor(getClass().getClassLoader().getResourceAsStream(path),
+            p = new FoxmlInputStreamFedoraObjectProcessor(getClass().getClassLoader().getResourceAsStream(path),
                     f, resolver, LOCAL_FEDORA_SERVER);
         }
 
@@ -236,6 +236,11 @@ public abstract class Example1TestSuite {
             }
 
 
+        }
+
+        @Override
+        public void processDisseminator() {
+            // do nothing
         }
 
         @Override

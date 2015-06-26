@@ -23,8 +23,8 @@ import org.fcrepo.migration.MigrationIDMapper;
 import org.fcrepo.migration.ObjectProperty;
 import org.fcrepo.migration.ObjectReference;
 import org.fcrepo.migration.ObjectVersionReference;
-import org.fcrepo.migration.foxml11.DC;
-import org.fcrepo.migration.foxml11.NamespacePrefixMapper;
+import org.fcrepo.migration.foxml.DC;
+import org.fcrepo.migration.foxml.NamespacePrefixMapper;
 import org.fcrepo.migration.urlmappers.SelfReferencingURLMapper;
 import org.slf4j.Logger;
 
@@ -63,6 +63,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     private ExternalContentURLMapper externalContentUrlMapper;
 
     private NamespacePrefixMapper namespacePrefixMapper;
+
+    private boolean skipDisseminators = false;
 
     /**
      * Basic object version handler.
@@ -106,6 +108,15 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
         this.importRedirect = value;
     }
 
+    /**
+     * Sets a property that indicates whether fedora 2 disseminators will be skipped or
+     * not.
+     * @param skip indicates whether it is ok to skip fedora 2 disseminators.
+     */
+    public void setSkipDisseminators(final boolean skip) {
+        this.skipDisseminators = skip;
+    }
+
     @Override
     public void processObjectVersions(final Iterable<ObjectVersionReference> versions) {
         String objectPath = null;
@@ -117,6 +128,11 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                         + " version at " + version.getVersionDate() + ".");
 
                 if (objectPath == null) {
+                    if (!skipDisseminators && version.getObject().hadFedora2Disseminators()) {
+                        throw new RuntimeException("Fedora 2 disseminators are not supported, set" +
+                                " \"skipDisseminators\" to true to migration this object without" +
+                                " the disseminators!");
+                    }
                     objectPath = idMapper.mapObjectPath(version.getObjectInfo().getPid());
                     if (!f4client.exists(objectPath)) {
                         f4client.createPlaceholder(objectPath);

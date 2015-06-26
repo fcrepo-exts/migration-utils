@@ -25,14 +25,14 @@
 
     <!--  OBJECT SOURCES : choose one for your migrator  -->
 
-    <bean id="nativeFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml11.NativeFoxmlDirectoryObjectSource" >
+    <bean id="nativeFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource" >
         <constructor-arg name="objectStore" ref="objectStore" />
         <constructor-arg name="resolver" ref="akubraIDResolver" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <property name="fetcher" ref="httpClientURLFetcher"/>
     </bean>
 
-    <bean id="exportedFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml11.ArchiveExportedFoxmlDirectoryObjectSource">
+    <bean id="exportedFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml.ArchiveExportedFoxmlDirectoryObjectSource">
         <constructor-arg name="exportDir" ref="exportedFoxmlDir"/>
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
     </bean>
@@ -120,7 +120,7 @@
     <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids
          as encoded for fedora installations using the akubra-fs storage.
      -->
-    <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml11.AkubraFSIDResolver">
+    <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml.AkubraFSIDResolver">
         <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
 
         <!-- Add the following line back in if you wish to maintain a cache of the internal id mapping between
@@ -132,7 +132,7 @@
     <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids
      as encoded for fedora installations using the akubra-fs storage.
      -->
-    <bean id="legacyIDResolver" class="org.fcrepo.migration.foxml11.LegacyFSIDResolver">
+    <bean id="legacyIDResolver" class="org.fcrepo.migration.foxml.LegacyFSIDResolver">
         <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
 
         <!-- Add the following line back in if you wish to maintain a cache of the internal id mapping between
@@ -142,10 +142,10 @@
     </bean>
 
     <!-- A bean that defines the codebase used to make HTTP requests to fetch content at URLs. -->
-    <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml11.HttpClientURLFetcher" />
+    <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
 
     <!-- A utility bean to map namespace prefixes -->
-    <bean id="namespacePrefixMapper" class="org.fcrepo.migration.foxml11.NamespacePrefixMapper">
+    <bean id="namespacePrefixMapper" class="org.fcrepo.migration.foxml.NamespacePrefixMapper">
         <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
     </bean>
 

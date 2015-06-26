@@ -31,6 +31,8 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
 
     private Map<String, List<DatastreamVersion>> dsIdToVersionListMap;
 
+    private int disseminatorsSkipped = 0;
+
     /**
      * the object abstraction streaming fedora object handler.
      * @param objectHandler the fedora object handler
@@ -63,6 +65,11 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
     }
 
     @Override
+    public void processDisseminator() {
+        disseminatorsSkipped ++;
+    }
+
+    @Override
     public void completeObject(final ObjectInfo object) {
         handler.processObject(new ObjectReference() {
             @Override
@@ -83,6 +90,11 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
             @Override
             public List<DatastreamVersion> getDatastreamVersions(final String datastreamId) {
                 return dsIdToVersionListMap.get(datastreamId);
+            }
+
+            @Override
+            public boolean hadFedora2Disseminators() {
+                return disseminatorsSkipped > 0;
             }
         });
         cleanForReuse();

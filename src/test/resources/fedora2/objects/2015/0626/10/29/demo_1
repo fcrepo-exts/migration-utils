@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#"
+           xmlns:fedoraxsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:audit="info:fedora/fedora-system:def/audit#"
+           fedoraxsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-0.xsd"
+           PID="demo:1">
+    <foxml:objectProperties>
+        <foxml:property NAME="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" VALUE="FedoraBDefObject"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="Behavior Definition Object for UVA Simple Image Contract"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE="fedoraAdmin"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2015-06-26T14:29:32.122Z"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2015-06-26T14:29:32.122Z"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#contentModel" VALUE="fedora:BDEF"/>
+    </foxml:objectProperties>
+    <foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+        <foxml:datastreamVersion ID="AUDIT.0" LABEL="Fedora Object Audit Trail" CREATED="2015-06-26T14:29:32.122Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+            <foxml:xmlContent>
+            <audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+                <audit:record ID="AUDREC1">
+                    <audit:process type="Fedora API-M"/>
+                    <audit:action>ingestObject</audit:action>
+                    <audit:componentID></audit:componentID>
+                    <audit:responsibility>fedoraAdmin</audit:responsibility>
+                    <audit:date>2015-06-26T14:29:32.122Z</audit:date>
+                    <audit:justification>Ingested from local file /home/md5wz/Applications/fedora/fedora-2.2.4/client/demo/foxml/local-server-demos/simple-image-demo/bdef_demo_1.xml</audit:justification>
+                </audit:record>
+            </audit:auditTrail>
+            </foxml:xmlContent>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:datastream ID="METHODMAP" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="METHODMAP1.0" LABEL="Method Map for Fedora Behavior Definition for UVA Simple Image" CREATED="2015-06-26T14:29:32.122Z" MIMETYPE="text/xml" SIZE="382">
+            <foxml:contentDigest TYPE="DISABLED" DIGEST="none"/>
+            <foxml:xmlContent>
+<fmm:MethodMap xmlns:fmm="http://fedora.comm.nsdlib.org/service/methodmap" name="Fedora MethodMap for Simple Image BDef">
+					<fmm:Method operationName="getThumbnail"></fmm:Method>
+					<fmm:Method operationName="getMedium"></fmm:Method>
+					<fmm:Method operationName="getHigh"></fmm:Method>
+					<fmm:Method operationName="getVeryHigh"></fmm:Method>
+				</fmm:MethodMap>
+            </foxml:xmlContent>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:datastream ID="DS1" STATE="A" CONTROL_GROUP="E" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="DS1.0" LABEL="Documentation for UVA Simple Image Behavior Def" CREATED="2015-06-26T14:29:32.122Z" MIMETYPE="text/html" SIZE="0">
+            <foxml:contentDigest TYPE="DISABLED" DIGEST="none"/>
+            <foxml:contentLocation TYPE="URL" REF=" http://uva.lib.edu/bdef/image/doc/simpleImage.html"/>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="DC1.0" LABEL="Dublin Core Metadata" CREATED="2015-06-26T14:29:32.122Z" MIMETYPE="text/xml" SIZE="266">
+            <foxml:contentDigest TYPE="DISABLED" DIGEST="none"/>
+            <foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <dc:title>Behavior Definition Object for UVA Simple Image Contract</dc:title>
+  <dc:identifier>demo:1</dc:identifier>
+</oai_dc:dc>
+            </foxml:xmlContent>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:disseminator ID="DISS1" BDEF_CONTRACT_PID="fedora-system:1" STATE="A" VERSIONABLE="true">
+        <foxml:disseminatorVersion ID="DISS1.0" LABEL="Bootstrap Behaviors" BMECH_SERVICE_PID="fedora-system:2" CREATED="2015-06-26T14:29:32.122Z">
+            <foxml:serviceInputMap>
+                <foxml:datastreamBinding KEY="BDEF-METHODMAP" DATASTREAM_ID="METHODMAP" LABEL="Abstract behavior definition for UVA Simple Image in Fedora Method Map format"/>
+                <foxml:datastreamBinding KEY="BDEF-GUIDE" DATASTREAM_ID="DS1" LABEL="The Official Guide to the UVA Simple Image Behavior Definition"/>
+            </foxml:serviceInputMap>
+        </foxml:disseminatorVersion>
+    </foxml:disseminator>
+</foxml:digitalObject>
