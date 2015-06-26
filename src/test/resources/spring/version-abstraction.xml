@@ -15,11 +15,11 @@
         <constructor-arg name="resolver" ref="akubraIDResolver" />
     </bean>
 
-    <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml11.AkubraFSIDResolver">
+    <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml.AkubraFSIDResolver">
         <constructor-arg ref="datastreamStore" />
     </bean>
 
-    <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml11.HttpClientURLFetcher">
+    <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher">
     </bean>
 
     <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">

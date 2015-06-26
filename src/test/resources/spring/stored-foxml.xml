@@ -15,7 +15,7 @@
         <constructor-arg name="resolver" ref="idResolver" />
     </bean>
 
-    <bean id="idResolver" class="org.fcrepo.migration.foxml11.AkubraFSIDResolver">
+    <bean id="idResolver" class="org.fcrepo.migration.foxml.AkubraFSIDResolver">
         <constructor-arg ref="datastreamStore" />
     </bean>
 

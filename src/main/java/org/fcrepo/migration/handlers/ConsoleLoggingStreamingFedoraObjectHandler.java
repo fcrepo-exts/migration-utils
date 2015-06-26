@@ -37,6 +37,11 @@ public class ConsoleLoggingStreamingFedoraObjectHandler implements StreamingFedo
     }
 
     @Override
+    public void processDisseminator() {
+        System.out.println("  DISSEMINATOR found and skipped!");
+    }
+
+    @Override
     public void completeObject(final ObjectInfo object) {
         System.out.println(object.getPid() + " parsed in " + (System.currentTimeMillis() - start) + "ms.");
     }

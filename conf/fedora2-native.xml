@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+<!--
+  This configuration file serves as a starting point for a fedora 2 to fedora 4
+  migration.
+-->
+    <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -7,14 +11,11 @@
 
     <context:property-placeholder/>
 
-    <bean id="f3Migrator" class="org.fcrepo.migration.Migrator">
-        <property name="source" ref="exportedFoxmlDirectoryObjectSource" />
-        <property name="handler" ref="objectAbstraction" />
-    </bean>
-
-    <bean id="f2Migrator" class="org.fcrepo.migration.Migrator">
+    <bean id="migrator" class="org.fcrepo.migration.Migrator">
         <property name="source" ref="nativeFoxmlDirectoryObjectSource" />
         <property name="handler" ref="objectAbstraction" />
+        <property name="limit" value="2" /><!-- CHANGE THIS IF YOU WANT TO MIGRATE MORE THAN 2 OBJECTS -->
+
     </bean>
 
     <bean id="nativeFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource" >
@@ -28,12 +29,6 @@
         <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
     </bean>
 
-
-    <bean id="exportedFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml.ArchiveExportedFoxmlDirectoryObjectSource" >
-        <constructor-arg name="exportDir" ref="exportDir" />
-        <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
-    </bean>
-
     <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">
         <constructor-arg ref="versionAbstraction"/>
     </bean>
@@ -43,42 +38,35 @@
     </bean>
 
     <bean id="basicMigration" class="org.fcrepo.migration.handlers.BasicObjectVersionHandler">
-        <constructor-arg name="client" ref="fedora4Client" />
+        <constructor-arg name="repo" ref="fedora4Client" />
         <constructor-arg name="idMapper" ref="idMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
-        <property name="importExternal" value="false" />
-        <property name="importRedirect" value="false" />
-        <property name="skipDisseminators" value="true" />
-
+        <property name="importExternal" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT E DATASTREAMS -->
+        <property name="importRedirect" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT R DATASTREAMS -->
+        <property name="skipDisseminators" value="false" /><!-- CHANGE THIS IF YOU WANT TO SKIP YOUR FEDORA 2
+                                                                DISSEMINATORS -->
     </bean>
 
-    <bean id="idMapper" class="org.fcrepo.migration.idmappers.OpaqueIDMapper">
-        <constructor-arg name="cachedIDIndexDir"><null /></constructor-arg>
-        <constructor-arg name="f4Client" ref="fedora4Client" />
+    <bean id="idMapper" class="org.fcrepo.migration.idmappers.SimpleIDMapper">
+        <constructor-arg name="baseUrl" ref="fedora4Url" />
+        <constructor-arg name="rootPath" value="migrated-fedora2" />
+        <property name="charDepth" value="2" />
     </bean>
 
-	<!-- A utility bean to map namespace prefixes -->
     <bean id="namespacePrefixMapper" class="org.fcrepo.migration.foxml.NamespacePrefixMapper">
         <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
     </bean>
 
-    <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.DefaultFedora4Client">
-        <constructor-arg name="repo" ref="repo" />
-    </bean>
-
-    <bean id="repo" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
+    <bean id="fedora4Client" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
         <constructor-arg name="repositoryURL" ref="fedora4Url" />
     </bean>
 
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
 
-    <bean id="exportDir" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/exported" />
-    </bean>
-
+    <!-- CHANGE THIS TO THE FEDORA 4 URL TO WHICH YOU WANT TO MIGRATE THE CONTENT -->
     <bean id="fedora4Url" class="java.lang.String">
-        <constructor-arg value="http://localhost:${fcrepo.dynamic.test.port:8080}/fcrepo-webapp/rest/" />
+        <constructor-arg value="http://localhost:${fcrepo.dynamic.test.port:8080}/rest/" />
     </bean>
 
     <bean id="localFedoraServer" class="java.lang.String">
@@ -86,13 +74,15 @@
     </bean>
 
     <bean id="namespaceFile" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/main/resources/namespaces.properties"/>
+        <constructor-arg type="java.lang.String" value="conf/namespaces.properties"/>
     </bean>
 
+    <!-- CHANGE THIS TO YOUR FEDORA 2 OBJECTS DIRECTORY -->
     <bean id="objectStore" class="java.io.File">
         <constructor-arg type="java.lang.String" value="src/test/resources/fedora2/objects" />
     </bean>
 
+    <!-- CHANGE THIS TO YOUR FEDORA 2 DATASTREAM DIRECTORY -->
     <bean id="datastreamStore" class="java.io.File">
         <constructor-arg type="java.lang.String" value="src/test/resources/fedora2/datastreams" />
     </bean>

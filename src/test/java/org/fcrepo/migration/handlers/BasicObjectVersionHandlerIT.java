@@ -30,10 +30,12 @@ public class BasicObjectVersionHandlerIT {
     public static void migrateTestData() throws XMLStreamException {
         final ConfigurableApplicationContext context =
                 new ClassPathXmlApplicationContext("spring/it-setup.xml");
-        final Migrator m = (Migrator) context.getBean("migrator");
+
+        ((Migrator) context.getBean("f3Migrator")).run();
+        ((Migrator) context.getBean("f2Migrator")).run();
+
         client = (Fedora4Client) context.getBean("fedora4Client");
         idMapper = (MigrationIDMapper) context.getBean("idMapper");
-        m.run();
         context.close();
     }
 
