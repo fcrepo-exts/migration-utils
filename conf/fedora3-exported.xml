@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  This configuration file serves as a starting point for a fedora 2 to fedora 4
-  migration.
+  This configuration file serves as a starting point for a fedora 3 to fedora 4
+   migration when the fedora 3 content has been exported to "archive" FOXML 1.1
+   files.
 
   There are several default values you will likely have to change below, each is
   marked with a comment starting with "CHANGE THIS":
@@ -15,21 +16,16 @@
     <context:property-placeholder/>
 
     <bean id="migrator" class="org.fcrepo.migration.Migrator">
-        <property name="source" ref="nativeFoxmlDirectoryObjectSource" />
+        <property name="source" ref="exportedFoxmlDirectoryObjectSource" />
         <property name="handler" ref="objectAbstraction" />
         <property name="limit" value="2" /><!-- CHANGE THIS IF YOU WANT TO MIGRATE MORE THAN 2 OBJECTS -->
 
     </bean>
 
-    <bean id="nativeFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource" >
-        <constructor-arg name="objectStore" ref="objectStore" />
-        <constructor-arg name="resolver" ref="legacyIDResolver" />
+    <bean id="exportedFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml.ArchiveExportedFoxmlDirectoryObjectSource" >
+        <constructor-arg name="exportDir" ref="exportDir" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <property name="fetcher" ref="httpClientURLFetcher"/>
-    </bean>
-
-    <bean id="legacyIDResolver" class="org.fcrepo.migration.foxml.LegacyFSIDResolver">
-        <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
     </bean>
 
     <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">
@@ -47,8 +43,6 @@
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
         <property name="importExternal" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT E DATASTREAMS -->
         <property name="importRedirect" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT R DATASTREAMS -->
-        <property name="skipDisseminators" value="false" /><!-- CHANGE THIS IF YOU WANT TO SKIP YOUR FEDORA 2
-                                                                DISSEMINATORS -->
     </bean>
 
     <!--
@@ -89,17 +83,12 @@
         <constructor-arg type="java.lang.String" value="conf/namespaces.properties"/>
     </bean>
 
-    <!-- CHANGE THIS TO YOUR FEDORA 2 OBJECTS DIRECTORY -->
-    <bean id="objectStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/fedora2/objects" />
-    </bean>
-
-    <!-- CHANGE THIS TO YOUR FEDORA 2 DATASTREAM DIRECTORY -->
-    <bean id="datastreamStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/fedora2/datastreams" />
+    <!-- CHANGE THIS TO THE DIRECTORY TO WHICH YOU EXPORTED "ARCHIVE" FOXML -->
+    <bean id="exportDir" class="java.io.File">
+        <constructor-arg type="java.lang.String" value="src/test/resources/exported" />
     </bean>
 
     <bean id="idIndex" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="f2-native-id-index" />
+        <constructor-arg type="java.lang.String" value="exported-id-index" />
     </bean>
 </beans>
