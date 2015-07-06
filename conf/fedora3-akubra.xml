@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  This configuration file serves as a starting point for a fedora 2 to fedora 4
-  migration.
+  This configuration file serves as a starting point for a fedora 3 to fedora 4
+   migration when the fedora 3 content is stored on disk using the Akubra storage
+   module.
 
   There are several default values you will likely have to change below, each is
   marked with a comment starting with "CHANGE THIS":
@@ -23,12 +24,12 @@
 
     <bean id="nativeFoxmlDirectoryObjectSource" class="org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource" >
         <constructor-arg name="objectStore" ref="objectStore" />
-        <constructor-arg name="resolver" ref="legacyIDResolver" />
+        <constructor-arg name="resolver" ref="akubraIDResolver" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <property name="fetcher" ref="httpClientURLFetcher"/>
     </bean>
 
-    <bean id="legacyIDResolver" class="org.fcrepo.migration.foxml.LegacyFSIDResolver">
+    <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml.AkubraFSIDResolver">
         <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
     </bean>
 
@@ -47,8 +48,6 @@
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
         <property name="importExternal" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT E DATASTREAMS -->
         <property name="importRedirect" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT R DATASTREAMS -->
-        <property name="skipDisseminators" value="false" /><!-- CHANGE THIS IF YOU WANT TO SKIP YOUR FEDORA 2
-                                                                DISSEMINATORS -->
     </bean>
 
     <!--
@@ -89,17 +88,17 @@
         <constructor-arg type="java.lang.String" value="conf/namespaces.properties"/>
     </bean>
 
-    <!-- CHANGE THIS TO YOUR FEDORA 2 OBJECTS DIRECTORY -->
+    <!-- CHANGE THIS TO YOUR FEDORA 3 OBJECTS DIRECTORY -->
     <bean id="objectStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/fedora2/objects" />
+        <constructor-arg type="java.lang.String" value="src/test/resources/akubraFS/objectStore" />
     </bean>
 
-    <!-- CHANGE THIS TO YOUR FEDORA 2 DATASTREAM DIRECTORY -->
+    <!-- CHANGE THIS TO YOUR FEDORA 3 DATASTREAM DIRECTORY -->
     <bean id="datastreamStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/fedora2/datastreams" />
+        <constructor-arg type="java.lang.String" value="src/test/resources/akubraFS/datastreamStore" />
     </bean>
 
     <bean id="idIndex" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="f2-native-id-index" />
+        <constructor-arg type="java.lang.String" value="akubraFS-native-id-index" />
     </bean>
 </beans>
