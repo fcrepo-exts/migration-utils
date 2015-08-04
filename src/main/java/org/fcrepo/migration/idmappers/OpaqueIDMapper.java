@@ -135,7 +135,7 @@ public class OpaqueIDMapper implements MigrationIDMapper {
 
     @Override
     public String getBaseURL() {
-        return null;
+        return f4Client.getRepositoryUrl();
     }
 
     private String getCachedObjectPath(final String pid) {
