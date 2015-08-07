@@ -77,6 +77,7 @@
         <constructor-arg name="idMapper" ref="opaqueIDMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
+        <property name="customPropertyMapping" ref="propertiesFile" />
 
         <!-- set these to true if you want to copy the external content into your fedora 4
              repository at the time of migration -->
@@ -183,6 +184,10 @@
 
     <bean id="namespaceFile" class="java.io.File">
         <constructor-arg type="java.lang.String" value="src/main/resources/namespaces.properties"/>
+    </bean>
+
+    <bean id="propertiesFile" class="java.io.File">
+        <constructor-arg type="java.lang.String" value="src/main/resources/custom-mapping.properties"/>
     </bean>
 
     <!--

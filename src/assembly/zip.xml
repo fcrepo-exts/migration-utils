@@ -13,6 +13,7 @@
       <outputDirectory>conf</outputDirectory>
       <includes>
         <include>namespaces.properties</include>
+        <include>custom-mapping.properties</include>
       </includes>
     </fileSet>
     <fileSet>

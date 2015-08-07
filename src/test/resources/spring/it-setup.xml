@@ -47,6 +47,7 @@
         <constructor-arg name="idMapper" ref="idMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
+        <property name="customPropertyMapping" ref="propertiesFile" />
         <property name="importExternal" value="false" />
         <property name="importRedirect" value="false" />
         <property name="skipDisseminators" value="true" />
@@ -87,6 +88,10 @@
 
     <bean id="namespaceFile" class="java.io.File">
         <constructor-arg type="java.lang.String" value="src/main/resources/namespaces.properties"/>
+    </bean>
+
+    <bean id="propertiesFile" class="java.io.File">
+        <constructor-arg type="java.lang.String" value="src/test/resources/custom-mapping.properties"/>
     </bean>
 
     <bean id="objectStore" class="java.io.File">
