@@ -3,6 +3,7 @@ package org.fcrepo.migration.handlers;
 import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.graph.Triple;
 import junit.framework.Assert;
+import org.fcrepo.client.FedoraDatastream;
 import org.fcrepo.client.FedoraException;
 import org.fcrepo.client.FedoraObject;
 import org.fcrepo.client.impl.FedoraRepositoryImpl;
@@ -82,6 +83,24 @@ public class BasicObjectVersionHandlerIT {
             }
         }
         Assert.fail("Unable to find mapped PID.");
+    }
+
+    @Test
+    public void testDatastreamProperties() throws FedoraException {
+        final FedoraDatastream ds = repo.getDatastream(idMapper.mapDatastreamPath("example:1", "DS1"));
+        final Iterator<Triple> tripleIt = ds.getProperties();
+        while (tripleIt.hasNext()) {
+            final Triple next = tripleIt.next();
+            if (next.predicateMatches(NodeFactory.createURI("http://purl.org/dc/terms/title"))
+                    && next.objectMatches(NodeFactory.createLiteral("Example inline XML datastream"))) {
+                return;
+            } else {
+                Assert.assertFalse("Label was found under unexpected property! (\""
+                        + next.getPredicate().getURI() + "\")",
+                        next.objectMatches(NodeFactory.createLiteral("Example inline XML datastream")));
+            }
+        }
+        Assert.fail("Unable to find datastream label in migrated resource RDF assertions.");
     }
 
 }

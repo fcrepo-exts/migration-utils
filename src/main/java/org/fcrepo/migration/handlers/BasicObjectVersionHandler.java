@@ -190,8 +190,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                             || (v.getDatastreamInfo().getControlGroup().equals("R") && !importRedirect)) {
                         f4client.createOrUpdateRedirectNonRDFResource(dsPath,
                                 externalContentUrlMapper.mapURL(v.getExternalOrRedirectURL()));
+                        updateDatastreamProperties(version.getObject(), v, dsPath);
                     } else {
                         f4client.createOrUpdateNonRDFResource(dsPath, v.getContent(), v.getMimeType());
+                        updateDatastreamProperties(version.getObject(), v, dsPath);
                     }
                 }
 
