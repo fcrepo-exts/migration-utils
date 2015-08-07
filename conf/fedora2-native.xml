@@ -45,6 +45,7 @@
         <constructor-arg name="idMapper" ref="idMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
+        <property name="customPropertyMapping" ref="propertiesFile" />
         <property name="importExternal" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT E DATASTREAMS -->
         <property name="importRedirect" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT R DATASTREAMS -->
         <property name="skipDisseminators" value="false" /><!-- CHANGE THIS IF YOU WANT TO SKIP YOUR FEDORA 2
@@ -87,6 +88,10 @@
 
     <bean id="namespaceFile" class="java.io.File">
         <constructor-arg type="java.lang.String" value="conf/namespaces.properties"/>
+    </bean>
+
+    <bean id="propertiesFile" class="java.io.File">
+        <constructor-arg type="java.lang.String" value="conf/custom-mapping.properties"/>
     </bean>
 
     <!-- CHANGE THIS TO YOUR FEDORA 2 OBJECTS DIRECTORY -->

@@ -33,11 +33,15 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Properties;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -65,6 +69,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
     private NamespacePrefixMapper namespacePrefixMapper;
 
     private boolean skipDisseminators = false;
+
+    private Properties customPropertyMapping;
 
     /**
      * Basic object version handler.
@@ -106,6 +112,30 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      */
     public void setImportRedirect(final boolean value) {
         this.importRedirect = value;
+    }
+
+    /**
+     * A property setter for the optional propertly that indicates a Properties file whose
+     * key value pairs represent custom mappings from fedora 3 properties to fedora 4
+     * properties.
+     * @param propertiesFile a properties file containing mappings from foxml to fedoar 4 properties
+     */
+    public void setCustomPropertyMapping(final File propertiesFile) {
+        this.customPropertyMapping = new Properties();
+        try {
+            final FileInputStream fis = new FileInputStream(propertiesFile);
+            try {
+                this.customPropertyMapping.load(fis);
+            } finally {
+                fis.close();
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("The file, \"" + propertiesFile.getAbsolutePath()
+                    + "\" , specified in the 'customPropertyMapping' property was not found!", e);
+        } catch (IOException e) {
+            throw new RuntimeException("Error access the file, \"" + propertiesFile.getAbsolutePath()
+                    + "\" , specified in the 'customPropertyMapping' property!", e);
+        }
     }
 
     /**
@@ -220,6 +250,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                         "http://id.loc.gov/vocabulary/preservation/eventType/mig",
                         getCurrentTimeInXSDDateTime());
             }
+
+            mapProperty("info:fedora/fedora-system:def/model#PID", version.getObject().getObjectInfo().getPid(),
+                    triplesToRemove, triplesToInsert, true);
         }
 
         if (version.isLastVersion()) {
@@ -253,10 +286,8 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
                                final Boolean isLiteral) {
         String pred = origPred;
         // Map dates and object state
-        if (pred.equals("info:fedora/fedora-system:def/model#createdDate")) {
-            pred = "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication";
-        } else if (pred.equals("info:fedora/fedora-system:def/model#state")) {
-            pred = "http://fedora.info/definitions/1/0/access/objState";
+        if (customPropertyMapping != null && customPropertyMapping.containsKey(pred)) {
+            pred = customPropertyMapping.getProperty(pred);
         } else if (pred.equals("info:fedora/fedora-system:def/view#lastModifiedDate")) {
             // Handle modified date seperately and exit early.
             addDateEvent(triplesToInsert,
@@ -265,7 +296,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             return;
         }
 
-        if (isDateProperty(pred)) {
+        if (isDateProperty(origPred)) {
             updateDateTriple(triplesToRemove,
                              triplesToInsert,
                              pred,
