@@ -1,10 +1,10 @@
-# Migration Utilities [![Build Status](https://travis-ci.org/fcrepo4-labs/migration-utils.png?branch=master)](https://travis-ci.org/fcrepo4-labs/migration-utils)
+# Migration Utilities [![Build Status](https://travis-ci.org/fcrepo4-exts/migration-utils.png?branch=master)](https://travis-ci.org/fcrepo4-exts/migration-utils)
 
 A framework to support migration of data from Fedora 3 to Fedora 4 repositories.
 
 ## Overview
 
-The main class (`org.fcrepo.migration.Migrator`) iterates over all of the fedora objects in a configured source (`org.fcrepo.migration.ObjectSource`) and handles them using the configured handler (`org.fcrepo.migration.StreamingFedoraObjectHandler`). The configuration is entirely contained within a Spring XML configuration file in [`src/main/resources/spring/migration-bean.xml`](https://github.com/fcrepo4-labs/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml).
+The main class (`org.fcrepo.migration.Migrator`) iterates over all of the fedora objects in a configured source (`org.fcrepo.migration.ObjectSource`) and handles them using the configured handler (`org.fcrepo.migration.StreamingFedoraObjectHandler`). The configuration is entirely contained within a Spring XML configuration file in [`src/main/resources/spring/migration-bean.xml`](https://github.com/fcrepo4-exts/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml).
 
 ## Status
 
@@ -26,12 +26,12 @@ _It is strongly recommended that you set up a local, empty Fedora 4 repository f
 
 Getting started:
 
-* [Download](https://github.com/fcrepo4-labs/migration-utils/releases) and extract the distribution zip file
+* [Download](https://github.com/fcrepo4-exts/migration-utils/releases) and extract the distribution zip file
 * Choose an example configuration file that best suits your needs
-  * [conf/fedora2-native.xml](https://github.com/fcrepo4-labs/migration-utils/blob/master/conf/fedora2-native.xml) is a good start for migrating from fedora 2
-  * [conf/fedora3-akubra.xml](https://github.com/fcrepo4-labs/migration-utils/blob/master/conf/fedora3-akubra.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (akubra FS)
-  * [conf/fedora3-legacy.xml](https://github.com/fcrepo4-labs/migration-utils/blob/master/conf/fedora3-legacy.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (legacy FS)
-  * [conf/fedora3-exported.xml](https://github.com/fcrepo4-labs/migration-utils/blob/master/conf/fedora3-exported.xml) is a good start for migrating exported FOXML from fedora 3
+  * [conf/fedora2-native.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora2-native.xml) is a good start for migrating from fedora 2
+  * [conf/fedora3-akubra.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-akubra.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (akubra FS)
+  * [conf/fedora3-legacy.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-legacy.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (legacy FS)
+  * [conf/fedora3-exported.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-exported.xml) is a good start for migrating exported FOXML from fedora 3
 * Make necessary changes to the configuration to reflect your needs and local set up
   * Most importantly you'll want to set the appropriate fedora 4 URL to which you want to migrate the resources
   * Unless you just want to migrate the included test set, you'll also want to point the configuration to your fedora3 FOXML data files
