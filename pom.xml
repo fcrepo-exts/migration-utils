@@ -2,10 +2,14 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
+  <parent>
+    <groupId>org.fcrepo</groupId>
+    <artifactId>fcrepo</artifactId>
+    <version>4.3.1-SNAPSHOT</version>
+  </parent>
   <groupId>org.fcrepo.migration</groupId>
   <artifactId>migration-utils</artifactId>
-  <version>4.2.1-SNAPSHOT</version>
+  <version>4.3.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>migration-utils</name>
@@ -21,50 +25,24 @@
 
   <scm>
     <connection>scm:git:git://github.com/fcrepo4-labs/${project_name}.git</connection>
-    <developerConnection>scm:git:git@github.com:fcrepo4-labs/${project_name}.git</developerConnection>
-    <url>https://github.com/fcrepo4-labs/${project_name}</url>
+    <developerConnection>scm:git:git@github.com:fcrepo4-exts/${project_name}.git</developerConnection>
+    <url>https://github.com/fcrepo4-exts/${project_name}</url>
     <tag>HEAD</tag>
   </scm>
-
-  <dependencies>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.4</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.10</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-core</artifactId>
-      <version>4.10.3</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-analyzers-common</artifactId>
-      <version>4.10.3</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.3.6</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
+  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.10</version>
+      </dependency>
+     <dependency>
+       <groupId>org.apache.httpcomponents</groupId>
+       <artifactId>httpclient</artifactId>
+       <version>4.3.6</version>
+     </dependency>
+     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
       <version>${jena.version}</version>
@@ -78,17 +56,47 @@
           <artifactId>log4j</artifactId>
         </exclusion>
       </exclusions>
+
+    </dependency>
+  </dependencies>
+ </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
+    </dependency>
+       <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>4.10.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-analyzers-common</artifactId>
+      <version>4.10.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>${spring.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.fcrepo</groupId>
       <artifactId>fcrepo-client-impl</artifactId>
-      <version>4.2.1-SNAPSHOT</version>
+      <version>4.3.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.fcrepo</groupId>
       <artifactId>fcrepo-client</artifactId>
-      <version>4.2.1-SNAPSHOT</version>
+      <version>4.3.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
