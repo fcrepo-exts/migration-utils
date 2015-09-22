@@ -21,6 +21,7 @@
     <spring.version>4.1.1.RELEASE</spring.version>
     <jena.version>2.12.1</jena.version>
     <checkstyle.plugin.version>2.15</checkstyle.plugin.version>
+    <fcrepo-build-tools.version>4.3.0</fcrepo-build-tools.version>
   </properties>
 
   <scm>
@@ -197,7 +198,7 @@
           <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-build-tools</artifactId>
-            <version>${project.version}</version>
+            <version>${fcrepo-build-tools.version}</version>
           </dependency>
         </dependencies>
         <configuration>
