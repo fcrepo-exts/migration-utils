@@ -90,3 +90,11 @@ java -jar migration-utils-{version}-driver.jar <relative-or-absolute-path-to-con
 ## Additional Documentation
 
  * [wiki](https://wiki.duraspace.org/display/FF/Fedora+3+to+4+Data+Migration)
+
+## Maintainers
+
+Current maintainers
+
+* [Mike Durbin](https://github.com/mikedurbin)
+* [Nick Ruest](https://github.com/ruebot)
+
