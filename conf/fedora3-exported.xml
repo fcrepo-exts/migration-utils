@@ -67,6 +67,9 @@
 
     <bean id="repo" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
         <constructor-arg name="repositoryURL" ref="fedora4Url" />
+        <!--If Fedora 4 requires authorized requests, uncomment the following and provide appropriate values.-->
+        <!--<constructor-arg name="username" value="admin-username"/>-->
+        <!--<constructor-arg name="password" value="admin-password"/>-->
     </bean>
 
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
