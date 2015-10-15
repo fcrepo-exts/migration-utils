@@ -116,6 +116,9 @@
     <!-- The configuration options for a Fedora 4 client to do the updates to Fedora 4 -->
     <bean id="repo" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
         <constructor-arg name="repositoryURL" ref="fedora4Url" />
+        <!--If Fedora 4 requires authorized requests, uncomment the following and provide appropriate values.-->
+        <!--<constructor-arg name="username" value="admin-username"/>-->
+        <!--<constructor-arg name="password" value="admin-password"/>-->
     </bean>
 
     <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids
