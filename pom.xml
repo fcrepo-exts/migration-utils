@@ -2,8 +2,8 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.fcrepo</groupId>
-    <artifactId>fcrepo</artifactId>
-    <version>4.4.1-SNAPSHOT</version>
+    <artifactId>fcrepo-parent</artifactId>
+    <version>4.5.0</version>
   </parent>
   <groupId>org.fcrepo.migration</groupId>
   <artifactId>migration-utils</artifactId>
@@ -19,7 +19,13 @@
     <spring.version>4.1.1.RELEASE</spring.version>
     <jena.version>2.12.1</jena.version>
     <checkstyle.plugin.version>2.15</checkstyle.plugin.version>
+    <logback.version>1.1.2</logback.version>
+    <mockito.version>1.10.8</mockito.version>
+    <slf4j.version>1.7.10</slf4j.version>
+    <junit.version>4.11</junit.version>
     <fcrepo-build-tools.version>4.3.0</fcrepo-build-tools.version>
+    <fcrepo-java-client.version>0.1.2</fcrepo-java-client.version>
+    <fcrepo.version>4.4.1-SNAPSHOT</fcrepo.version>
   </properties>
 
   <scm>
@@ -28,19 +34,23 @@
     <url>https://github.com/fcrepo4-exts/${project_name}</url>
     <tag>HEAD</tag>
   </scm>
-  
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
+
+  <dependencies>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.10</version>
+        <version>1.6</version>
       </dependency>
-     <dependency>
-       <groupId>org.apache.httpcomponents</groupId>
-       <artifactId>httpclient</artifactId>
-       <version>4.3.6</version>
-     </dependency>
      <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
@@ -55,12 +65,41 @@
           <artifactId>log4j</artifactId>
         </exclusion>
       </exclusions>
-
     </dependency>
-  </dependencies>
- </dependencyManagement>
-
-  <dependencies>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>${jena.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>httpclient</artifactId>
+          <groupId>org.apache.httpcomponents</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jcl-over-slf4j</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+     <dependency>
+       <groupId>org.apache.httpcomponents</groupId>
+       <artifactId>httpclient</artifactId>
+       <version>4.3.3</version>
+       <exclusions>
+           <exclusion>
+               <groupId>log4j</groupId>
+               <artifactId>log4j</artifactId>
+           </exclusion>
+       </exclusions>
+     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -88,29 +127,42 @@
     </dependency>
 
     <dependency>
-      <groupId>org.fcrepo</groupId>
-      <artifactId>fcrepo-client-impl</artifactId>
-      <version>4.4.1-SNAPSHOT</version>
+      <groupId>org.fcrepo.client</groupId>
+      <artifactId>fcrepo-java-client</artifactId>
+      <version>${fcrepo-java-client.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.fcrepo</groupId>
-      <artifactId>fcrepo-client</artifactId>
-      <version>4.4.1-SNAPSHOT</version>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>2.13</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.fcrepo</groupId>
       <artifactId>fcrepo-webapp</artifactId>
-      <version>4.4.1-SNAPSHOT</version>
+      <version>${fcrepo.version}</version>
       <type>war</type>
       <scope>test</scope>
     </dependency>

@@ -113,14 +113,6 @@
 
     <!-- Pluggable utility beans -->
 
-    <!-- The configuration options for a Fedora 4 client to do the updates to Fedora 4 -->
-    <bean id="repo" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
-        <constructor-arg name="repositoryURL" ref="fedora4Url" />
-        <!--If Fedora 4 requires authorized requests, uncomment the following and provide appropriate values.-->
-        <!--<constructor-arg name="username" value="admin-username"/>-->
-        <!--<constructor-arg name="password" value="admin-password"/>-->
-    </bean>
-
     <!-- A utility bean that maintains an index necessary to resolve datastream files from the fedora 3 internal ids
          as encoded for fedora installations using the akubra-fs storage.
      -->
@@ -204,7 +196,10 @@
         <constructor-arg value="localhost:8080" />
     </bean>
 
-    <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.DefaultFedora4Client">
-        <constructor-arg name="repo" ref="repo" />
+    <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.StatelessFedora4Client">
+        <constructor-arg name="fcrepoBaseURL" ref="fedora4Url" />
+        <!--<constructor-arg name="username" value="admin-username"/>-->
+        <!--<constructor-arg name="password" value="admin-password"/>-->
     </bean>
+    
 </beans>

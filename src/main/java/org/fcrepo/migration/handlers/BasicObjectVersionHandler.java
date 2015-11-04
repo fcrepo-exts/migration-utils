@@ -486,7 +486,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
             final String dsId = splitUri[splitUri.length - 1];
             final String dsPath = idMapper.mapDatastreamPath(v.getDatastreamInfo().getObjectInfo().getPid(), dsId);
             if (!f4client.exists(dsPath)) {
-                f4client.createDSPlaceholder(dsPath);
+                f4client.createNonRDFPlaceholder(dsPath);
                 LOGGER.warn("The datastream \"" + dsId
                         + "\" referenced in the RDF datastream \"" + v.getDatastreamInfo().getDatastreamId() + "\" on "
                         + v.getDatastreamInfo().getObjectInfo().getPid() + " did not exist at "
