@@ -38,6 +38,11 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
     private String localFedoraServer;
 
     /**
+     * Defaults to match any filename that doesn't begin with a "." character.
+     */
+    private String fileInclusionPattern = "^[^\\.].*$";
+
+    /**
      * A constructor for use with the data storage directories that underly a
      * fedora 3.x repository.  First, this constructor will build an index of
      * all of the datastreams in the provided datastreamStore directory for use
@@ -65,9 +70,19 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
         this.fetcher = fetcher;
     }
 
+    /**
+     * Sets a pattern of files to include as object files.  This must be
+     * a Java formatted regular expression.
+     * @param pattern a regular expression string for filenames that will be considered
+     * to be object or datastream files.
+     */
+    public void setFileInclusionPattern(final String pattern) {
+        fileInclusionPattern = pattern;
+    }
+
     @Override
     public Iterator<FedoraObjectProcessor> iterator() {
-        return new FoxmlDirectoryDFSIterator(root, resolver, fetcher, localFedoraServer);
+        return new FoxmlDirectoryDFSIterator(root, resolver, fetcher, localFedoraServer, fileInclusionPattern);
     }
 
 }

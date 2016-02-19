@@ -37,6 +37,11 @@ public class ArchiveExportedFoxmlDirectoryObjectSource implements ObjectSource {
     private String localFedoraServer;
 
     /**
+     * Defaults to match any filename that doesn't begin with a "." character.
+     */
+    private String fileInclusionPattern = "^[^\\.].*$";
+
+    /**
      * archive exported foxml directory object source.
      * @param exportDir the export directory
      * @param localFedoraServer the domain and port for the server that hosted the fedora objects in the format
@@ -56,8 +61,18 @@ public class ArchiveExportedFoxmlDirectoryObjectSource implements ObjectSource {
         this.fetcher = fetcher;
     }
 
+    /**
+     * Sets a pattern of files to include as object files.  This must be
+     * a Java formatted regular expression.
+     * @param pattern a regular expression string for filenames that will be considered
+     * to be object or datastream files.
+     */
+    public void setFileInclusionPattern(final String pattern) {
+        fileInclusionPattern = pattern;
+    }
+
     @Override
     public Iterator<FedoraObjectProcessor> iterator() {
-        return new FoxmlDirectoryDFSIterator(root, fetcher, localFedoraServer);
+        return new FoxmlDirectoryDFSIterator(root, fetcher, localFedoraServer, fileInclusionPattern);
     }
 }
