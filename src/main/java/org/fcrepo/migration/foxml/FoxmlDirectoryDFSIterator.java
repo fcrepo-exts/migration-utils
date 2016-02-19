@@ -16,6 +16,7 @@
 package org.fcrepo.migration.foxml;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -44,17 +45,23 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
 
     private String localFedoraServer;
 
+    private FileFilter fileFilter;
+
     /**
      * foxml directory DFS iterator.
      * @param root the root file
      * @param fetcher the fetcher
      * @param localFedoraServer uri to local fedora server
+     * @param fileFilter a FileFilter that defined which files should be included
+     *        in this Iterator.
      */
-    public FoxmlDirectoryDFSIterator(final File root, final URLFetcher fetcher, final String localFedoraServer) {
+    public FoxmlDirectoryDFSIterator(final File root, final URLFetcher fetcher, final String localFedoraServer,
+            final FileFilter fileFilter) {
         stack = new Stack<List<File>>();
         current = new ArrayList<File>(Arrays.asList(root.listFiles()));
         this.fetcher = fetcher;
         this.localFedoraServer = localFedoraServer;
+        this.fileFilter = fileFilter;
     }
 
     /**
@@ -64,10 +71,12 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
      * @param fetcher the fetcher
      * @param localFedoraServer the domain and port for the server that hosted the fedora objects in the format
      *                          "localhost:8080".
+     * @param fileFilter a FileFilter that defined which files should be included
+     *        in this Iterator.
      */
     public FoxmlDirectoryDFSIterator(final File root, final InternalIDResolver resolver, final URLFetcher fetcher,
-                                     final String localFedoraServer) {
-        this(root, fetcher, localFedoraServer);
+                                     final String localFedoraServer, final FileFilter fileFilter) {
+        this(root, fetcher, localFedoraServer, fileFilter);
         this.resolver = resolver;
     }
 
@@ -78,7 +87,13 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
             } else {
                 final File first = current.get(0);
                 if (first.isFile()) {
-                    return true;
+                    if (this.fileFilter.accept(first)) {
+                        return true;
+                    } else {
+                        // exclude the current file and get the next one...
+                        current.remove(0);
+                        return advanceToNext();
+                    }
                 } else {
                     final File directory = current.remove(0);
                     stack.push(current);
@@ -99,11 +114,13 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
         if (!advanceToNext()) {
             throw new IllegalStateException();
         } else {
+            final File currentFile = current.remove(0);
             try {
                 return new FoxmlInputStreamFedoraObjectProcessor(
-                        new FileInputStream(current.remove(0)), fetcher, resolver, localFedoraServer);
+                        new FileInputStream(currentFile), fetcher, resolver, localFedoraServer);
             } catch (final XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException(currentFile.getPath() + " doesn't appear to be an XML file."
+                        + (e.getMessage() != null ? "  (" + e.getMessage() + ")" : ""));
             } catch (final FileNotFoundException e) {
                 throw new RuntimeException(e);
             }

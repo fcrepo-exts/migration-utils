@@ -16,8 +16,11 @@
 package org.fcrepo.migration.foxml;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.fcrepo.migration.FedoraObjectProcessor;
 import org.fcrepo.migration.ObjectSource;
 
@@ -35,6 +38,11 @@ public class ArchiveExportedFoxmlDirectoryObjectSource implements ObjectSource {
     private URLFetcher fetcher;
 
     private String localFedoraServer;
+
+    /**
+     * Defaults to match any filename that doesn't begin with a "." character.
+     */
+    private FileFilter fileFilter = new RegexFileFilter(Pattern.compile("^[^\\.].*$"));
 
     /**
      * archive exported foxml directory object source.
@@ -56,8 +64,17 @@ public class ArchiveExportedFoxmlDirectoryObjectSource implements ObjectSource {
         this.fetcher = fetcher;
     }
 
+    /**
+     * Sets a FileFilter to determine which files will be considered as object
+     * files in the source directories.
+     * @param fileFilter a FileFilter implementation
+     */
+    public void setFileFilter(final FileFilter fileFilter) {
+        this.fileFilter = fileFilter;
+    }
+
     @Override
     public Iterator<FedoraObjectProcessor> iterator() {
-        return new FoxmlDirectoryDFSIterator(root, fetcher, localFedoraServer);
+        return new FoxmlDirectoryDFSIterator(root, fetcher, localFedoraServer, fileFilter);
     }
 }
