@@ -16,9 +16,12 @@
 package org.fcrepo.migration.foxml;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.fcrepo.migration.FedoraObjectProcessor;
 import org.fcrepo.migration.ObjectSource;
 
@@ -40,7 +43,7 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
     /**
      * Defaults to match any filename that doesn't begin with a "." character.
      */
-    private String fileInclusionPattern = "^[^\\.].*$";
+    private FileFilter fileFilter = new RegexFileFilter(Pattern.compile("^[^\\.].*$"));
 
     /**
      * A constructor for use with the data storage directories that underly a
@@ -71,18 +74,17 @@ public class NativeFoxmlDirectoryObjectSource implements ObjectSource {
     }
 
     /**
-     * Sets a pattern of files to include as object files.  This must be
-     * a Java formatted regular expression.
-     * @param pattern a regular expression string for filenames that will be considered
-     * to be object or datastream files.
+     * Sets a FileFilter to determine which files will be considered as object
+     * files in the source directories.
+     * @param fileFilter a FileFilter implementation
      */
-    public void setFileInclusionPattern(final String pattern) {
-        fileInclusionPattern = pattern;
+    public void setFileFilter(final FileFilter fileFilter) {
+        this.fileFilter = fileFilter;
     }
 
     @Override
     public Iterator<FedoraObjectProcessor> iterator() {
-        return new FoxmlDirectoryDFSIterator(root, resolver, fetcher, localFedoraServer, fileInclusionPattern);
+        return new FoxmlDirectoryDFSIterator(root, resolver, fetcher, localFedoraServer, fileFilter);
     }
 
 }

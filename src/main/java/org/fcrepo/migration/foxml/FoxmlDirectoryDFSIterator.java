@@ -16,6 +16,7 @@
 package org.fcrepo.migration.foxml;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -45,23 +45,23 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
 
     private String localFedoraServer;
 
-    private Pattern filenameIncludePattern;
+    private FileFilter fileFilter;
 
     /**
      * foxml directory DFS iterator.
      * @param root the root file
      * @param fetcher the fetcher
      * @param localFedoraServer uri to local fedora server
-     * @param filenameIncludePattern a regular expression representing the
-     *        filenames to consider as possible object or datastream files.
+     * @param fileFilter a FileFilter that defined which files should be included
+     *        in this Iterator.
      */
     public FoxmlDirectoryDFSIterator(final File root, final URLFetcher fetcher, final String localFedoraServer,
-            final String filenameIncludePattern) {
+            final FileFilter fileFilter) {
         stack = new Stack<List<File>>();
         current = new ArrayList<File>(Arrays.asList(root.listFiles()));
         this.fetcher = fetcher;
         this.localFedoraServer = localFedoraServer;
-        this.filenameIncludePattern = Pattern.compile(filenameIncludePattern);
+        this.fileFilter = fileFilter;
     }
 
     /**
@@ -71,12 +71,12 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
      * @param fetcher the fetcher
      * @param localFedoraServer the domain and port for the server that hosted the fedora objects in the format
      *                          "localhost:8080".
-     * @param filenameIncludePattern a regular expression representing the
-     *        filenames to consider as possible object or datastream files.
+     * @param fileFilter a FileFilter that defined which files should be included
+     *        in this Iterator.
      */
     public FoxmlDirectoryDFSIterator(final File root, final InternalIDResolver resolver, final URLFetcher fetcher,
-                                     final String localFedoraServer, final String filenameIncludePattern) {
-        this(root, fetcher, localFedoraServer, filenameIncludePattern);
+                                     final String localFedoraServer, final FileFilter fileFilter) {
+        this(root, fetcher, localFedoraServer, fileFilter);
         this.resolver = resolver;
     }
 
@@ -87,7 +87,7 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
             } else {
                 final File first = current.get(0);
                 if (first.isFile()) {
-                    if (filenameIncludePattern.matcher(first.getName()).matches()) {
+                    if (this.fileFilter.accept(first)) {
                         return true;
                     } else {
                         // exclude the current file and get the next one...
