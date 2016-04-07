@@ -31,8 +31,8 @@ import javax.ws.rs.core.MediaType;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.jena.riot.Lang;
@@ -109,7 +109,7 @@ public class BasicObjectVersionHandlerIT {
     @Test
     public void testDatastreamProperties() throws ClientProtocolException, URISyntaxException, IOException {
         final GraphStore g = getResourceTriples(idMapper.mapDatastreamPath("example:1", "DS1") + "/fcr:metadata");
-        assertTrue("Unable to find datastream lable in migrated resource RDF assertions.",
+        assertTrue("Unable to find datastream label in migrated resource RDF assertions.",
                 g.contains(ANY, ANY, NodeFactory.createURI("http://purl.org/dc/terms/title"),
                         NodeFactory.createLiteral("Example inline XML datastream")));
     }
@@ -117,13 +117,14 @@ public class BasicObjectVersionHandlerIT {
     private GraphStore getResourceTriples(final String path) throws URISyntaxException,
             ClientProtocolException, IOException {
         final FcrepoHttpClientBuilder b = new FcrepoHttpClientBuilder(null, null, client.getRepositoryUrl());
-        final CloseableHttpClient c = b.build();
-        final HttpMethods method = HttpMethods.GET;
-        final URI uri = new URI(client.getRepositoryUrl() + path);
-        final HttpRequestBase request = method.createRequest(uri);
-        final HttpResponse response = c.execute(request);
-        return parseTriples(response.getEntity());
-
+        try (final CloseableHttpClient c = b.build()) {
+            final HttpMethods method = HttpMethods.GET;
+            final URI uri = new URI(client.getRepositoryUrl() + path);
+            final HttpRequestBase request = method.createRequest(uri);
+            try (final CloseableHttpResponse response = c.execute(request)) {
+                return parseTriples(response.getEntity());
+            }
+        }
     }
 
     private static String getRdfSerialization(final HttpEntity entity) {

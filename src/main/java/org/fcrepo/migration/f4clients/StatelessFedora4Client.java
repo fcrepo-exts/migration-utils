@@ -23,7 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.fcrepo.client.FcrepoClient;
@@ -91,9 +91,8 @@ public class StatelessFedora4Client implements Fedora4Client {
     private String uriToPath(final String URI) {
         if (URI.startsWith(baseUri)) {
             return URI.substring(baseUri.length());
-        } else {
-            return URI;
         }
+        return URI;
     }
 
     @Override
@@ -150,15 +149,18 @@ public class StatelessFedora4Client implements Fedora4Client {
         try {
             final FcrepoHttpClientBuilder client
                     = new FcrepoHttpClientBuilder(username, password, new URI(baseUri).toURL().getHost());
-            final CloseableHttpClient c = client.build();
-            final HttpMethods method = HttpMethods.POST;
-            final URI uri = pathToURI(path + "/fcr:versions");
-            final HttpEntityEnclosingRequestBase request = (HttpEntityEnclosingRequestBase) method.createRequest(uri);
-            request.addHeader("Slug", versionId);
-            final HttpResponse response = c.execute(request);
-            final int statusCode = response.getStatusLine().getStatusCode();
-            if (!(statusCode >= 200 && statusCode < 300)) {
-                throw new RuntimeException("Unable to create version! " + response.getStatusLine().toString());
+            try (final CloseableHttpClient c = client.build()) {
+                final HttpMethods method = HttpMethods.POST;
+                final URI uri = pathToURI(path + "/fcr:versions");
+                final HttpEntityEnclosingRequestBase request
+                        = (HttpEntityEnclosingRequestBase) method.createRequest(uri);
+                request.addHeader("Slug", versionId);
+                try (final CloseableHttpResponse response = c.execute(request)) {
+                    final int statusCode = response.getStatusLine().getStatusCode();
+                    if (!(statusCode >= 200 && statusCode < 300)) {
+                        throw new RuntimeException("Unable to create version! " + response.getStatusLine().toString());
+                    }
+                }
             }
         } catch (URISyntaxException | IOException e) {
             throw new RuntimeException(e);
@@ -196,10 +198,8 @@ public class StatelessFedora4Client implements Fedora4Client {
             }
         } else if (!exists(path)) {
             createResource(path);
-            return path;
-        } else {
-            return path;
         }
+        return path;
     }
 
     @Override
