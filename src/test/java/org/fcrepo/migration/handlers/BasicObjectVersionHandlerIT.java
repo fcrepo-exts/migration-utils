@@ -15,13 +15,29 @@
  */
 package org.fcrepo.migration.handlers;
 
-import com.hp.hpl.jena.graph.NodeFactory;
-import com.hp.hpl.jena.graph.Triple;
-import junit.framework.Assert;
-import org.fcrepo.client.FedoraDatastream;
-import org.fcrepo.client.FedoraException;
-import org.fcrepo.client.FedoraObject;
-import org.fcrepo.client.impl.FedoraRepositoryImpl;
+import static com.hp.hpl.jena.graph.Node.ANY;
+import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.apache.jena.riot.RDFLanguages.contentTypeToLang;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.ws.rs.core.MediaType;
+import javax.xml.stream.XMLStreamException;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.jena.riot.Lang;
+import org.fcrepo.client.FcrepoHttpClientBuilder;
+import org.fcrepo.client.HttpMethods;
 import org.fcrepo.migration.Fedora4Client;
 import org.fcrepo.migration.MigrationIDMapper;
 import org.fcrepo.migration.Migrator;
@@ -31,10 +47,12 @@ import org.slf4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import javax.xml.stream.XMLStreamException;
-import java.util.Iterator;
+import com.hp.hpl.jena.graph.NodeFactory;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.update.GraphStore;
+import com.hp.hpl.jena.update.GraphStoreFactory;
 
-import static org.slf4j.LoggerFactory.getLogger;
+import junit.framework.Assert;
 
 /**
  * @author mdurbin
@@ -44,8 +62,6 @@ public class BasicObjectVersionHandlerIT {
     final static Logger LOGGER = getLogger(BasicObjectVersionHandlerIT.class);
 
     private static Fedora4Client client;
-
-    private static FedoraRepositoryImpl repo;
 
     private static MigrationIDMapper idMapper;
 
@@ -58,64 +74,74 @@ public class BasicObjectVersionHandlerIT {
         ((Migrator) context.getBean("f2Migrator")).run();
 
         client = (Fedora4Client) context.getBean("fedora4Client");
-        repo = (FedoraRepositoryImpl) context.getBean("repo");
         idMapper = (MigrationIDMapper) context.getBean("idMapper");
         context.close();
     }
 
     @Test
-    public void testObjectsWereCreated() throws FedoraException {
+    public void testObjectsWereCreated() {
         Assert.assertTrue(client.exists(idMapper.mapObjectPath("example:1")));
         Assert.assertTrue(client.exists(idMapper.mapObjectPath("example:2")));
         Assert.assertTrue(client.exists(idMapper.mapObjectPath("example:3")));
     }
 
     @Test
-    public void testPlaceholdersWereCreated() throws FedoraException {
+    public void testPlaceholdersWereCreated() {
         Assert.assertTrue(client.exists(idMapper.mapObjectPath("cmodle:1")));
     }
 
     @Test
-    public void testExample1DatastreamsWereCreated() throws FedoraException {
+    public void testExample1DatastreamsWereCreated() {
         for (String dsid : new String[] { "DS1", "DS2", "DS3", "DS4" }) {
             Assert.assertTrue(client.exists(idMapper.mapDatastreamPath("example:1", dsid)));
         }
     }
 
     @Test
-    public void testCustomPropertyMapping() throws FedoraException {
-        final FedoraObject object = repo.getObject(idMapper.mapObjectPath("example:1"));
-        final Iterator<Triple> tripleIt = object.getProperties();
-        while (tripleIt.hasNext()) {
-            final Triple next = tripleIt.next();
-            if (next.predicateMatches(NodeFactory.createURI("http://fake/fake/pid"))
-                    && next.objectMatches(NodeFactory.createLiteral("example:1"))) {
-                return;
-            } else {
-                if (next.objectMatches(NodeFactory.createLiteral("example:1"))) {
-                    LOGGER.debug(next.getPredicate().getURI() + " -> " + next.getObject().toString());
-                }
-            }
-        }
-        Assert.fail("Unable to find mapped PID.");
+    public void testCustomPropertyMapping() throws ClientProtocolException, URISyntaxException, IOException {
+        final GraphStore g = getResourceTriples(idMapper.mapObjectPath("example:1"));
+        assertTrue("Unable to find mapped PID.",
+                g.contains(ANY, ANY, NodeFactory.createURI("http://fake/fake/pid"),
+                        NodeFactory.createLiteral("example:1")));
+        g.close();
     }
 
     @Test
-    public void testDatastreamProperties() throws FedoraException {
-        final FedoraDatastream ds = repo.getDatastream(idMapper.mapDatastreamPath("example:1", "DS1"));
-        final Iterator<Triple> tripleIt = ds.getProperties();
-        while (tripleIt.hasNext()) {
-            final Triple next = tripleIt.next();
-            if (next.predicateMatches(NodeFactory.createURI("http://purl.org/dc/terms/title"))
-                    && next.objectMatches(NodeFactory.createLiteral("Example inline XML datastream"))) {
-                return;
-            } else {
-                Assert.assertFalse("Label was found under unexpected property! (\""
-                        + next.getPredicate().getURI() + "\")",
-                        next.objectMatches(NodeFactory.createLiteral("Example inline XML datastream")));
+    public void testDatastreamProperties() throws ClientProtocolException, URISyntaxException, IOException {
+        final GraphStore g = getResourceTriples(idMapper.mapDatastreamPath("example:1", "DS1") + "/fcr:metadata");
+        assertTrue("Unable to find datastream label in migrated resource RDF assertions.",
+                g.contains(ANY, ANY, NodeFactory.createURI("http://purl.org/dc/terms/title"),
+                        NodeFactory.createLiteral("Example inline XML datastream")));
+    }
+
+    private GraphStore getResourceTriples(final String path) throws URISyntaxException,
+            ClientProtocolException, IOException {
+        final FcrepoHttpClientBuilder b = new FcrepoHttpClientBuilder(null, null, client.getRepositoryUrl());
+        try (final CloseableHttpClient c = b.build()) {
+            final HttpMethods method = HttpMethods.GET;
+            final URI uri = new URI(client.getRepositoryUrl() + path);
+            final HttpRequestBase request = method.createRequest(uri);
+            try (final CloseableHttpResponse response = c.execute(request)) {
+                return parseTriples(response.getEntity());
             }
         }
-        Assert.fail("Unable to find datastream label in migrated resource RDF assertions.");
+    }
+
+    private static String getRdfSerialization(final HttpEntity entity) {
+        final MediaType mediaType = MediaType.valueOf(entity.getContentType().getValue());
+        final Lang lang = contentTypeToLang(mediaType.toString());
+        assertNotNull("Entity is not an RDF serialization", lang);
+        return lang.getName();
+    }
+
+    private static GraphStore parseTriples(final HttpEntity entity) throws IOException {
+        return parseTriples(entity.getContent(), getRdfSerialization(entity));
+    }
+
+    private static GraphStore parseTriples(final InputStream content, final String contentType) {
+        final Model model = createDefaultModel();
+        model.read(content, "", contentType);
+        return GraphStoreFactory.create(model);
     }
 
 }

@@ -31,6 +31,10 @@
 
     <bean id="legacyIDResolver" class="org.fcrepo.migration.foxml.LegacyFSIDResolver">
         <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
+        <!-- Add the following line back in if you wish to maintain a cache of the internal id mapping between
+             runs of this application.  This will save substantial time at startup, but is not appropriate if
+             the repository changes.  -->
+        <!--<constructor-arg name="indexDir" type="java.io.File" ref="indexRoot" />-->
     </bean>
 
     <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">
@@ -66,12 +70,8 @@
         <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
     </bean>
 
-    <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.DefaultFedora4Client">
-        <constructor-arg name="repo" ref="repo" />
-    </bean>
-
-    <bean id="repo" class="org.fcrepo.client.impl.FedoraRepositoryImpl">
-        <constructor-arg name="repositoryURL" ref="fedora4Url" />
+    <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.StatelessFedora4Client">
+        <constructor-arg name="fcrepoBaseURL" ref="fedora4Url" />
         <!--If Fedora 4 requires authorized requests, uncomment the following and provide appropriate values.-->
         <!--<constructor-arg name="username" value="admin-username"/>-->
         <!--<constructor-arg name="password" value="admin-password"/>-->

@@ -104,7 +104,7 @@ public interface Fedora4Client {
      *             a placeholder resource at a server-assigned path).
      * @return the path of the placeholder resource that was created
      */
-    public String createDSPlaceholder(String path);
+    public String createNonRDFPlaceholder(String path);
 
     /**
      * Determines whether the resource at the given path is a placeholder or not.

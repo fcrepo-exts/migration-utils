@@ -15,9 +15,7 @@
  */
 package org.fcrepo.migration.idmappers;
 
-import org.fcrepo.client.FedoraException;
-import org.fcrepo.client.FedoraObject;
-import org.fcrepo.migration.f4clients.DefaultFedora4Client;
+import org.fcrepo.migration.f4clients.StatelessFedora4Client;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,17 +31,14 @@ import java.io.IOException;
 public class OpaqueIDMapperTest {
 
     @Mock
-    private DefaultFedora4Client client;
-
-    @Mock
-    private FedoraObject object;
+    private StatelessFedora4Client client;
 
     private OpaqueIDMapper mapper;
 
     final static String path = "/mock/path";
 
     @Before
-    public void setup() throws FedoraException, IOException {
+    public void setup() throws IOException {
         MockitoAnnotations.initMocks(this);
         Mockito.when(client.createPlaceholder(null)).thenReturn(path + "/1",  path + "/2", path + "/3");
 
@@ -51,7 +46,7 @@ public class OpaqueIDMapperTest {
     }
 
     @Test
-    public void testObjectMintingAndCaching() throws FedoraException {
+    public void testObjectMintingAndCaching() {
         final String pid1 = "pid:1";
         final String pid2 = "pid:2";
 
@@ -68,7 +63,7 @@ public class OpaqueIDMapperTest {
     }
 
     @Test
-    public void testDSMintingAndCaching() throws FedoraException {
+    public void testDSMintingAndCaching() {
         final String pid1 = "pid:1";
         final String pid2 = "pid:2";
         final String ds1 = "ds1";
