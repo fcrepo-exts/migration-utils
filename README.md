@@ -26,17 +26,18 @@ _It is strongly recommended that you set up a local, empty Fedora 4 repository f
 
 Getting started:
 
-* [Download](https://github.com/fcrepo4-exts/migration-utils/releases) and extract the distribution zip file
-* Choose an example configuration file that best suits your needs
-  * [conf/fedora2-native.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora2-native.xml) is a good start for migrating from fedora 2
-  * [conf/fedora3-akubra.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-akubra.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (akubra FS)
-  * [conf/fedora3-legacy.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-legacy.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (legacy FS)
-  * [conf/fedora3-exported.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-exported.xml) is a good start for migrating exported FOXML from fedora 3
-* Make necessary changes to the configuration to reflect your needs and local set up
-  * Most importantly you'll want to set the appropriate fedora 4 URL to which you want to migrate the resources
-  * Unless you just want to migrate the included test set, you'll also want to point the configuration to your fedora3 FOXML data files
-
-To run the migration scenario you have configured in the Spring XML configuration file:
+1. [Download](https://github.com/fcrepo4-exts/migration-utils/releases) and extract the distribution zip file or clone the repo and build from source
+  - If you download a release, the jar file will be in the root of the directory.
+  - If you build from source, the jar file will be in the `target` directory.
+2. Choose an example configuration file that best suits your needs
+  - [conf/fedora2-native.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora2-native.xml) is a good start for migrating from fedora 2
+  - [conf/fedora3-akubra.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-akubra.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (akubra FS)
+  - [conf/fedora3-legacy.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-legacy.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (legacy FS)
+  - [conf/fedora3-exported.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-exported.xml) is a good start for migrating exported FOXML from fedora 3
+3. Make necessary changes to the configuration to reflect your needs and local set up
+  - Most importantly you'll want to set the appropriate fedora 4 URL to which you want to migrate the resources
+  - Unless you just want to migrate the included test set, you'll also want to point the configuration to your fedora3 FOXML data files
+4. Run the migration scenario you have configured in the Spring XML configuration file:
 
 ```
 java -jar migration-utils-{version}-driver.jar <relative-or-absolute-path-to-configuration-file>
