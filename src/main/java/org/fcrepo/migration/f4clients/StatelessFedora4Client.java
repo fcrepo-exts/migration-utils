@@ -68,7 +68,9 @@ public class StatelessFedora4Client implements Fedora4Client {
 
     private FcrepoClient getClient() {
         try {
-            return new FcrepoClient(username, password, new URI(baseUri).toURL().getHost(), false);
+            return new FcrepoClient.FcrepoClientBuilder()
+                    .credentials(username, password)
+                    .authScope(new URI(baseUri).toURL().getHost()).build();
         } catch (MalformedURLException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -98,7 +100,7 @@ public class StatelessFedora4Client implements Fedora4Client {
     @Override
     public boolean exists(final String path) {
         try {
-            return getClient().head(pathToURI(path)).getStatusCode() != 404;
+            return getClient().head(pathToURI(path)).perform().getStatusCode() != 404;
         } catch (FcrepoOperationFailedException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -107,7 +109,7 @@ public class StatelessFedora4Client implements Fedora4Client {
     @Override
     public void createResource(final String path) {
         try {
-            assertSuccess(getClient().put(pathToURI(path), null, null));
+            assertSuccess(getClient().put(pathToURI(path)).perform());
         } catch (FcrepoOperationFailedException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -121,8 +123,10 @@ public class StatelessFedora4Client implements Fedora4Client {
     @Override
     public void createOrUpdateRedirectNonRDFResource(final String path, final String url) {
         try {
-            assertSuccess(getClient().put(pathToURI(path), null,
-                    "message/external-body; access-type=URL; URL=\"" + url.toString() + "\""));
+
+            assertSuccess(getClient().put(pathToURI(path))
+                    .body((InputStream) null, "message/external-body; access-type=URL; URL=\"" + url.toString() + "\"")
+                    .perform());
         } catch (FcrepoOperationFailedException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -131,7 +135,7 @@ public class StatelessFedora4Client implements Fedora4Client {
     @Override
     public void createOrUpdateNonRDFResource(final String path, final InputStream content, final String contentType) {
         try {
-            assertSuccess(getClient().put(pathToURI(path), content, contentType));
+            assertSuccess(getClient().put(pathToURI(path)).body(content, contentType).perform());
         } catch (FcrepoOperationFailedException | URISyntaxException e) {
             throw new RuntimeException(e);
         } finally {
@@ -170,7 +174,8 @@ public class StatelessFedora4Client implements Fedora4Client {
     @Override
     public void updateResourceProperties(final String path, final String sparqlUpdate) {
         try {
-            assertSuccess(getClient().patch(pathToURI(path), new ByteArrayInputStream(sparqlUpdate.getBytes("UTF-8"))));
+            assertSuccess(getClient().patch(pathToURI(path))
+                    .body(new ByteArrayInputStream(sparqlUpdate.getBytes("UTF-8"))).perform());
         } catch (FcrepoOperationFailedException | UnsupportedEncodingException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -179,8 +184,8 @@ public class StatelessFedora4Client implements Fedora4Client {
     @Override
     public void updateNonRDFResourceProperties(final String path, final String sparqlUpdate) {
         try {
-            assertSuccess(getClient().patch(pathToURI(path + "/fcr:metadata"),
-                    new ByteArrayInputStream(sparqlUpdate.getBytes("UTF-8"))));
+            assertSuccess(getClient().patch(pathToURI(path + "/fcr:metadata"))
+                    .body(new ByteArrayInputStream(sparqlUpdate.getBytes("UTF-8"))).perform());
         } catch (FcrepoOperationFailedException | UnsupportedEncodingException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -190,7 +195,7 @@ public class StatelessFedora4Client implements Fedora4Client {
     public String createPlaceholder(final String path) {
         if (path == null || path.length() == 0) {
             try {
-                final FcrepoResponse r = getClient().post(new URI(baseUri), null, null);
+                final FcrepoResponse r = getClient().post(new URI(baseUri)).perform();
                 assertSuccess(r);
                 return uriToPath(r.getLocation().toString());
             } catch (FcrepoOperationFailedException | URISyntaxException e) {
@@ -207,7 +212,8 @@ public class StatelessFedora4Client implements Fedora4Client {
         if (!exists(path)) {
             if (path == null || path.length() == 0) {
                 try {
-                    final FcrepoResponse r = getClient().post(new URI(baseUri), null, "text/plain");
+                    final FcrepoResponse r = getClient().post(new URI(baseUri))
+                            .body((InputStream) null, "text/plain").perform();
                     assertSuccess(r);
                     return uriToPath(r.getLocation().toString());
                 } catch (FcrepoOperationFailedException | URISyntaxException e) {
@@ -215,8 +221,9 @@ public class StatelessFedora4Client implements Fedora4Client {
                 }
             } else {
                 try {
-                    assertSuccess(getClient().put(pathToURI(path), null, "text/xml"));
-                } catch (FcrepoOperationFailedException | URISyntaxException e) {
+                    assertSuccess(getClient().put(pathToURI(path))
+                            .body(new ByteArrayInputStream("".getBytes("UTF-8")), "text/xml").perform());
+                } catch (FcrepoOperationFailedException | URISyntaxException | UnsupportedEncodingException e) {
                     throw new RuntimeException(e);
                 }
                 return path;
@@ -229,7 +236,7 @@ public class StatelessFedora4Client implements Fedora4Client {
     @Override
     public boolean isPlaceholder(final String path) {
         try {
-            return getClient().get(pathToURI(path + "/fcr:versions"), null, null).getStatusCode() == 404;
+            return getClient().get(pathToURI(path + "/fcr:versions")).perform().getStatusCode() == 404;
         } catch (FcrepoOperationFailedException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
