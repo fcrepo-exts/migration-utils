@@ -15,29 +15,17 @@
  */
 package org.fcrepo.migration.handlers;
 
-import static com.hp.hpl.jena.graph.Node.ANY;
-import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
-import static org.apache.jena.riot.RDFLanguages.contentTypeToLang;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import javax.ws.rs.core.MediaType;
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.http.HttpEntity;
+import com.hp.hpl.jena.graph.NodeFactory;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.update.GraphStore;
+import com.hp.hpl.jena.update.GraphStoreFactory;
+import junit.framework.Assert;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.jena.riot.Lang;
-import org.fcrepo.client.FcrepoHttpClientBuilder;
-import org.fcrepo.client.HttpMethods;
+import org.apache.jena.atlas.web.ContentType;
+import org.apache.jena.riot.RDFLanguages;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.migration.Fedora4Client;
 import org.fcrepo.migration.MigrationIDMapper;
 import org.fcrepo.migration.Migrator;
@@ -47,12 +35,16 @@ import org.slf4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.hp.hpl.jena.graph.NodeFactory;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.update.GraphStore;
-import com.hp.hpl.jena.update.GraphStoreFactory;
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-import junit.framework.Assert;
+import static com.hp.hpl.jena.graph.Node.ANY;
+import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.junit.Assert.assertTrue;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * @author mdurbin
@@ -98,7 +90,8 @@ public class BasicObjectVersionHandlerIT {
     }
 
     @Test
-    public void testCustomPropertyMapping() throws ClientProtocolException, URISyntaxException, IOException {
+    public void testCustomPropertyMapping() throws ClientProtocolException, URISyntaxException, IOException,
+            FcrepoOperationFailedException {
         final GraphStore g = getResourceTriples(idMapper.mapObjectPath("example:1"));
         assertTrue("Unable to find mapped PID.",
                 g.contains(ANY, ANY, NodeFactory.createURI("http://fake/fake/pid"),
@@ -107,40 +100,24 @@ public class BasicObjectVersionHandlerIT {
     }
 
     @Test
-    public void testDatastreamProperties() throws ClientProtocolException, URISyntaxException, IOException {
+    public void testDatastreamProperties() throws ClientProtocolException, URISyntaxException, IOException,
+            FcrepoOperationFailedException {
         final GraphStore g = getResourceTriples(idMapper.mapDatastreamPath("example:1", "DS1") + "/fcr:metadata");
         assertTrue("Unable to find datastream label in migrated resource RDF assertions.",
                 g.contains(ANY, ANY, NodeFactory.createURI("http://purl.org/dc/terms/title"),
                         NodeFactory.createLiteral("Example inline XML datastream")));
     }
 
-    private GraphStore getResourceTriples(final String path) throws URISyntaxException,
-            ClientProtocolException, IOException {
-        final FcrepoHttpClientBuilder b = new FcrepoHttpClientBuilder(null, null, client.getRepositoryUrl());
-        try (final CloseableHttpClient c = b.build()) {
-            final HttpMethods method = HttpMethods.GET;
-            final URI uri = new URI(client.getRepositoryUrl() + path);
-            final HttpRequestBase request = method.createRequest(uri);
-            try (final CloseableHttpResponse response = c.execute(request)) {
-                return parseTriples(response.getEntity());
-            }
-        }
-    }
-
-    private static String getRdfSerialization(final HttpEntity entity) {
-        final MediaType mediaType = MediaType.valueOf(entity.getContentType().getValue());
-        final Lang lang = contentTypeToLang(mediaType.toString());
-        assertNotNull("Entity is not an RDF serialization", lang);
-        return lang.getName();
-    }
-
-    private static GraphStore parseTriples(final HttpEntity entity) throws IOException {
-        return parseTriples(entity.getContent(), getRdfSerialization(entity));
+    private GraphStore getResourceTriples(final String path) throws URISyntaxException, IOException,
+            FcrepoOperationFailedException {
+        final FcrepoClient c = new FcrepoClient.FcrepoClientBuilder().build();
+        final FcrepoResponse r = c.get(URI.create(client.getRepositoryUrl() + path)).perform();
+        return parseTriples(r.getBody(), r.getContentType());
     }
 
     private static GraphStore parseTriples(final InputStream content, final String contentType) {
         final Model model = createDefaultModel();
-        model.read(content, "", contentType);
+        model.read(content, "", RDFLanguages.contentTypeToLang(ContentType.create(contentType)).getName());
         return GraphStoreFactory.create(model);
     }
 

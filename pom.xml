@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.fcrepo</groupId>
     <artifactId>fcrepo-parent</artifactId>
-    <version>4.5.0</version>
+    <version>4.7.2</version>
   </parent>
   <groupId>org.fcrepo.migration</groupId>
   <artifactId>migration-utils</artifactId>
@@ -24,8 +24,8 @@
     <slf4j.version>1.7.10</slf4j.version>
     <junit.version>4.11</junit.version>
     <fcrepo-build-tools.version>4.3.0</fcrepo-build-tools.version>
-    <fcrepo-java-client.version>0.1.2</fcrepo-java-client.version>
-    <fcrepo.version>4.4.1-SNAPSHOT</fcrepo.version>
+    <fcrepo-java-client.version>0.2.1</fcrepo-java-client.version>
+    <fcrepo.version>4.7.2</fcrepo.version>
   </properties>
 
   <scm>
@@ -401,6 +401,7 @@
                   <systemProperties>
                     <fcrepo.dynamic.jms.port>${fcrepo.dynamic.jms.port}</fcrepo.dynamic.jms.port>
                     <fcrepo.dynamic.stomp.port>${fcrepo.dynamic.stomp.port}</fcrepo.dynamic.stomp.port>
+                    <fcrepo.modeshape.configuration>classpath:/config/file-simple/repository.json</fcrepo.modeshape.configuration>
                   </systemProperties>
                 </container>
               </configuration>
