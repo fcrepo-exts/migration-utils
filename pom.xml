@@ -25,7 +25,7 @@
     <junit.version>4.11</junit.version>
     <fcrepo-build-tools.version>4.3.0</fcrepo-build-tools.version>
     <fcrepo-java-client.version>0.2.1</fcrepo-java-client.version>
-    <fcrepo.version>4.7.2</fcrepo.version>
+    <fcrepo.version>4.7.4</fcrepo.version>
   </properties>
 
   <scm>
@@ -399,6 +399,7 @@
                     <version>7.6.15.v20140411</version>
                   </artifactInstaller>
                   <systemProperties>
+                    <fcrepo.properties.management>relaxed</fcrepo.properties.management>
                     <fcrepo.dynamic.jms.port>${fcrepo.dynamic.jms.port}</fcrepo.dynamic.jms.port>
                     <fcrepo.dynamic.stomp.port>${fcrepo.dynamic.stomp.port}</fcrepo.dynamic.stomp.port>
                     <fcrepo.modeshape.configuration>classpath:/config/file-simple/repository.json</fcrepo.modeshape.configuration>

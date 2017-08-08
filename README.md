@@ -52,8 +52,8 @@ java -jar migration-utils-{version}-driver.jar <relative-or-absolute-path-to-con
 | PID              | fedora3model:PID†                   | yul:328697               |
 | state            | fedoraaccess:objState               | Active                   |
 | label            | fedora3model:label†                 | Elvis Presley            |
-| createDate       | premis:hasDateCreatedByApplication  | 2015-03-16T20:11:06.683Z |
-| lastModifiedDate | metadataModification                | 2015-03-16T20:11:06.683Z |
+| createDate       | fcrepo:created                      | 2015-03-16T20:11:06.683Z |
+| lastModifiedDate | fcrepo:lastModified                 | 2015-03-16T20:11:06.683Z |
 | ownerId          | fedora3model:ownerId†               | nruest                   |
 
 ### fcrepo3 Datastream properties to fcrepo4
@@ -64,7 +64,7 @@ java -jar migration-utils-{version}-driver.jar <relative-or-absolute-path-to-con
 | Label         | dcterms:title‡                                               | ASC19109.tif                                               |
 | MIME Type     | ebucore:hasMimeType†                                         | image/tiff                                                 |
 | State         | fedoraaccess:objState                                        | Active                                                     |
-| Created       | premis:hasDateCreatedByApplication                           | 2015-03-16T20:11:06.683Z                                   |
+| Created       | fcrepo:created                                               | 2015-03-16T20:11:06.683Z                                   |
 | Versionable   | fedora:hasVersions‡                                          | true                                                       |
 | Format URI    | premis:formatDesignation‡                                    | info:pronom/fmt/156                                        |
 | Alternate IDs | dcterms:identifier‡                                          |                                                            |
