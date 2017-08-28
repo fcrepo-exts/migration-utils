@@ -305,10 +305,16 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
         // Map dates and object state
         if (customPropertyMapping != null && customPropertyMapping.containsKey(pred)) {
             pred = customPropertyMapping.getProperty(pred);
+        } else if (pred.equals("info:fedora/fedora-system:def/model#createdDate")) {
+            // Handle created date seperately and exit early.
+            updateDateTriple(triplesToRemove, triplesToInsert,
+                    "http://fedora.info/definitions/v4/repository#created",
+                    obj);
+            return;
         } else if (pred.equals("info:fedora/fedora-system:def/view#lastModifiedDate")) {
             // Handle modified date seperately and exit early.
-            addDateEvent(triplesToInsert,
-                    "http://fedora.info/definitions/v4/audit#metadataModification",
+            updateDateTriple(triplesToRemove, triplesToInsert,
+                    "http://fedora.info/definitions/v4/repository#lastModified",
                     obj);
             return;
         }
@@ -360,9 +366,10 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
 
             // Created date
             if (createdDate != null) {
+                LOGGER.debug("Setting created date to " + createdDate + "...");
                 updateDateTriple(triplesToRemove,
                         triplesToInsert,
-                        "http://www.loc.gov/premis/rdf/v1#hasDateCreatedByApplication",
+                        "http://fedora.info/definitions/v4/repository#created",
                         createdDate);
             }
         }
@@ -380,8 +387,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
 
             // The created date of the last version is the last modified date.
             if (createdDate != null) {
-                addDateEvent(triplesToInsert,
-                        "http://fedora.info/definitions/v4/audit#contentModification",
+                updateDateTriple(triplesToRemove,
+                        triplesToInsert,
+                        "http://fedora.info/definitions/v4/repository#lastModified",
                         createdDate);
             }
 
