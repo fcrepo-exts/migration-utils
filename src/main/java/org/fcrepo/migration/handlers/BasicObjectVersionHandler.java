@@ -30,6 +30,7 @@ import com.hp.hpl.jena.sparql.modify.request.UpdateDeleteWhere;
 import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
 import org.apache.jena.atlas.io.IndentedWriter;
+import org.apache.jena.riot.system.ErrorHandlerFactory;
 import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.ExternalContentURLMapper;
 import org.fcrepo.migration.Fedora4Client;
@@ -101,6 +102,9 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
         this.idMapper = idMapper;
         this.externalContentUrlMapper = new SelfReferencingURLMapper(localFedoraServer, idMapper);
         this.namespacePrefixMapper = namespacePrefixMapper;
+
+        // Do not throw exception for invalid RDF
+        ErrorHandlerFactory.setDefaultErrorHandler(ErrorHandlerFactory.errorHandlerWarn);
     }
 
     /**
