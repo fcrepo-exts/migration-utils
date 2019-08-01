@@ -1,9 +1,10 @@
 language: java
 sudo: required
 jdk:
-  - openjdk8
+  - openjdk11
 go:
   - 1.12.x
+
 before_install:
   - "echo $JAVA_OPTS"
   - "export JAVA_OPTS=-Xmx512m"
