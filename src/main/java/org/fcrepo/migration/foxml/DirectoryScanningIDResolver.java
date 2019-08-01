@@ -140,7 +140,7 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
             final Document doc = new Document();
             doc.add(new StringField("path", f.getPath(), Field.Store.YES));
             doc.add(new StringField("id", getInternalIdForFile(f), Field.Store.YES));
-            LOGGER.trace("Added \"" + getInternalIdForFile(f) + "\"");
+            LOGGER.trace("Added \"{}\" for: {}", getInternalIdForFile(f), f.getPath());
             writer.addDocument(doc);
         }
     }

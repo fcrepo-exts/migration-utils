@@ -1,12 +1,15 @@
 language: java
-sudo: false
+sudo: required
 jdk:
-  - oraclejdk8
+  - openjdk8
+go:
+  - 1.12.x
 before_install:
   - "echo $JAVA_OPTS"
   - "export JAVA_OPTS=-Xmx512m"
 
 script:
+  - go get github.com/birkland/ocfl/cmd/ocfl
   - mvn install -B -V
   - mvn javadoc:jar
   - mvn javadoc:test-aggregate

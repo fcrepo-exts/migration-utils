@@ -122,7 +122,9 @@ public class Migrator {
                 break;
             }
             LOGGER.info("Processing \"" + o.getObjectInfo().getPid() + "\"...");
-            o.processObject(handler);
+            if (o.getObjectInfo().getPid() != null) {
+                o.processObject(handler);
+            }
         }
     }
 
