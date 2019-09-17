@@ -20,9 +20,9 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author awoods
  * @since 2019-07-18
  */
-public class OCFLFedora4Client implements Fedora4Client {
+public class OCFLGoLangFedora4Client implements Fedora4Client {
 
-    private static final Logger LOGGER = getLogger(OCFLFedora4Client.class);
+    private static final Logger LOGGER = getLogger(OCFLGoLangFedora4Client.class);
 
     private final File storageRoot;
     private final File stagingRoot;
@@ -33,7 +33,7 @@ public class OCFLFedora4Client implements Fedora4Client {
      * @param storage Root for OCFL Objects
      * @param staging directory for in-progress OCFL Objects
      */
-    public OCFLFedora4Client(final String storage, final String staging) {
+    public OCFLGoLangFedora4Client(final String storage, final String staging) {
 
         // Ensure Storage Root exists
         this.storageRoot = new File(storage);
