@@ -26,6 +26,9 @@
     <fcrepo-build-tools.version>4.3.0</fcrepo-build-tools.version>
     <fcrepo-java-client.version>0.2.1</fcrepo-java-client.version>
     <fcrepo.version>4.7.4</fcrepo.version>
+    <javaee.xml.version>2.3.1</javaee.xml.version>
+    <jaxb.core.version>2.3.0.1</jaxb.core.version>
+    <jaxb.impl.version>2.3.1</jaxb.impl.version>
   </properties>
 
   <scm>
@@ -124,6 +127,22 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
       <version>${spring.version}</version>
+    </dependency>
+    <!--  modules needed for Java 11 support EE modules. -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>${javaee.xml.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>${jaxb.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>${jaxb.impl.version}</version>
     </dependency>
 
     <dependency>
