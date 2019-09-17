@@ -36,7 +36,7 @@ import static org.junit.Assert.assertTrue;
  * 
  * @author awoods
  */
-public class OCFLFedora4ClientIT {
+public class OCFLGoLangFedora4ClientIT {
 
     private Fedora4Client client;
 
