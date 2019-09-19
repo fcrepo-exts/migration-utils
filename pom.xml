@@ -104,6 +104,16 @@
        </exclusions>
      </dependency>
     <dependency>
+      <groupId>edu.wisc.library.ocfl</groupId>
+      <artifactId>ocfl-java-core</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>edu.wisc.library.ocfl</groupId>
+      <artifactId>ocfl-java-api</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.4</version>
@@ -188,6 +198,13 @@
   </dependencies>
 
   <repositories>
+
+    <!--Remove this once Peter Winkles publishes to Sonatype-->
+    <repository>
+      <id>tmp-dependencies</id>
+      <name>Temporary Dependencies</name>
+      <url>https://raw.github.com/awoods/dependencies/master/</url>
+    </repository>
 
     <repository>
       <id>sonatype-nexus-snapshots</id>
