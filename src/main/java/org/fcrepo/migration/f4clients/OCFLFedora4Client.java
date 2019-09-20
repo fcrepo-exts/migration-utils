@@ -34,7 +34,7 @@ public class OCFLFedora4Client implements Fedora4Client {
 
     /**
      * Constructor
-     * 
+     *
      * @author Remigiusz Malessa
      * @since 4.4.1-SNAPSHOT
      * @param storage Root for OCFL Objects
@@ -61,15 +61,16 @@ public class OCFLFedora4Client implements Fedora4Client {
 
     /**
      * This method returns true if the resource exists in the storage root
-     *
+     * 
+     * @author Remigiusz Malessa
+     * @since 4.4.1-SNAPSHOT
      * @param path to the resource
      * @return true if resource exists in 'storage' root
      */
     @Override
     public boolean exists(final String path) {
-        LOGGER.info("to-be-implemented: exists: " + path);
 
-        return false;
+        return ocflRepo.containsObject(path);
     }
 
     @Override
