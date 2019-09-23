@@ -50,7 +50,7 @@ public class OCFLFedora4Client implements Fedora4Client {
             Security.addProvider(new BouncyCastleProvider());
             ocflRepo =
                     new OcflRepositoryBuilder().build(new FileSystemOcflStorage(repoDir,
-                            new ObjectIdPathMapperBuilder().withDefaultCaffeineCache().buildDefaultPairTreeMapper()),
+                            new ObjectIdPathMapperBuilder().withDefaultCaffeineCache().buildFlatMapper()),
                             repoDir.resolve("deposit"));
         } else {
             final String missingDir = new File(storage).isDirectory() ? staging : storage;
@@ -61,7 +61,7 @@ public class OCFLFedora4Client implements Fedora4Client {
 
     /**
      * This method returns true if the resource exists in the storage root
-     * 
+     *
      * @author Remigiusz Malessa
      * @since 4.4.1-SNAPSHOT
      * @param path to the resource
@@ -70,7 +70,9 @@ public class OCFLFedora4Client implements Fedora4Client {
     @Override
     public boolean exists(final String path) {
 
-        return ocflRepo.containsObject(path);
+        final boolean exists = ocflRepo.containsObject(path);
+        LOGGER.info("Object with path: " + path + ", " + (exists ? "exist" : "does not exist"));
+        return exists;
     }
 
     @Override

@@ -31,13 +31,14 @@ public class OCFLFedora4ClientTest {
 
 
     /**
-     * @author copied implementation from OCFLGoLangFedora4ClientIT by @awoods
+     * @author Remigiusz Malessa
      * @since 4.4.1-SNAPSHOT
      */
     @Test
     public void testExists() {
 
-        final String badId = "o2";
+        // Sanity check -
+        final String badId = "nonexistantobject";
         assertFalse("Object should not exist: " + badId, client.exists(badId));
 
         final String goodId = "o1";
