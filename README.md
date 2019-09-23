@@ -92,6 +92,14 @@ java -jar migration-utils-{version}-driver.jar <relative-or-absolute-path-to-con
 
  * [wiki](https://wiki.duraspace.org/display/FF/Fedora+3+to+4+Data+Migration)
 
+### Development
+
+The migration-utils software is built with [Maven 3](https://maven.apache.org) and requires either Java 8 or Java 11.
+```bash
+mvn clean install
+```
+The executable utility will be found in the `target` directory.
+
 ## Maintainers
 
 Current maintainers
