@@ -52,7 +52,7 @@
     <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.6</version>
+        <version>1.13</version>
       </dependency>
      <dependency>
       <groupId>org.apache.jena</groupId>
@@ -198,13 +198,6 @@
   </dependencies>
 
   <repositories>
-
-    <!--Remove this once Peter Winkles publishes to Sonatype-->
-    <repository>
-      <id>tmp-dependencies</id>
-      <name>Temporary Dependencies</name>
-      <url>https://raw.github.com/awoods/dependencies/master/</url>
-    </repository>
 
     <repository>
       <id>sonatype-nexus-snapshots</id>
