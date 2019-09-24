@@ -26,7 +26,7 @@ public class OCFLFedora4ClientTest {
 
         final String storage = "src/test/resources/ocflStorage";
         final String staging = "src/test/resources/staging";
-        client = new OCFLFedora4Client(storage, staging);
+        client = new OCFLFedora4Client(storage, staging, OCFLFedora4Client.ObjectIdMapperType.FLAT);
     }
 
 

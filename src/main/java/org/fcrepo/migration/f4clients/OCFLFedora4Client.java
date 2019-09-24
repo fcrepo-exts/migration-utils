@@ -7,14 +7,13 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.Security;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.fcrepo.migration.Fedora4Client;
 import org.slf4j.Logger;
 
 import edu.wisc.library.ocfl.api.OcflRepository;
 import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
+import edu.wisc.library.ocfl.core.mapping.ObjectIdPathMapper;
 import edu.wisc.library.ocfl.core.mapping.ObjectIdPathMapperBuilder;
 import edu.wisc.library.ocfl.core.storage.FileSystemOcflStorage;
 
@@ -32,6 +31,11 @@ public class OCFLFedora4Client implements Fedora4Client {
 
     private final String stagingRoot;
 
+    // Type of
+    public enum ObjectIdMapperType {
+        FLAT
+    }
+
     /**
      * Constructor
      *
@@ -40,18 +44,24 @@ public class OCFLFedora4Client implements Fedora4Client {
      * @param storage Root for OCFL Objects
      * @param staging directory for in-progress OCFL Objects
      */
-    public OCFLFedora4Client(final String storage, final String staging) {
+    public OCFLFedora4Client(final String storage, final String staging, final ObjectIdMapperType mapper) {
 
         this.storageRoot = storage;
         this.stagingRoot = staging;
+
+        ObjectIdPathMapper objectIdPathMapper = null;
+        switch (mapper) {
+        case FLAT:
+            objectIdPathMapper = new ObjectIdPathMapperBuilder().withDefaultCaffeineCache().buildFlatMapper();
+        }
+
         // If locations exist instantiate repository
         if (new File(storage).isDirectory() && new File(staging).isDirectory()) {
+            LOGGER.debug("OCFLFedora4Client: {}, {}", storage, staging);
             final Path repoDir = Paths.get(this.storageRoot);
-            Security.addProvider(new BouncyCastleProvider());
             ocflRepo =
                     new OcflRepositoryBuilder().build(new FileSystemOcflStorage(repoDir,
-                            new ObjectIdPathMapperBuilder().withDefaultCaffeineCache().buildFlatMapper()),
-                            repoDir.resolve("deposit"));
+                            objectIdPathMapper), repoDir.resolve("deposit"));
         } else {
             final String missingDir = new File(storage).isDirectory() ? staging : storage;
             throw new RuntimeException("Failed to create OCFL repository, because location: " + missingDir +
@@ -62,7 +72,7 @@ public class OCFLFedora4Client implements Fedora4Client {
     /**
      * This method returns true if the resource exists in the storage root
      *
-     * @author Remigiusz Malessa
+     * @author Remigiusz Malessa (based on implementation by awoods)
      * @since 4.4.1-SNAPSHOT
      * @param path to the resource
      * @return true if resource exists in 'storage' root
@@ -71,7 +81,7 @@ public class OCFLFedora4Client implements Fedora4Client {
     public boolean exists(final String path) {
 
         final boolean exists = ocflRepo.containsObject(path);
-        LOGGER.info("Object with path: " + path + ", " + (exists ? "exist" : "does not exist"));
+        LOGGER.debug("Object with path: {}, exists: {}", path, exists);
         return exists;
     }
 

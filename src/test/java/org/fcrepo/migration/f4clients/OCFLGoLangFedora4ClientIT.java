@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 /**
  *  A basic suite of integration tests to test certain interaction
  *  patterns (and code) against the an OCFL version of Fedora.
- * 
+ *
  * @author awoods
  */
 public class OCFLGoLangFedora4ClientIT {
@@ -43,7 +43,7 @@ public class OCFLGoLangFedora4ClientIT {
     @Before
     public void setup() throws BeansException {
         final ConfigurableApplicationContext context =
-                new ClassPathXmlApplicationContext("spring/ocfl-it-setup.xml");
+                new ClassPathXmlApplicationContext("spring/ocfl-go-it-setup.xml");
         client = (Fedora4Client) context.getBean("fedora4Client");
     }
 
