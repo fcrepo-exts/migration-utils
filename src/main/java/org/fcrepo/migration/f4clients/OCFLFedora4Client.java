@@ -31,7 +31,6 @@ public class OCFLFedora4Client implements Fedora4Client {
 
     private final String stagingRoot;
 
-    // Type of
     public enum ObjectIdMapperType {
         FLAT
     }
