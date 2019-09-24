@@ -53,6 +53,9 @@ public class OCFLFedora4Client implements Fedora4Client {
         switch (mapper) {
         case FLAT:
             objectIdPathMapper = new ObjectIdPathMapperBuilder().withDefaultCaffeineCache().buildFlatMapper();
+            break;
+        default:
+            throw new RuntimeException("No implementation for the maper: " + mapper);
         }
 
         // If locations exist instantiate repository
