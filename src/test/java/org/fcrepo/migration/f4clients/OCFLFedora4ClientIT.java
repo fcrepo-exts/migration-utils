@@ -62,4 +62,10 @@ public class OCFLFedora4ClientIT {
         // TODO implement integration test with client.createVersionSnapshot(id, "v1")
     }
 
+    @Test
+    public void testCreateResource() {
+
+        final String id = UUID.randomUUID().toString();
+        client.createResource(id);
+    }
 }

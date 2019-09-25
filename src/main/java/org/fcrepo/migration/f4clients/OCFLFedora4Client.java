@@ -87,9 +87,21 @@ public class OCFLFedora4Client implements Fedora4Client {
         return exists;
     }
 
+    /**
+     * Creates a new resource at the given path.
+     * Copied from {@link org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client#createResource}
+     *
+     * @param path the path to the new resource
+     */
     @Override
     public void createResource(final String path) {
-        LOGGER.info("to-be-implemented: createResource: " + path);
+        LOGGER.info("createResource: {}", path);
+
+        final String ocflObject = objFromPath(path);
+        final File stagingObj = new File(stagingRoot, ocflObject);
+        if (!stagingObj.exists() && !stagingObj.mkdirs()) {
+            throw new RuntimeException("Unable to create staging object: " + stagingObj);
+        }
     }
 
     /**
@@ -203,5 +215,16 @@ public class OCFLFedora4Client implements Fedora4Client {
     public boolean isPlaceholder(final String path) {
         LOGGER.info("to-be-implemented: isPlaceholder: " + path);
         return true;
+    }
+
+    /**
+     * Copied from {@link org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client#objFromPath}
+     *
+     * @param path the path to the new resource
+     * @return object ID
+     */
+    private String objFromPath(final String path) {
+        // return path before final '/', or full path
+        return path.contains("/") ? path.substring(0, path.lastIndexOf('/')) : path;
     }
 }
