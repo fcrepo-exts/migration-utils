@@ -172,8 +172,13 @@ public class OCFLFedora4Client implements Fedora4Client {
      */
     @Override
     public String createPlaceholder(final String path) {
-        LOGGER.info("to-be-implemented: createPlaceholder: " + path);
-        return null;
+        LOGGER.info("to-be-implemented: createPlaceholder: {} ", path);
+        final File placeholder = new File(stagingRoot, path);
+        if (!placeholder.exists() && !placeholder.mkdirs()) {
+            throw new RuntimeException("Unable to create directory: " + placeholder.getAbsolutePath());
+        }
+        LOGGER.info("createPlaceholder: {} ", placeholder.getAbsolutePath());
+        return placeholder.getAbsolutePath();
     }
 
     /**
