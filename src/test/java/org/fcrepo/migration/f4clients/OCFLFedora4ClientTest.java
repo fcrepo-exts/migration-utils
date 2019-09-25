@@ -18,9 +18,6 @@ public class OCFLFedora4ClientTest {
 
     private static OCFLFedora4Client client;
 
-    /**
-     * @throws java.lang.Exception
-     */
     @BeforeClass
     public static void setUp() {
 
