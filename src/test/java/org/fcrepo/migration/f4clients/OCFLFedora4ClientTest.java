@@ -22,7 +22,7 @@ public class OCFLFedora4ClientTest {
      * @throws java.lang.Exception
      */
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() {
 
         final String storage = "src/test/resources/ocflStorage";
         final String staging = "src/test/resources/staging";
