@@ -42,6 +42,7 @@ public class OCFLFedora4Client implements Fedora4Client {
      * @since 4.4.1-SNAPSHOT
      * @param storage Root for OCFL Objects
      * @param staging directory for in-progress OCFL Objects
+     * @param mapper to be used to map object id's to paths
      */
     public OCFLFedora4Client(final String storage, final String staging, final ObjectIdMapperType mapper) {
 
