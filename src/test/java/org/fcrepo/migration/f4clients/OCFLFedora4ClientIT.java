@@ -79,5 +79,10 @@ public class OCFLFedora4ClientIT {
         assertTrue("file " + baseName + " should exist as " + newFileName, client.exists(newFileName));
     }
 
+    @Test
+    public void testCreateResource() {
 
+        final String id = UUID.randomUUID().toString();
+        client.createResource(id);
+    }
 }
