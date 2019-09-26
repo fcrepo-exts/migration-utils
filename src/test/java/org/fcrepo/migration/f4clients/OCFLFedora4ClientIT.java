@@ -16,16 +16,17 @@
 
 package org.fcrepo.migration.f4clients;
 
-import static org.junit.Assert.assertFalse;
-
-import java.util.UUID;
-
 import org.fcrepo.migration.Fedora4Client;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.io.ByteArrayInputStream;
+import java.util.UUID;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * A basic suite of integration tests to test certain interaction patterns (and code) against the an OCFL version of
@@ -89,5 +90,16 @@ public class OCFLFedora4ClientIT {
 
         final String id = UUID.randomUUID().toString();
         client.createResource(id);
+    }
+
+    @Test
+    public void testCreateOrUpdateNonRDFResource() {
+        final String path = UUID.randomUUID().toString();
+        client.createResource(path);
+        client.createOrUpdateNonRDFResource(path + "/v1/content/file.xml",
+                new ByteArrayInputStream("<sample>test-1</sample>".getBytes()), "text/xml");
+        client.createOrUpdateNonRDFResource(path + "/v1/content/file.xml",
+                new ByteArrayInputStream("<sample>test-2</sample>".getBytes()), "text/xml");
+        // TODO - check the content of the file?
     }
 }
