@@ -62,6 +62,28 @@ public class OCFLFedora4ClientIT {
         // TODO implement integration test with client.createVersionSnapshot(id, "v1")
     }
 
+    /**
+     * Testing integration of the createPlaceholder() method.
+     * 
+     * TODO Futher integration tests may be needed.
+     * At time of writing, no methods exist to integrate with
+     *
+     * @author Dan Field
+     * @since 4.4.1-SNAPSHOT
+     */
+    @Test
+    public void testCreatePlaceholder() {
+
+        final String newFileName = UUID.randomUUID().toString();
+        boolean caught = false;
+        try {
+            final String returnedPath = client.createPlaceholder(newFileName);
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertFalse("createPlaceholder threw an exception", caught);
+    }
+
     @Test
     public void testCreateResource() {
 
