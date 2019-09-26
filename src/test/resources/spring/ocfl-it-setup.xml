@@ -199,7 +199,7 @@
 
     <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.OCFLFedora4Client">
         <constructor-arg name="storage" value="src/test/resources/ocflStorage"/>
-        <constructor-arg name="staging" value="src/test/resources/ocflStorage"/>
+        <constructor-arg name="staging" value="src/test/resources/staging"/>
         <constructor-arg name="mapper" value="FLAT"/>
     </bean>
     
