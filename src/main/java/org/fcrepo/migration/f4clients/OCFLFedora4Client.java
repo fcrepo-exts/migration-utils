@@ -141,7 +141,7 @@ public class OCFLFedora4Client implements Fedora4Client {
      */
     @Override
     public void createOrUpdateNonRDFResource(final String path, final InputStream content, final String contentType) {
-        LOGGER.info("createOrUpdateNonRDFResource: " + path + ", " + contentType);
+        LOGGER.debug("createOrUpdateNonRDFResource: {}, {}", path, contentType);
 
         final String ocflObject = objFromPath(path);
         final String ocflFilename = filenameFromPath(path);
