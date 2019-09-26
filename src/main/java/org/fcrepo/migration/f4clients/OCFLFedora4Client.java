@@ -4,10 +4,14 @@ package org.fcrepo.migration.f4clients;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.IOUtils;
 import org.fcrepo.migration.Fedora4Client;
 import org.slf4j.Logger;
 
@@ -129,6 +133,7 @@ public class OCFLFedora4Client implements Fedora4Client {
 
     /**
      * Creates or updates a non-RDF resource.
+     * Copied from {@link org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client#createOrUpdateNonRDFResource}
      *
      * @param path the path of the resource to be modified/created
      * @param content the non-RDF content
@@ -136,7 +141,39 @@ public class OCFLFedora4Client implements Fedora4Client {
      */
     @Override
     public void createOrUpdateNonRDFResource(final String path, final InputStream content, final String contentType) {
-        LOGGER.info("to-be-implemented: createOrUpdateNonRDFResource: " + path + ", " + contentType);
+        LOGGER.debug("createOrUpdateNonRDFResource: {}, {}", path, contentType);
+
+        final String ocflObject = objFromPath(path);
+        final String ocflFilename = filenameFromPath(path);
+
+        // Ensure object exists in staging
+        final File stagingObj = new File(stagingRoot, ocflObject);
+        if (!stagingObj.exists() && !stagingObj.mkdirs()) {
+            throw new RuntimeException("Unable to create staging object: " + stagingObj);
+        }
+
+        // Ensure resource file exists in staging
+        final File stagingFile = new File(stagingObj, ocflFilename);
+        try {
+            if (!stagingFile.createNewFile()) {
+                // staging-file already existed
+                LOGGER.debug("File already exists, {}", stagingFile);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Copy provided content into staging file
+        try {
+            final FileOutputStream outputStream = new FileOutputStream(stagingFile, false);
+            try {
+                IOUtils.copy(content, outputStream);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -232,5 +269,16 @@ public class OCFLFedora4Client implements Fedora4Client {
     private String objFromPath(final String path) {
         // return path before final '/', or full path
         return path.contains("/") ? path.substring(0, path.lastIndexOf('/')) : path;
+    }
+
+    /**
+     * Copied from {@link org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client#filenameFromPath}
+     *
+     * @param path the path to a resource
+     * @return file name
+     */
+    private String filenameFromPath(final String path) {
+        // return path element after final '/', or full path if no '/'
+        return path.contains("/") ? path.substring(path.lastIndexOf('/') + 1) : path;
     }
 }
