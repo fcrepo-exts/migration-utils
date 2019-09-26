@@ -20,6 +20,10 @@ import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
 import edu.wisc.library.ocfl.core.mapping.ObjectIdPathMapper;
 import edu.wisc.library.ocfl.core.mapping.ObjectIdPathMapperBuilder;
 import edu.wisc.library.ocfl.core.storage.FileSystemOcflStorage;
+import edu.wisc.library.ocfl.api.model.CommitInfo;
+import edu.wisc.library.ocfl.api.model.ObjectId;
+import edu.wisc.library.ocfl.api.model.User;
+
 
 /**
  * @author RichardDWilliams
@@ -184,7 +188,15 @@ public class OCFLFedora4Client implements Fedora4Client {
      */
     @Override
     public void createVersionSnapshot(final String path, final String versionId) {
-        LOGGER.info("to-be-implemented: createVersionSnapshot: {}, version-id: {}", path, versionId);
+        LOGGER.info("createVersionSnapshot: {}, version-id: {}", path, versionId);
+
+        // Copy the staged object into the storage root, as a new OCFL version
+        final String ocflObject = objFromPath(path);
+
+        final File stagingObject = new File(stagingRoot, ocflObject);
+        final User user = new User().setName("name").setAddress("address");
+        final CommitInfo defaultCommitInfo = new CommitInfo().setMessage("message").setUser(user);
+        ocflRepo.putObject(ObjectId.version(ocflObject, versionId), stagingObject.toPath(), defaultCommitInfo);
     }
 
     /**
