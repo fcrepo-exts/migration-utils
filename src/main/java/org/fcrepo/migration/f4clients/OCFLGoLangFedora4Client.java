@@ -8,11 +8,11 @@ import org.slf4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.UUID;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -116,15 +116,14 @@ public class OCFLGoLangFedora4Client implements Fedora4Client {
         }
 
         // Copy provided content into staging file... in append-mode.
-        try {
-            final FileOutputStream outputStream = new FileOutputStream(stagingFile, true);
+        try (final FileOutputStream outputStream = new FileOutputStream(stagingFile, true)) {
             try {
                 IOUtils.copy(content, outputStream);
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -175,7 +174,9 @@ public class OCFLGoLangFedora4Client implements Fedora4Client {
     public String createPlaceholder(final String path) {
         LOGGER.info("createPlaceholder: {}", path);
 
-        final File placeholder = new File(stagingRoot, path);
+        final File placeholder =
+                new File(stagingRoot,
+                         path == null ? UUID.randomUUID().toString() : path);
         if (!placeholder.exists() && !placeholder.mkdirs()) {
             throw new RuntimeException("Unable to create directory: " + storageRoot.getAbsolutePath() + "/" + path);
         }
@@ -214,7 +215,7 @@ public class OCFLGoLangFedora4Client implements Fedora4Client {
             // Read the standard out from the command
             String out;
             while ((out = stdInput.readLine()) != null) {
-                stdout.append(out);
+                stdout.append(out + "\n");
             }
             LOGGER.debug("standard output: '{}'", stdout);
 
@@ -222,7 +223,7 @@ public class OCFLGoLangFedora4Client implements Fedora4Client {
             final StringBuilder stderr = new StringBuilder();
             String err;
             while ((err = stdError.readLine()) != null) {
-                stderr.append(err);
+                stderr.append(err + "\n");
             }
             LOGGER.debug("standard error: '{}'", stderr);
 
