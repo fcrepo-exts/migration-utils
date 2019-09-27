@@ -61,6 +61,10 @@
         <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
     </bean>
     
+    <bean id="minimalMigration" class="org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler">
+    	<constructor-arg name="driver" ref="ocflDriver" />
+    </bean>
+    
     <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.HackyOcflDriver">
         <constructor-arg ref="${fedora.client:ocflFedoraClient}"></constructor-arg>
     </bean>
