@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.fcrepo.migration.Fedora4Client;
@@ -234,8 +235,18 @@ public class OCFLFedora4Client implements Fedora4Client {
      */
     @Override
     public String createPlaceholder(final String path) {
-        LOGGER.info("to-be-implemented: createPlaceholder: {} ", path);
-        final File placeholder = new File(stagingRoot, path);
+        LOGGER.info("createPlaceholder: {} ", path);
+
+        final String placeholderPath;
+        // if no path requested, generate one
+        if (path == null || path.isEmpty()) {
+            // Use a UUID to avoid collisions with other files / tests
+            placeholderPath = UUID.randomUUID().toString();
+        } else {
+            placeholderPath = path;
+        }
+
+        final File placeholder = new File(stagingRoot, placeholderPath);
         if (!placeholder.exists() && !placeholder.mkdirs()) {
             throw new RuntimeException("Unable to create directory: " + placeholder.getAbsolutePath());
         }
