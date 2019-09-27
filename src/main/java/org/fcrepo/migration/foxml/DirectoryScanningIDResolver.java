@@ -31,7 +31,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -93,14 +92,15 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
         } else {
             indexDir = cachedIndexDir;
         }
-        final Directory dir = FSDirectory.open(indexDir);
+
         if (indexDir.exists()) {
             LOGGER.warn("Index exists at \"" + indexDir.getPath() + "\" and will be used.  "
                     + "To clear index, simply delete this directory and re-run the application.");
         } else {
             final Analyzer analyzer = new StandardAnalyzer();
-            final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_4_10_3, analyzer);
+            final IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+            final Directory dir = FSDirectory.open(indexDir.toPath());
             final IndexWriter writer = new IndexWriter(dir, iwc);
             LOGGER.info("Builidng an index of all the datastreams in \"" + dsRoot.getPath() + "\"...");
             indexDatastreams(writer, dsRoot);
@@ -109,7 +109,7 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
             writer.close();
         }
 
-        final IndexReader reader = DirectoryReader.open(FSDirectory.open(indexDir));
+        final IndexReader reader = DirectoryReader.open(FSDirectory.open(indexDir.toPath()));
         searcher = new IndexSearcher(reader);
     }
 

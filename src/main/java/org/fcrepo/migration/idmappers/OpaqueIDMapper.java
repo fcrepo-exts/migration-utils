@@ -30,7 +30,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.fcrepo.migration.Fedora4Client;
 import org.fcrepo.migration.MigrationIDMapper;
 import org.slf4j.Logger;
@@ -106,18 +105,18 @@ public class OpaqueIDMapper implements MigrationIDMapper {
             indexDir = cachedIDIndexDir;
         }
 
-        final Directory dir = FSDirectory.open(indexDir);
+        final Directory dir = FSDirectory.open(indexDir.toPath());
         if (indexDir.exists()) {
             LOGGER.warn("Index exists at \"" + indexDir.getPath() + "\" and will be used.  "
                     + "To clear index, simply delete this directory and re-run the application.");
         }
         final Analyzer analyzer = new StandardAnalyzer();
-        final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_4_10_3, analyzer);
+        final IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
         iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         writer = new IndexWriter(dir, iwc);
         writer.commit();
 
-        searcherManager = new SearcherManager(writer, false, null);
+        searcherManager = new SearcherManager(writer, false, false, null);
     }
 
     /**
