@@ -17,7 +17,6 @@
 package org.fcrepo.migration.f4clients;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
@@ -27,7 +26,6 @@ import org.junit.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  * A basic suite of integration tests to test certain interaction patterns (and code) against the an OCFL version of
@@ -67,17 +65,29 @@ public class OCFLFedora4ClientIT {
     /**
      * Testing integration of the createPlaceholder() method.
      * 
+     * TODO Futher integration tests may be needed.
+     * At time of writing, no methods exist to integrate with
+     *
      * @author Dan Field
      * @since 4.4.1-SNAPSHOT
      */
     @Test
     public void testCreatePlaceholder() {
+
         final String newFileName = UUID.randomUUID().toString();
-        final String returnedPath = client.createPlaceholder(newFileName);
-        final String baseName = FilenameUtils.getBaseName(returnedPath);
-        // check returned file really exists
-        assertTrue("file " + baseName + " should exist as " + newFileName, client.exists(newFileName));
+        boolean caught = false;
+        try {
+            final String returnedPath = client.createPlaceholder(newFileName);
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertFalse("createPlaceholder threw an exception", caught);
     }
 
+    @Test
+    public void testCreateResource() {
 
+        final String id = UUID.randomUUID().toString();
+        client.createResource(id);
+    }
 }
