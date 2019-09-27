@@ -18,7 +18,7 @@
     <bean id="migrator" class="org.fcrepo.migration.Migrator">
         <property name="source" ref="exportedFoxmlDirectoryObjectSource" />
         <property name="handler" ref="objectAbstraction" />
-        <property name="limit" value="2" /><!-- CHANGE THIS IF YOU WANT TO MIGRATE MORE THAN 2 OBJECTS -->
+        <property name="limit" value="${migration.limit:2}" /><!-- SET migration.limit OR CHANGE THIS IF YOU WANT TO MIGRATE MORE THAN 2 OBJECTS -->
 
     </bean>
 
@@ -33,17 +33,17 @@
     </bean>
 
     <bean id="versionAbstraction" class="org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler">
-        <constructor-arg ref="basicMigration"/>
+        <constructor-arg ref="${migration.impl:basicMigration}"/>
     </bean>
 
     <bean id="basicMigration" class="org.fcrepo.migration.handlers.BasicObjectVersionHandler">
-        <constructor-arg name="client" ref="fedora4Client" />
+        <constructor-arg name="client" ref="${fedora.client:fedora4Client}" />
         <constructor-arg name="idMapper" ref="idMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
         <property name="customPropertyMapping" ref="propertiesFile" />
-        <property name="importExternal" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT E DATASTREAMS -->
-        <property name="importRedirect" value="false" /><!-- CHANGE THIS IF YOU WANT TO IMPORT R DATASTREAMS -->
+        <property name="importExternal" value="${migration.import.external:false}" /><!-- CHANGE THIS IF YOU WANT TO IMPORT E DATASTREAMS -->
+        <property name="importRedirect" value="${migration.import.redirect:false}" /><!-- CHANGE THIS IF YOU WANT TO IMPORT R DATASTREAMS -->
     </bean>
 
     <!--
@@ -53,12 +53,16 @@
     -->
     <bean id="idMapper" class="org.fcrepo.migration.idmappers.OpaqueIDMapper">
         <constructor-arg name="cachedIDIndexDir" ref="idIndex" />
-        <constructor-arg name="f4Client" ref="fedora4Client" />
+        <constructor-arg name="f4Client" ref="${fedora.client:fedora4Client}" />
     </bean>
 
 
     <bean id="namespacePrefixMapper" class="org.fcrepo.migration.foxml.NamespacePrefixMapper">
         <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
+    </bean>
+    
+    <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.HackyOcflDriver">
+        <constructor-arg ref="${fedora.client:ocflFedoraClient}"></constructor-arg>
     </bean>
 
     <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.StatelessFedora4Client">
@@ -67,29 +71,41 @@
         <!--<constructor-arg name="username" value="admin-username"/>-->
         <!--<constructor-arg name="password" value="admin-password"/>-->
     </bean>
+    
+    <bean id="ocflFedoraClient" class="org.fcrepo.migration.f4clients.OCFLFedora4Client">
+        <constructor-arg name="storage" value="${migration.ocfl.storage.dir:target/test/ocfl}"/>
+        <constructor-arg name="staging" value="${migration.ocfl.staging.dir:target/test/staging}"/>
+        <constructor-arg name="mapper" value="FLAT"/>
+    </bean>
+    
+    <bean id="ocflGoFedoraClient" class="org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client">
+        <constructor-arg name="storage" value="${migration.ocfl.storage.dir:target/test/ocfl}"/>
+        <constructor-arg name="staging" value="${migration.ocfl.staging.dir:target/test/staging}"/>
+    </bean>
 
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
 
     <!-- CHANGE THIS TO THE FEDORA 4 URL TO WHICH YOU WANT TO MIGRATE THE CONTENT -->
     <bean id="fedora4Url" class="java.lang.String">
-        <constructor-arg value="http://localhost:${fcrepo.dynamic.test.port:8080}/rest/" />
+        <constructor-arg value="${fedora.to.baseuri:http://localhost:${fcrepo.dynamic.test.port:8080}/rest/}" />
     </bean>
 
+    <!-- The fedora 2 or 3 server migrated content is coming from -->
     <bean id="localFedoraServer" class="java.lang.String">
-        <constructor-arg value="localhost:8080" />
+        <constructor-arg value="${fedora.from.server:localhost:8080}" />
     </bean>
 
     <bean id="namespaceFile" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="conf/namespaces.properties"/>
+        <constructor-arg type="java.lang.String" value="${migration.namespace.file:src/main/resources/namespaces.properties}"/>
     </bean>
 
     <bean id="propertiesFile" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="conf/custom-mapping.properties"/>
+        <constructor-arg type="java.lang.String" value="${migration.mapping.file:src/test/resources/custom-mapping.properties}"/>
     </bean>
 
-    <!-- CHANGE THIS TO THE DIRECTORY TO WHICH YOU EXPORTED "ARCHIVE" FOXML -->
+    <!-- SER foxml.export.dir OR CHANGE THIS TO THE DIRECTORY TO WHICH YOU EXPORTED "ARCHIVE" FOXML -->
     <bean id="exportDir" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="src/test/resources/exported" />
+        <constructor-arg type="java.lang.String" value="${foxml.export.dir:src/test/resources/exported}" />
     </bean>
 
     <bean id="idIndex" class="java.io.File">
