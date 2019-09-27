@@ -27,6 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * A basic suite of integration tests to test certain interaction patterns (and code) against the an OCFL version of
@@ -58,9 +59,11 @@ public class OCFLFedora4ClientIT {
         final String id = UUID.randomUUID().toString();
         assertFalse("Object should not exist: " + id, client.exists(id));
 
-        // TODO implement integration test with client.createResource(id) method
-
-        // TODO implement integration test with client.createVersionSnapshot(id, "v1")
+        client.createResource(id);
+        // Still should not exist... in the OCFL storage root
+        assertFalse("Object should not exist: " + id, client.exists(id));
+        client.createVersionSnapshot(id, "v1");
+        assertTrue("Object should exist: " + id, client.exists(id));
     }
 
     /**
