@@ -198,7 +198,7 @@ public class OCFLFedora4Client implements Fedora4Client {
         final File stagingObject = new File(stagingRoot, ocflObject);
         final User user = new User().setName("name").setAddress("address");
         final CommitInfo defaultCommitInfo = new CommitInfo().setMessage("message").setUser(user);
-        ocflRepo.putObject(ObjectId.version(ocflObject, versionId), stagingObject.toPath(), defaultCommitInfo);
+        ocflRepo.putObject(ObjectId.head(ocflObject), stagingObject.toPath(), defaultCommitInfo);
     }
 
     /**
