@@ -78,5 +78,11 @@ public class OCFLFedora4ClientTest {
         final File placeholderReturnedPath = new File(client.createPlaceholder(newFileName));
         // check that we get returned the path name of the previous placeholder
         assertEquals(newFileName, placeholderReturnedPath.getName());
+
+        // delete again and try passing a null path
+        assertTrue(placeholderReturnedPath.delete());
+        final File placeholderNullReturnedPath = new File(client.createPlaceholder(null));
+        // check that the returned path exists on disk
+        assertTrue(placeholderNullReturnedPath.exists());
     }
 }
