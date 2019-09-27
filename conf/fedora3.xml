@@ -61,12 +61,12 @@
     
     <!-- Set foxml.dir.objects or CHANGE THIS TO YOUR FEDORA 3 OBJECTS DIRECTORY -->
     <bean id="objectStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="${foxml.dir.objects:src/test/resources/legacyFS/objects}" />
+        <constructor-arg type="java.lang.String" value="${foxml.object.dir:src/test/resources/legacyFS/objects}" />
     </bean>
 
     <!-- Set foxml.store.datastreams or CHANGE THIS TO YOUR FEDORA 3 DATASTREAM DIRECTORY -->
     <bean id="datastreamStore" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="${foxml.dir.datastreams:src/test/resources/legacyFS/datastreams}" />
+        <constructor-arg type="java.lang.String" value="${foxml.datastream.dir:src/test/resources/legacyFS/datastreams}" />
     </bean>  
     
     <bean id="indexRoot" class="java.io.File">
