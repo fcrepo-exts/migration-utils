@@ -68,12 +68,13 @@ public class OCFLFedora4Client implements Fedora4Client {
         }
 
         // If locations exist instantiate repository
-        if (new File(storage).isDirectory() && new File(staging).isDirectory()) {
+        final File stagingDir = new File(staging);
+        if (new File(storage).isDirectory() && stagingDir.isDirectory()) {
             LOGGER.debug("OCFLFedora4Client: {}, {}", storage, staging);
             final Path repoDir = Paths.get(this.storageRoot);
             ocflRepo =
                     new OcflRepositoryBuilder().build(new FileSystemOcflStorage(repoDir,
-                            objectIdPathMapper), repoDir.resolve("deposit"));
+                            objectIdPathMapper), stagingDir.toPath());
         } else {
             final String missingDir = new File(storage).isDirectory() ? staging : storage;
             throw new RuntimeException("Failed to create OCFL repository, because location: " + missingDir +

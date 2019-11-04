@@ -1,6 +1,8 @@
 target/
 .idea
-migration-bean.xml*
 *~
+
+migration-bean.xml*
 id-index
 id-minter.log
+exported-id-index/
