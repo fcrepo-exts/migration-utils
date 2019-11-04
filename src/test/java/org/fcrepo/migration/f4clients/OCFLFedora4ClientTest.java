@@ -25,7 +25,8 @@ public class OCFLFedora4ClientTest {
     public static void setUp() {
 
         final String storage = "src/test/resources/ocflStorage";
-        final String staging = "src/test/resources/staging";
+        final String staging = "target/test/unit/staging";
+        new File(staging).mkdirs();
         client = new OCFLFedora4Client(storage, staging, OCFLFedora4Client.ObjectIdMapperType.FLAT);
     }
 
