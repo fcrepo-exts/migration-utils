@@ -198,8 +198,8 @@
     </bean>
 
     <bean id="fedora4Client" class="org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client">
-        <constructor-arg name="storage" value="target/test/ocfl"/>
-        <constructor-arg name="staging" value="target/test/staging"/>
+        <constructor-arg name="storage" value="target/test/go/ocfl"/>
+        <constructor-arg name="staging" value="target/test/go/staging"/>
     </bean>
     
 </beans>

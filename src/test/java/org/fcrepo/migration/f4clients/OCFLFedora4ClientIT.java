@@ -24,6 +24,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
@@ -42,6 +43,12 @@ public class OCFLFedora4ClientIT {
 
     @Before
     public void setup() throws BeansException {
+        // Create directories expected in this test (based on `spring/ocfl-it-setup.xml`)
+        final File storage = new File("target/test/ocfl/storage");
+        final File staging = new File("target/test/ocfl/staging");
+
+        storage.mkdirs();
+        staging.mkdirs();
 
         final ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("spring/ocfl-it-setup.xml");
         client = (Fedora4Client) context.getBean("fedora4Client");
