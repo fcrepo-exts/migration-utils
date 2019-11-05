@@ -53,7 +53,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 public class ArchiveGroupHandler
 implements FedoraObjectVersionHandler {
 
-    final OcflDriver driver;
+    private final OcflDriver driver;
 
     /**
      * Create an ArchiveGroupHandler,
@@ -143,7 +143,7 @@ implements FedoraObjectVersionHandler {
 
         final String uri =
                 "info:fedora/" + dv.getDatastreamInfo().getObjectInfo().getPid()
-                        + "/" + dv.getDatastreamInfo().getDatastreamId();
+                + "/" + dv.getDatastreamInfo().getDatastreamId();
         final String dsid = dv.getDatastreamInfo().getDatastreamId();
 
         if (dv.isFirstVersionIn(ref)) {
