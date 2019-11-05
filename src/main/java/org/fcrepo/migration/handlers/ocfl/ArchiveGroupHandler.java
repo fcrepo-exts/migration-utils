@@ -146,8 +146,6 @@ implements FedoraObjectVersionHandler {
                         + "/" + dv.getDatastreamInfo().getDatastreamId();
         final String dsid = dv.getDatastreamInfo().getDatastreamId();
 
-        System.out.println("DS URI: " + uri);
-
         if (dv.isFirstVersionIn(ref)) {
             createDates.put(dv.getDatastreamInfo().getDatastreamId(),
                             dv.getCreated());
