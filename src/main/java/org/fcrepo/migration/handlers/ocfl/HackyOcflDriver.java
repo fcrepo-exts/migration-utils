@@ -51,8 +51,6 @@ implements OcflDriver {
             @Override
             public void put(final String path, final InputStream content) {
 
-                System.out.println("PUT content with path " + path);
-
                 // We exploit knowledge that client chops up the given path into ocfl object id
                 // path via the "/" separator. ContentType is unused by the OCFL Fedora4Client
                 // impls.
