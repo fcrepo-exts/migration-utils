@@ -83,7 +83,7 @@
 
     <!-- Full LDP migration impl -->
     <bean id="ldpFull" class="org.fcrepo.migration.handlers.BasicObjectVersionHandler">
-        <constructor-arg name="client" ref="${fedora.client:fedora4}" />
+        <constructor-arg name="client" ref="${fedora.client:ocfl}" />
         <constructor-arg name="idMapper" ref="idMapper" />
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <constructor-arg name="namespacePrefixMapper" ref="namespacePrefixMapper"/>
@@ -99,7 +99,7 @@
     -->
     <bean id="idMapper" class="org.fcrepo.migration.idmappers.OpaqueIDMapper">
         <constructor-arg name="cachedIDIndexDir" ref="idIndex" />
-        <constructor-arg name="f4Client" ref="${fedora.client:fedora4}" />
+        <constructor-arg name="f4Client" ref="${fedora.client:ocfl}" />
     </bean>
 
 
@@ -112,7 +112,7 @@
     </bean>
     
     <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.HackyOcflDriver">
-        <constructor-arg ref="${fedora.client:ocflFedoraClient}"></constructor-arg>
+        <constructor-arg ref="${fedora.client:ocfl}"></constructor-arg>
     </bean>
 
     <bean id="fedora4" class="org.fcrepo.migration.f4clients.StatelessFedora4Client">
@@ -123,13 +123,13 @@
     </bean>
     
     <bean id="ocfl" class="org.fcrepo.migration.f4clients.OCFLFedora4Client">
-        <constructor-arg name="storage" value="${migration.ocfl.storage.dir:target/test/ocfl}"/>
+        <constructor-arg name="storage" value="${migration.ocfl.storage.dir:target/test/storage}"/>
         <constructor-arg name="staging" value="${migration.ocfl.staging.dir:target/test/staging}"/>
         <constructor-arg name="mapper" value="FLAT"/>
     </bean>
     
     <bean id="ocflGo" class="org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client">
-        <constructor-arg name="storage" value="${migration.ocfl.storage.dir:target/test/ocfl}"/>
+        <constructor-arg name="storage" value="${migration.ocfl.storage.dir:target/test/storage}"/>
         <constructor-arg name="staging" value="${migration.ocfl.staging.dir:target/test/staging}"/>
     </bean>
 

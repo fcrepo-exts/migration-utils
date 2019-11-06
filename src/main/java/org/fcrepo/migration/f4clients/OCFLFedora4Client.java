@@ -67,19 +67,26 @@ public class OCFLFedora4Client implements Fedora4Client {
             throw new RuntimeException("No implementation for the maper: " + mapper);
         }
 
-        // If locations exist instantiate repository
-        final File stagingDir = new File(staging);
-        if (new File(storage).isDirectory() && stagingDir.isDirectory()) {
-            LOGGER.debug("OCFLFedora4Client: {}, {}", storage, staging);
-            final Path repoDir = Paths.get(this.storageRoot);
-            ocflRepo =
-                    new OcflRepositoryBuilder().build(new FileSystemOcflStorage(repoDir,
-                            objectIdPathMapper), stagingDir.toPath());
-        } else {
-            final String missingDir = new File(storage).isDirectory() ? staging : storage;
-            throw new RuntimeException("Failed to create OCFL repository, because location: " + missingDir +
-                    " does not exists, or is not a directory.");
+        // Create storage dir if does not exist
+        final File storageDir = new File(storage);
+        if (!storageDir.isDirectory()) {
+            LOGGER.debug("Creating storage directory: {}", storageDir);
+            storageDir.mkdirs();
         }
+
+        // Create staging dir if does not exist
+        final File stagingDir = new File(staging);
+        if (!stagingDir.isDirectory()) {
+            LOGGER.debug("Creating staging directory: {}", stagingDir);
+            stagingDir.mkdirs();
+        }
+
+        LOGGER.debug("OCFLFedora4Client: {}, {}", storage, staging);
+        final Path repoDir = Paths.get(this.storageRoot);
+        ocflRepo =
+                new OcflRepositoryBuilder().build(new FileSystemOcflStorage(repoDir,
+                        objectIdPathMapper), stagingDir.toPath());
+
     }
 
     /**
