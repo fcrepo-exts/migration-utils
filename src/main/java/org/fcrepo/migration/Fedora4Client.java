@@ -112,4 +112,9 @@ public interface Fedora4Client {
      * @return true if it's a placeholder, false otherwise
      */
     public boolean isPlaceholder(String path);
+
+    /**
+     * Closes all resources held by this client.
+     */
+    public void close();
 }

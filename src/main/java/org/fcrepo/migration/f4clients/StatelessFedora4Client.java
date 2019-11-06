@@ -32,6 +32,9 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.HttpMethods;
 import org.fcrepo.migration.Fedora4Client;
+import org.slf4j.Logger;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A Fedora4Client implementation that uses the code from the
@@ -41,6 +44,8 @@ import org.fcrepo.migration.Fedora4Client;
  * @author mdurbin
  */
 public class StatelessFedora4Client implements Fedora4Client {
+
+    private static final Logger LOGGER = getLogger(StatelessFedora4Client.class);
 
     private String baseUri;
 
@@ -240,5 +245,10 @@ public class StatelessFedora4Client implements Fedora4Client {
         } catch (FcrepoOperationFailedException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void close() {
+        LOGGER.info("not-implemented: close");
     }
 }
