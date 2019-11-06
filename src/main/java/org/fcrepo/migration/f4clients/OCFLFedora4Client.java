@@ -291,6 +291,11 @@ public class OCFLFedora4Client implements Fedora4Client {
         return true;
     }
 
+    @Override
+    public void close() {
+        ocflRepo.close();
+    }
+
     /**
      * Copied from {@link org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client#objFromPath}
      *

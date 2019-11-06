@@ -112,7 +112,7 @@
     </bean>
     
     <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.HackyOcflDriver">
-        <constructor-arg ref="${fedora.client:ocfl}"></constructor-arg>
+        <constructor-arg ref="${fedora.client:ocfl}"/>
     </bean>
 
     <bean id="fedora4" class="org.fcrepo.migration.f4clients.StatelessFedora4Client">
