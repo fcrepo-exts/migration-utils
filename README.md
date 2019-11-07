@@ -1,12 +1,29 @@
 # Migration Utilities [![Build Status](https://travis-ci.org/fcrepo4-exts/migration-utils.png?branch=master)](https://travis-ci.org/fcrepo4-exts/migration-utils)
 
-A framework to support migration of data from Fedora 3 to Fedora 4 repositories.
+A framework to support migration of data from Fedora 3 to Fedora 4, 5, or 6 repositories
 
 ## Overview
 
-The main class (`org.fcrepo.migration.Migrator`) iterates over all of the fedora objects in a configured source (`org.fcrepo.migration.ObjectSource`) and handles them using the configured handler (`org.fcrepo.migration.StreamingFedoraObjectHandler`). The configuration is entirely contained within a Spring XML configuration file in [`src/main/resources/spring/migration-bean.xml`](https://github.com/fcrepo4-exts/migration-utils/blob/master/src/main/resources/spring/migration-bean.xml).
+This utility iterates the foxml files of a fedora 2 or 3 repository, and populates a fedora 4, 5, or 6 repository.
+
+For migrations to Fedora 4 and 5, the utility populates the repository via its APIs.  You will need a running fedora 4 or fedora 5 repository to perform the migration.
+The utility will perform various mapping operations in order to fit the fedora 2/3 model onto LDP as supported in Fedora 4 and 5.  In particular:
+
+* All RDF URIs will be re-mapped.  Fedora 2 and 3 use `info:fedora/` URIs in `RELS-EXT` and `RELS-INT`.  The migration utility will re-write these URIs into resolvable `http://` URIs that point to the corresponding resources in the fedora 4 or 5 repository
+* FOXML object properties will be expressed in terms of RDF according to the mapping defined in `${migration.mapping.file}`. See example [custom-mapping.properties](https://github.com/fcrepo4-exts/migration-utils/blob/master/src/main/resources/custom-mapping.properties).
+* TODO: is there more?
+
+Migrations to Fedora 6 may take a different approach, writing migrated objects directly to the filesystem as [OCFL](https://ocfl.io/draft/spec/)
+objects.  Additionally, a "minimal" migration mode is available that performs fewer transformations to migrated content.
+In particular:
+
+* There is a 1:1 correspondence between fedora 3 objects and OCFL objects.  Fedora 3 datastreams appear as files within the resulting OCFL objects.
+* RDF is not re-mapped, `info:fedora/` subjects and objects are kept intact as-is
+* FOXML object and datastream properties are represented as triples in additional sidecar files as per the mapping defined in `${migration.mapping.file}`. See example [custom-mapping.properties](https://github.com/fcrepo4-exts/migration-utils/blob/master/src/main/resources/custom-mapping.properties).
 
 ## Status
+
+Fedora 6 support is being actively developed, and is considered unstable until Fedora 6 is released.
 
 A basic migration scenario is implemented that may serve as a starting point for
 your own migration from Fedora 3.x to Fedora 4.x.
@@ -22,25 +39,41 @@ Background work
     * If so, fcrepo3 should not be running, and you will need to determine if you're using legacy or akubra storage
 * Determine your fcrepo4 url (ex: http://localhost:8080/rest/, http://yourHostName.ca:8080/fcrepo/rest/)
 
-_It is strongly recommended that you set up a local, empty Fedora 4 repository for testing migration of your resources because you can easily throw away the repository (or simply delete its data directory) when you're done testing, or if you wish to test a different migration configuration.  One should wait until one is fully content with the representation of one's migrated content in Fedora 4 before migrating content into an active or production repository._  
+*Warning*: _The migration tool is under active development, so these instructions will change as the configuration process becomes more refined_  
 
-Getting started:
+General usage of the migration utils CLI is as follows:
 
-1. [Download](https://github.com/fcrepo4-exts/migration-utils/releases) and extract the distribution zip file or clone the repo and build from source
-  - If you download a release, the jar file will be in the root of the directory.
-  - If you build from source, the jar file will be in the `target` directory.
-2. Choose an example configuration file that best suits your needs
-  - [conf/fedora2-native.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora2-native.xml) is a good start for migrating from fedora 2
-  - [conf/fedora3-akubra.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-akubra.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (akubra FS)
-  - [conf/fedora3-legacy.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-legacy.xml) is a good start for migrating from fedora 3 with access to the stored FOXML (legacy FS)
-  - [conf/fedora3-exported.xml](https://github.com/fcrepo4-exts/migration-utils/blob/master/conf/fedora3-exported.xml) is a good start for migrating exported FOXML from fedora 3
-3. Make necessary changes to the configuration to reflect your needs and local set up
-  - Most importantly you'll want to set the appropriate fedora 4 URL to which you want to migrate the resources
-  - Unless you just want to migrate the included test set, you'll also want to point the configuration to your fedora3 FOXML data files
-4. Run the migration scenario you have configured in the Spring XML configuration file:
+```java [system properties] -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar conf/fedora3.xml```
 
-```
-java -jar migration-utils-{version}-driver.jar <relative-or-absolute-path-to-configuration-file>
+The system properties determine the specific details of the migration, and are defined as follows:
+
+* `migration.layout` {exported, legacy, akubra}.  Foxml and datastream layout.  Default ***`exported`***
+* `migration.limit` Integer.  Maximum number of objects to export.  Default ***`2`***
+* `migration.strategy` {ldpFull, minimal}.  Migration strategy/technique from mapping Fedora 3 to LDP or OCFL.  `ldpFull` is the only option suitable for fcrepo4 and fcrepo5 migrations, as it performs the full suite of transformations from the fedora 3 model onto LDP.  `minimal` is an option for Fedora 6 for a transparent 1:1 mapping between fedora 3 objects and OCFL objects.  Default ***ldpFull***
+* `migration.import.external` {false, true}.  Whether to migrate external content.  Default ***`false`***
+* `migration.import.redirect` {false, true}.  Whether to migrate redirected content.  Default ***`false`***
+* `migration.mapping.file`.  File that has RDF predicate mappings in it for transforming migrated triples.  Default ***`src/test/resources/custom-mapping.properties`***
+* `migration.namespace.file`.  RDF namespace file.  Default  ***`src/main/resources/namespaces.properties`***
+* `migration.ocfl.storage.dir`.  Path to OCFL storage dir.  Only relevant when `fedora.client` is `ocfl` or `ocflGo`.  Default ***`target/test/ocfl`***
+* `migration.ocfl.staging.dir`.  Path to OCFL staging dir.  Only relevant when `fedora.client` is `ocfl` or `ocflGo`. Default ***`target/test/staging`***
+* `fedora.client`.  {fedora4, ocfl, ocflGo} Client to use for populating a fedora instance.  `fedora4` is an HTTP client used to populate Fedora via its APIs.  `ocfl` and `ocflGo` are clients that write OCFL objects to a filesystem, rather than an HTTP API.  They are suitable only for migrating to Fedora 6.  Default: ***`fedora4`***
+* `fedora.from.server`.  Host and port of a fedora3, not sure what it is used for.  Default: ***localhost:8080***
+* `fedora.to.baseuri`.  For full ldp-based migration (when the `fedora.client` is `fedora4`), the Fedora baseURI you want triples to be migrated to, and/or the Fedora you want to deposit content into.  Default ***http://localhost:${fcrepo.dynamic.test.port:8080}/rest/***
+* `foxml.export.dir`: When using the exported foxml layout, this is the directory containing exported foxml.  Default ***src/test/resources/exported***
+* `foxml.datastream.dir`.  Datastream directory for legacy and akubra layouts.  Default is ***src/test/resources/legacyFS/datastreams***
+* `foxml.object.dir`.  Foxml object dir for legacy and akubra layouts.  Default is ***src/test/resources/legacyFS/objects***
+
+### Examples
+
+Run a minimal fedora 6 migration from fedora3 legacy foxml
+
+```shell
+java  -Dmigration.strategy=minimal -Dmigration.layout=legacy -Dfedora.client=ocfl -Dmigration.limit=100 \
+-Dmigration.ocfl.storage.dir=target/test/ocfl \
+-Dmigration.ocfl.staging.dir=/tmp \
+-Dfoxml.object.dir=src/test/resources/legacyFS/objects  \
+-Dfoxml.datastream.dir=src/test/resources/legacyFS/datastreams  \
+-jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar conf/fedora3.xml
 ```
 
 ## Property Mappings
