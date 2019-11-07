@@ -247,8 +247,4 @@ public class StatelessFedora4Client implements Fedora4Client {
         }
     }
 
-    @Override
-    public void close() {
-        LOGGER.info("not-implemented: close");
-    }
 }
