@@ -57,7 +57,6 @@ public class Migrator {
         }
 
         final ConfigurableApplicationContext context = new FileSystemXmlApplicationContext(args[0]);
-        fedora4Client = context.getBean("ocfl", Fedora4Client.class);
         final Migrator m = context.getBean("migrator", Migrator.class);
         m.run();
         context.close();
@@ -66,9 +65,6 @@ public class Migrator {
     private ObjectSource source;
 
     private StreamingFedoraObjectHandler handler;
-
-    // Only used for clean shutdown
-    private static Fedora4Client fedora4Client;
 
     private int limit;
 
@@ -129,10 +125,6 @@ public class Migrator {
             if (o.getObjectInfo().getPid() != null) {
                 o.processObject(handler);
             }
-        }
-
-        if (fedora4Client != null) {
-            fedora4Client.close();
         }
     }
 

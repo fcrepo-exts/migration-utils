@@ -291,7 +291,9 @@ public class OCFLFedora4Client implements Fedora4Client {
         return true;
     }
 
-    @Override
+    /**
+     * Closes any resources the client has open
+     */
     public void close() {
         ocflRepo.close();
     }

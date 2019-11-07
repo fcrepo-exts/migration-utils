@@ -195,11 +195,6 @@ public class OCFLGoLangFedora4Client implements Fedora4Client {
         return true;
     }
 
-    @Override
-    public void close() {
-        LOGGER.info("not-implemented: close");
-    }
-
     /**
      * This method executes the backend OCFL commands
      *

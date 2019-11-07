@@ -113,8 +113,4 @@ public interface Fedora4Client {
      */
     public boolean isPlaceholder(String path);
 
-    /**
-     * Closes all resources held by this client.
-     */
-    public void close();
 }
