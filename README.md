@@ -9,8 +9,8 @@ This utility iterates the foxml files of a fedora 2 or 3 repository, and populat
 For migrations to Fedora 4 and 5, the utility populates the repository via its APIs.  You will need a running fedora 4 or fedora 5 repository to perform the migration.
 The utility will perform various mapping operations in order to fit the fedora 2/3 model onto LDP as supported in Fedora 4 and 5.  In particular:
 
-* All RDF URIs will be re-mapped.  Fedora 2 and 3 use `info:fedora/` URIs in `RELS-EXT` and `RELS-INT`.  THe migration utility will re-write these URIs into resolvable `http://` URIs that point to the corresponding resources in the fedora 4 or 5 repository
-* FOXML object properties will be expressed in terms of RDF according to a mapping
+* All RDF URIs will be re-mapped.  Fedora 2 and 3 use `info:fedora/` URIs in `RELS-EXT` and `RELS-INT`.  The migration utility will re-write these URIs into resolvable `http://` URIs that point to the corresponding resources in the fedora 4 or 5 repository
+* FOXML object properties will be expressed in terms of RDF according to the mapping defined in `${migration.mapping.file}`. See example [custom-mapping.properties](https://github.com/fcrepo4-exts/migration-utils/blob/master/src/main/resources/custom-mapping.properties).
 * TODO: is there more?
 
 Migrations to Fedora 6 may take a different approach, writing migrated objects directly to the filesystem as [OCFL](https://ocfl.io/draft/spec/)
@@ -19,7 +19,7 @@ In particular:
 
 * There is a 1:1 correspondence between fedora 3 objects and OCFL objects.  Fedora 3 datastreams appear as files within the resulting OCFL objects.
 * RDF is not re-mapped, `info:fedora/` subjects and objects are kept intact as-is
-* FOXML object and datastream properties are represented as triples in additional sidecar files
+* FOXML object and datastream properties are represented as triples in additional sidecar files as per the mapping defined in `${migration.mapping.file}`. See example [custom-mapping.properties](https://github.com/fcrepo4-exts/migration-utils/blob/master/src/main/resources/custom-mapping.properties).
 
 ## Status
 
