@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+import edu.wisc.library.ocfl.api.model.ObjectVersionId;
 import org.apache.commons.io.IOUtils;
 import org.fcrepo.migration.Fedora4Client;
 import org.slf4j.Logger;
@@ -22,7 +23,6 @@ import edu.wisc.library.ocfl.core.mapping.ObjectIdPathMapper;
 import edu.wisc.library.ocfl.core.mapping.ObjectIdPathMapperBuilder;
 import edu.wisc.library.ocfl.core.storage.FileSystemOcflStorage;
 import edu.wisc.library.ocfl.api.model.CommitInfo;
-import edu.wisc.library.ocfl.api.model.ObjectId;
 import edu.wisc.library.ocfl.api.model.User;
 
 
@@ -205,7 +205,7 @@ public class OCFLFedora4Client implements Fedora4Client {
         final File stagingObject = new File(stagingRoot, ocflObject);
         final User user = new User().setName("name").setAddress("address");
         final CommitInfo defaultCommitInfo = new CommitInfo().setMessage("message").setUser(user);
-        ocflRepo.putObject(ObjectId.head(ocflObject), stagingObject.toPath(), defaultCommitInfo);
+        ocflRepo.putObject(ObjectVersionId.head(ocflObject), stagingObject.toPath(), defaultCommitInfo);
     }
 
     /**
