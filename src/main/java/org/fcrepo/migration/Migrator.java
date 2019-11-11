@@ -21,9 +21,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.fcrepo.migration.pidlist.PidListManager;
 import org.slf4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -58,8 +60,11 @@ public class Migrator {
 
         final ConfigurableApplicationContext context = new FileSystemXmlApplicationContext(args[0]);
         final Migrator m = context.getBean("migrator", Migrator.class);
-        m.run();
-        context.close();
+        try {
+            m.run();
+        } finally {
+            context.close();
+        }
     }
 
     private ObjectSource source;
@@ -67,6 +72,8 @@ public class Migrator {
     private StreamingFedoraObjectHandler handler;
 
     private int limit;
+
+    private List<PidListManager> pidListManagers;
 
     /**
      * the migrator. set limit to -1.
@@ -101,6 +108,15 @@ public class Migrator {
     }
 
     /**
+     * set the list of PidListManagers
+     *
+     * @param pidListManagers the list
+     */
+    public void setPidListManagers(final List<PidListManager> pidListManagers) {
+        this.pidListManagers = pidListManagers;
+    }
+
+    /**
      * The constructor for migrator.
      * @param source the source
      * @param handler the handler
@@ -118,14 +134,33 @@ public class Migrator {
     public void run() throws XMLStreamException {
         int index = 0;
         for (final FedoraObjectProcessor o : source) {
-            if (limit >= 0 && index ++ >= limit) {
-                break;
-            }
-            LOGGER.info("Processing \"" + o.getObjectInfo().getPid() + "\"...");
-            if (o.getObjectInfo().getPid() != null) {
-                o.processObject(handler);
+            final String pid = o.getObjectInfo().getPid();
+            if (pid != null) {
+
+                // Process if limit is '-1', or we have not hit the non-negative 'limit'...
+                //  ..and the PidListManager accepts the PID
+                if ((limit < 0 || index++ < limit) && acceptPid(pid)) {
+                    LOGGER.info("Processing \"" + pid + "\"...");
+                    o.processObject(handler);
+                }
             }
         }
+    }
+
+    private boolean acceptPid(final String pid) {
+
+        // If there is not manager, accept the PID
+        if (pidListManagers == null) {
+            return true;
+        }
+
+        // If any manager DOES NOT accept the PID, return false
+        for (PidListManager m : pidListManagers) {
+            if (!m.accept(pid)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void printHelp() throws IOException {

@@ -56,12 +56,25 @@ The system properties determine the specific details of the migration, and are d
 * `migration.namespace.file`.  RDF namespace file.  Default  ***`src/main/resources/namespaces.properties`***
 * `migration.ocfl.storage.dir`.  Path to OCFL storage dir.  Only relevant when `fedora.client` is `ocfl`.  Default ***`target/test/ocfl`***
 * `migration.ocfl.staging.dir`.  Path to OCFL staging dir.  Only relevant when `fedora.client` is `ocfl`. Default ***`target/test/staging`***
+* `migration.pid.list.file`.  File containing list of PIDs to migrate.  Only relevant when `fedora.client` is `ocfl`. Default ***`null`***
+* `migration.pid.resume.dir`.  Path to directory in which a "resume file" will be created/used in the case that a previous run must be resumed from the last exported PID/Object.  Only relevant when `fedora.client` is `ocfl`. Default ***`target/test/pid`***
+* `migration.pid.resume.all`.  Boolean flag indicating whether the current execution should resume from the last exported PID/Object of process from the beginning.  Only relevant when `fedora.client` is `ocfl`. Default ***`true`***
 * `fedora.client`.  {fedora4, ocfl} Client to use for populating a fedora instance.  `fedora4` is an HTTP client used to populate Fedora via its APIs.  `ocfl` is a client that writes OCFL objects to a filesystem, rather than an HTTP API.  They are suitable only for migrating to Fedora 6.  Default: ***`fedora4`***
 * `fedora.from.server`.  Host and port of a fedora3, not sure what it is used for.  Default: ***localhost:8080***
 * `fedora.to.baseuri`.  For full ldp-based migration (when the `fedora.client` is `fedora4`), the Fedora baseURI you want triples to be migrated to, and/or the Fedora you want to deposit content into.  Default ***http://localhost:${fcrepo.dynamic.test.port:8080}/rest/***
 * `foxml.export.dir`: When using the exported foxml layout, this is the directory containing exported foxml.  Default ***src/test/resources/exported***
 * `foxml.datastream.dir`.  Datastream directory for legacy and akubra layouts.  Default is ***src/test/resources/legacyFS/datastreams***
 * `foxml.object.dir`.  Foxml object dir for legacy and akubra layouts.  Default is ***src/test/resources/legacyFS/objects***
+
+### PID migration selection
+
+The default migration configuration will migrate all of the Fedora 2/3 objects found in the source. Subsequent runs will simply re-migrate all of those objects.
+However, there are circumstances when it is preferred that only a subset of all source objects be migrated.
+There are three means by which a subset of objects may be selected for migration (noting that these means may also be combined).
+* *Limit*: When setting the `limit` configuration (detailed above), the migration will be performed on first X-number of objects specified by the value of `limit`.
+* *PID List*: When a pid-list is provided (detailed above), the migration will only be performed on the objects associated with the PIDs in the provided pid-list file.
+* *Resume*: When enabling the `resume` configuration (detailed above), a file is maintained that keeps track of the last successfully migration object. Subsequent executions will only migrate objects following the last migrated object. Note, this capability is based on the assumption that the order of objects to be migrated is deterministic and the same from one execution to the next.
+
 
 ### Examples
 
