@@ -81,7 +81,7 @@ implements FedoraObjectVersionHandler {
             // ArchiveGroups is not defined,
             // so this is a bit of a stab in the dark.
             if (ov.isFirstVersion()) {
-                session.put("object.ttl", getObjTriples(ov));
+                session.put("object.nt", getObjTriples(ov));
             }
 
             // Write datastreams and their metadata
@@ -108,7 +108,7 @@ implements FedoraObjectVersionHandler {
                 }
 
                 /* Write metadata */
-                session.put(dsid + ".ttl",
+                session.put(dsid + ".nt",
                             getDsTriples(dv, ov.getObject(), dsCreateDates));
             });
 
@@ -130,7 +130,7 @@ implements FedoraObjectVersionHandler {
             }
         });
 
-        triples.write(out, "TTL");
+        triples.write(out, "N-TRIPLES");
         return new ByteArrayInputStream(out.toByteArray());
     }
 
@@ -180,7 +180,7 @@ implements FedoraObjectVersionHandler {
                          "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType",
                          dv.getMimeType());
 
-        triples.write(out, "TTL");
+        triples.write(out, "N-TRIPLES");
         return new ByteArrayInputStream(out.toByteArray());
     }
 
