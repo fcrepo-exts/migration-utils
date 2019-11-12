@@ -107,7 +107,6 @@ public class OCFLFedora4Client implements Fedora4Client {
 
     /**
      * Creates a new resource at the given path.
-     * Copied from {@link org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client#createResource}
      *
      * @param path the path to the new resource
      */
@@ -146,7 +145,6 @@ public class OCFLFedora4Client implements Fedora4Client {
 
     /**
      * Creates or updates a non-RDF resource.
-     * Copied from {@link org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client#createOrUpdateNonRDFResource}
      *
      * @param path the path of the resource to be modified/created
      * @param content the non-RDF content
@@ -299,8 +297,6 @@ public class OCFLFedora4Client implements Fedora4Client {
     }
 
     /**
-     * Copied from {@link org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client#objFromPath}
-     *
      * @param path the path to the new resource
      * @return object ID
      */
@@ -310,8 +306,6 @@ public class OCFLFedora4Client implements Fedora4Client {
     }
 
     /**
-     * Copied from {@link org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client#filenameFromPath}
-     *
      * @param path the path to a resource
      * @return file name
      */
