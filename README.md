@@ -54,9 +54,9 @@ The system properties determine the specific details of the migration, and are d
 * `migration.import.redirect` {false, true}.  Whether to migrate redirected content.  Default ***`false`***
 * `migration.mapping.file`.  File that has RDF predicate mappings in it for transforming migrated triples.  Default ***`src/test/resources/custom-mapping.properties`***
 * `migration.namespace.file`.  RDF namespace file.  Default  ***`src/main/resources/namespaces.properties`***
-* `migration.ocfl.storage.dir`.  Path to OCFL storage dir.  Only relevant when `fedora.client` is `ocfl` or `ocflGo`.  Default ***`target/test/ocfl`***
-* `migration.ocfl.staging.dir`.  Path to OCFL staging dir.  Only relevant when `fedora.client` is `ocfl` or `ocflGo`. Default ***`target/test/staging`***
-* `fedora.client`.  {fedora4, ocfl, ocflGo} Client to use for populating a fedora instance.  `fedora4` is an HTTP client used to populate Fedora via its APIs.  `ocfl` and `ocflGo` are clients that write OCFL objects to a filesystem, rather than an HTTP API.  They are suitable only for migrating to Fedora 6.  Default: ***`fedora4`***
+* `migration.ocfl.storage.dir`.  Path to OCFL storage dir.  Only relevant when `fedora.client` is `ocfl`.  Default ***`target/test/ocfl`***
+* `migration.ocfl.staging.dir`.  Path to OCFL staging dir.  Only relevant when `fedora.client` is `ocfl`. Default ***`target/test/staging`***
+* `fedora.client`.  {fedora4, ocfl} Client to use for populating a fedora instance.  `fedora4` is an HTTP client used to populate Fedora via its APIs.  `ocfl` is a client that writes OCFL objects to a filesystem, rather than an HTTP API.  They are suitable only for migrating to Fedora 6.  Default: ***`fedora4`***
 * `fedora.from.server`.  Host and port of a fedora3, not sure what it is used for.  Default: ***localhost:8080***
 * `fedora.to.baseuri`.  For full ldp-based migration (when the `fedora.client` is `fedora4`), the Fedora baseURI you want triples to be migrated to, and/or the Fedora you want to deposit content into.  Default ***http://localhost:${fcrepo.dynamic.test.port:8080}/rest/***
 * `foxml.export.dir`: When using the exported foxml layout, this is the directory containing exported foxml.  Default ***src/test/resources/exported***

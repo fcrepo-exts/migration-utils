@@ -127,11 +127,6 @@
         <constructor-arg name="staging" value="${migration.ocfl.staging.dir:target/test/staging}"/>
         <constructor-arg name="mapper" value="FLAT"/>
     </bean>
-    
-    <bean id="ocflGo" class="org.fcrepo.migration.f4clients.OCFLGoLangFedora4Client">
-        <constructor-arg name="storage" value="${migration.ocfl.storage.dir:target/test/storage}"/>
-        <constructor-arg name="staging" value="${migration.ocfl.staging.dir:target/test/staging}"/>
-    </bean>
 
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
 
