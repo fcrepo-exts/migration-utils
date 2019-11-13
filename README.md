@@ -1,4 +1,4 @@
-# Migration Utilities [![Build Status](https://travis-ci.org/fcrepo4-exts/migration-utils.png?branch=master)](https://travis-ci.org/fcrepo4-exts/migration-utils)
+# Migration Utilities [![Build Status](https://travis-ci.com/fcrepo4-exts/migration-utils.svg?branch=master)](https://travis-ci.com/fcrepo4-exts/migration-utils)
 
 A framework to support migration of data from Fedora 3 to Fedora 4, 5, or 6 repositories
 
