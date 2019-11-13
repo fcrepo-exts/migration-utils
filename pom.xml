@@ -16,7 +16,7 @@
   <properties>
     <project_name>migration-utils</project_name>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring.version>4.3.17.RELEASE</spring.version>
+    <spring.version>5.2.1.RELEASE</spring.version>
     <lucene.version>7.1.0</lucene.version>
     <jena.version>2.12.1</jena.version>
     <checkstyle.plugin.version>2.15</checkstyle.plugin.version>
