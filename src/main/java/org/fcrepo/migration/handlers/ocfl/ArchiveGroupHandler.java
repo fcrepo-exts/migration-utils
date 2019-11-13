@@ -179,6 +179,18 @@ implements FedoraObjectVersionHandler {
                          uri,
                          "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType",
                          dv.getMimeType());
+        addLongLiteral(triples,
+                       uri,
+                       "http://www.loc.gov/premis/rdf/v1#size",
+                       dv.getSize());
+
+        if (dv.getContentDigest() != null) {
+            addStringLiteral(triples,
+                    uri,
+                    "http://www.loc.gov/premis/rdf/v1#hasMessageDigest",
+                    "urn:" + dv.getContentDigest().getType().toLowerCase() + ":" +
+                            dv.getContentDigest().getDigest().toLowerCase());
+        }
 
         triples.write(out, "N-TRIPLES");
         return new ByteArrayInputStream(out.toByteArray());
@@ -201,6 +213,17 @@ implements FedoraObjectVersionHandler {
             m.addLiteral(m.createResource(s),
                          m.createProperty(p),
                          m.createTypedLiteral(date, XSDDatatype.XSDdateTime));
+        }
+    }
+
+    private static void addLongLiteral(final Model m,
+                                       final String s,
+                                       final String p,
+                                       final long number) {
+        if (number != -1) {
+            m.addLiteral(m.createResource(s),
+                    m.createProperty(p),
+                    m.createTypedLiteral(number, XSDDatatype.XSDlong));
         }
     }
 }
