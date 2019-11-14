@@ -16,6 +16,7 @@
 
 package org.fcrepo.migration.f4clients;
 
+import org.apache.commons.io.FileUtils;
 import org.fcrepo.migration.Fedora4Client;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,9 +26,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.Collection;
 import java.util.UUID;
 
+import static org.apache.commons.io.filefilter.FileFilterUtils.trueFileFilter;
+import static org.fcrepo.migration.f4clients.OCFLFedora4Client.ObjectIdMapperType.FLAT;
+import static org.fcrepo.migration.f4clients.OCFLFedora4Client.ObjectIdMapperType.PAIRTREE;
+import static org.fcrepo.migration.f4clients.OCFLFedora4Client.ObjectIdMapperType.TRUNCATED;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -40,12 +48,14 @@ import static org.junit.Assert.assertTrue;
 public class OCFLFedora4ClientIT {
 
     private Fedora4Client client;
+    private File storage;
+    private File staging;
 
     @Before
     public void setup() throws BeansException {
         // Create directories expected in this test (based on `spring/ocfl-it-setup.xml`)
-        final File storage = new File("target/test/ocfl/storage");
-        final File staging = new File("target/test/ocfl/staging");
+        storage = new File("target/test/ocfl/storage");
+        staging = new File("target/test/ocfl/staging");
 
         storage.mkdirs();
         staging.mkdirs();
@@ -111,5 +121,77 @@ public class OCFLFedora4ClientIT {
         client.createOrUpdateNonRDFResource(path + "/v1/content/file.xml",
                 new ByteArrayInputStream("<sample>test-2</sample>".getBytes()), "text/xml");
         // TODO - check the content of the file?
+    }
+
+    @Test
+    public void testFlatLayout() {
+        client = new OCFLFedora4Client(storage.getPath(), staging.getPath(), FLAT);
+
+        final String id = "flat-" + UUID.randomUUID().toString();
+        client.createResource(id);
+
+        client.createVersionSnapshot(id, "not-used");
+        assertTrue("Object should exist: " + id, client.exists(id));
+        assertTrue("Should exist in storage: " + id, new File(storage, id).exists());
+    }
+
+    @Test
+    public void testPairtreeLayout() {
+        final String storage2 = storage.getPath() + "-pair";
+        client = new OCFLFedora4Client(storage2, staging.getPath(), PAIRTREE);
+
+        final String id = "pairtree-" + UUID.randomUUID().toString();
+        client.createResource(id);
+
+        client.createVersionSnapshot(id, "not-used");
+        assertTrue("Object should exist: " + id, client.exists(id));
+
+        final Collection<File> files = FileUtils.listFilesAndDirs(
+                new File(storage2),
+                trueFileFilter(),
+                trueFileFilter());
+
+        File found = null;
+        for (File f : files) {
+            if (f.getName().equals(id.substring(id.length() - 4))) {
+                found = f;
+            }
+        }
+
+        assertNotNull(found);
+        assertEquals(id.substring(id.length() - 4), found.getName());
+        assertTrue("Should be more than half as many path elements as length of ID",
+                id.length() / 2 < found.toPath().getNameCount());
+    }
+
+    @Test
+    public void testTruncatedLayout() {
+        final String storage2 = storage.getPath() + "-truncated";
+        client = new OCFLFedora4Client(storage2, staging.getPath(), TRUNCATED);
+
+        final String id = "truncated-" + UUID.randomUUID().toString();
+        client.createResource(id);
+
+        client.createVersionSnapshot(id, "not-used");
+        assertTrue("Object should exist: " + id, client.exists(id));
+
+        final Collection<File> files = FileUtils.listFilesAndDirs(
+                new File(storage2),
+                trueFileFilter(),
+                trueFileFilter());
+
+        File found = null;
+        for (File f : files) {
+            if (f.getName().length() > 40) {
+                found = f;
+            }
+        }
+
+        assertNotNull(found);
+
+        // The "truncated" algorithm is three levels deep, with the fourth level being the full hash
+        // ..each of the three levels contains sets of three characters from the hash.
+        final String topLevelName = found.getParentFile().getParentFile().getParentFile().getName();
+        assertEquals(topLevelName, found.getName().substring(0, 3));
     }
 }

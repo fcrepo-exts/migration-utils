@@ -56,6 +56,7 @@ The system properties determine the specific details of the migration, and are d
 * `migration.namespace.file`.  RDF namespace file.  Default  ***`src/main/resources/namespaces.properties`***
 * `migration.ocfl.storage.dir`.  Path to OCFL storage dir.  Only relevant when `fedora.client` is `ocfl`.  Default ***`target/test/ocfl`***
 * `migration.ocfl.staging.dir`.  Path to OCFL staging dir.  Only relevant when `fedora.client` is `ocfl`. Default ***`target/test/staging`***
+* `migration.ocfl.layout`.  Storage layout approach. Options include FLAT, PAIRTREE, and TRUNCATED. Only relevant when `fedora.client` is `ocfl`. Default ***`FLAT`***
 * `migration.pid.list.file`.  File containing list of PIDs to migrate.  Only relevant when `fedora.client` is `ocfl`. Default ***`null`***
 * `migration.pid.resume.dir`.  Path to directory in which a "resume file" will be created/used in the case that a previous run must be resumed from the last exported PID/Object.  Only relevant when `fedora.client` is `ocfl`. Default ***`target/test/pid`***
 * `migration.pid.resume.all`.  Boolean flag indicating whether the current execution should resume from the last exported PID/Object of process from the beginning.  Only relevant when `fedora.client` is `ocfl`. Default ***`true`***
