@@ -41,7 +41,7 @@ public class OCFLFedora4Client implements Fedora4Client {
     private final String stagingRoot;
 
     public enum ObjectIdMapperType {
-        FLAT
+        FLAT, PAIRTREE, TRUNCATED
     }
 
     /**
@@ -58,13 +58,20 @@ public class OCFLFedora4Client implements Fedora4Client {
         this.storageRoot = storage;
         this.stagingRoot = staging;
 
-        ObjectIdPathMapper objectIdPathMapper = null;
+        ObjectIdPathMapper objectIdPathMapper;
+        final ObjectIdPathMapperBuilder builder = new ObjectIdPathMapperBuilder().withDefaultCaffeineCache();
         switch (mapper) {
         case FLAT:
-            objectIdPathMapper = new ObjectIdPathMapperBuilder().withDefaultCaffeineCache().buildFlatMapper();
+            objectIdPathMapper = builder.buildFlatMapper();
+            break;
+        case PAIRTREE:
+            objectIdPathMapper = builder.buildDefaultPairTreeMapper();
+            break;
+        case TRUNCATED:
+            objectIdPathMapper = builder.buildDefaultTruncatedHashMapper();
             break;
         default:
-            throw new RuntimeException("No implementation for the maper: " + mapper);
+            throw new RuntimeException("No implementation for the mapper: " + mapper);
         }
 
         // Create storage dir if does not exist

@@ -136,7 +136,7 @@
     <bean id="ocfl" class="org.fcrepo.migration.f4clients.OCFLFedora4Client" destroy-method="close">
         <constructor-arg name="storage" value="${migration.ocfl.storage.dir:target/test/storage}"/>
         <constructor-arg name="staging" value="${migration.ocfl.staging.dir:target/test/staging}"/>
-        <constructor-arg name="mapper" value="FLAT"/>
+        <constructor-arg name="mapper" value="${migration.ocfl.layout:FLAT}"/>
     </bean>
 
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
