@@ -19,6 +19,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import edu.wisc.library.ocfl.api.util.Enforce;
@@ -35,6 +37,8 @@ import org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler;
 import org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler;
 import org.fcrepo.migration.handlers.ocfl.HackyOcflDriver;
 import org.fcrepo.migration.handlers.ocfl.OcflDriver;
+import org.fcrepo.migration.pidlist.PidListManager;
+import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.slf4j.Logger;
 
 import picocli.CommandLine;
@@ -139,6 +143,7 @@ public class PicocliMigrator implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
+        // Pre-processing directory verification
         Enforce.notNull(ocflStorageDir, "ocflStorageDir must be provided!");
 
         // Create Staging dir if not provided
@@ -146,6 +151,13 @@ public class PicocliMigrator implements Callable<Integer> {
             ocflStagingDir = new File(ocflStorageDir.getParentFile(), "staging");
         }
 
+        // Create PID list dir
+        final File pidDir = new File(ocflStorageDir.getParentFile(), "pid");
+        if (!pidDir.exists()) {
+            pidDir.mkdirs();
+        }
+
+        // Which F3 source are we using? - verify associated options
         ObjectSource objectSource;
         InternalIDResolver idResolver;
         switch (f3SourceType) {
@@ -176,6 +188,7 @@ public class PicocliMigrator implements Callable<Integer> {
                 throw new RuntimeException("Should never happen");
         }
 
+        // Build up the constituent parts of the 'migrator'
         final OCFLFedora4Client fedora4Client = new OCFLFedora4Client(
                 ocflStorageDir.getAbsolutePath(),
                 ocflStagingDir.getAbsolutePath(),
@@ -186,10 +199,15 @@ public class PicocliMigrator implements Callable<Integer> {
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 versionHandler);
 
+        // PID-list-managers (the second arg is "acceptAll". If resuming, we do not "acceptAll")
+        final ResumePidListManager resumeManager = new ResumePidListManager(pidDir, !resume);
+        final List<PidListManager> pidListManagerList = Collections.singletonList(resumeManager);
+
         final Migrator migrator = new Migrator();
         migrator.setLimit(objectLimit);
         migrator.setSource(objectSource);
         migrator.setHandler(objectHandler);
+        migrator.setPidListManagers(pidListManagerList);
 
         try {
             migrator.run();
