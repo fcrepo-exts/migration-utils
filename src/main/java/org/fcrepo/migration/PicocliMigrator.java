@@ -73,7 +73,7 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Directory containing Fedora 3 datastreams (used with --source-type AKUBRA or LEGACY)")
     private File f3DatastreamsDir;
 
-    @Option(names = {"--objects-dir", "-s"}, order = 3,
+    @Option(names = {"--objects-dir", "-o"}, order = 3,
             description = "Directory containing Fedora 3 objects (used with --source-type AKUBRA or LEGACY)")
     private File f3ObjectsDir;
 
@@ -81,24 +81,19 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Directory containing Fedora 3 export (used with --source-type EXPORTED)")
     private File f3ExportedDir;
 
-    @Option(names = {"--ocfl-storage-dir", "-o"}, required = true, order = 5,
-            description = "Directory where OCFL storage root will be written")
-    private File ocflStorageDir;
-
-    @Option(names = {"--ocfl-staging-dir", "-a"}, order = 6,
-            description = "Directory for OCFL content staging " +
-                    "(defaults to 'staging' dir inside parent dir of --ocfl-storage-dir)")
-    private File ocflStagingDir;
+    @Option(names = {"--working-dir", "-w"}, required = true, order = 5,
+            description = "Directory where OCFL storage root and supporting state will be written")
+    private File workingDir;
 
     @Option(names = {"--layout", "-y"}, defaultValue = "FLAT", showDefaultValue = ALWAYS, order = 20,
             description = "OCFL layout of storage root")
     private ObjectIdMapperType ocflLayout;
 
-    @Option(names = { "--limit", "-l" }, defaultValue = "-1", showDefaultValue = ALWAYS, order = 21,
+    @Option(names = {"--limit", "-l"}, defaultValue = "-1", showDefaultValue = ALWAYS, order = 21,
             description = "Limit number of objects to be processed.")
     private int objectLimit;
 
-    @Option(names = { "--resume", "-r" }, defaultValue = "false", showDefaultValue = ALWAYS, order = 22,
+    @Option(names = {"--resume", "-r"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 22,
             description = "Resume from last successfully migrated Fedora 3 object")
     private boolean resume;
 
@@ -144,15 +139,25 @@ public class PicocliMigrator implements Callable<Integer> {
     public Integer call() throws Exception {
 
         // Pre-processing directory verification
-        Enforce.notNull(ocflStorageDir, "ocflStorageDir must be provided!");
+        Enforce.notNull(workingDir, "workingDir must be provided!");
+        if (!workingDir.exists()) {
+            workingDir.mkdirs();
+        }
 
-        // Create Staging dir if not provided
-        if (ocflStagingDir == null) {
-            ocflStagingDir = new File(ocflStorageDir.getParentFile(), "staging");
+        // Create OCFL Storage dir
+        final File ocflStorageDir = new File(workingDir, "ocfl");
+        if (!ocflStorageDir.exists()) {
+            ocflStorageDir.mkdirs();
+        }
+
+        // Create Staging dir
+        final File ocflStagingDir = new File(workingDir, "staging");
+        if (!ocflStagingDir.exists()) {
+            ocflStagingDir.mkdirs();
         }
 
         // Create PID list dir
-        final File pidDir = new File(ocflStorageDir.getParentFile(), "pid");
+        final File pidDir = new File(workingDir, "pid");
         if (!pidDir.exists()) {
             pidDir.mkdirs();
         }
