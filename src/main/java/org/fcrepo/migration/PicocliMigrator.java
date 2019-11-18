@@ -15,6 +15,8 @@
  */
 package org.fcrepo.migration;
 
+import static edu.wisc.library.ocfl.api.util.Enforce.expressionTrue;
+import static edu.wisc.library.ocfl.api.util.Enforce.notNull;
 import static org.slf4j.LoggerFactory.getLogger;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 
@@ -23,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import edu.wisc.library.ocfl.api.util.Enforce;
 import org.apache.commons.io.FileUtils;
 import org.fcrepo.migration.f4clients.OCFLFedora4Client;
 import org.fcrepo.migration.f4clients.OCFLFedora4Client.ObjectIdMapperType;
@@ -48,6 +49,9 @@ import picocli.CommandLine.Option;
 
 
 /**
+ * This class provides a simple CLI for running and configuring migration-utils
+ * - See README.md for usage details
+ *
  * @author Remi Malessa
  * @author awoods
  * @since 2019-11-15
@@ -144,7 +148,7 @@ public class PicocliMigrator implements Callable<Integer> {
     public Integer call() throws Exception {
 
         // Pre-processing directory verification
-        Enforce.notNull(workingDir, "workingDir must be provided!");
+        notNull(workingDir, "workingDir must be provided!");
         if (!workingDir.exists()) {
             workingDir.mkdirs();
         }
@@ -175,23 +179,23 @@ public class PicocliMigrator implements Callable<Integer> {
         InternalIDResolver idResolver;
         switch (f3SourceType) {
             case EXPORTED:
-                Enforce.notNull(f3ExportedDir, "f3ExportDir must be used with EXPORTED source!");
+                notNull(f3ExportedDir, "f3ExportDir must be used with EXPORTED source!");
 
                 objectSource = new ArchiveExportedFoxmlDirectoryObjectSource(f3ExportedDir, localFedoraServer);
                 break;
             case AKUBRA:
-                Enforce.notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with AKUBRA or LEGACY source!");
-                Enforce.notNull(f3ObjectsDir, "f3ObjectsDir must be used with AKUBRA or LEGACY source!");
-                Enforce.expressionTrue(f3ObjectsDir.exists(), f3ObjectsDir, "f3ObjectsDir must exist! " +
+                notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with AKUBRA or LEGACY source!");
+                notNull(f3ObjectsDir, "f3ObjectsDir must be used with AKUBRA or LEGACY source!");
+                expressionTrue(f3ObjectsDir.exists(), f3ObjectsDir, "f3ObjectsDir must exist! " +
                         f3ObjectsDir.getAbsolutePath());
 
                 idResolver = new AkubraFSIDResolver(f3DatastreamsDir);
                 objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, localFedoraServer);
                 break;
             case LEGACY:
-                Enforce.notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with AKUBRA or LEGACY source!");
-                Enforce.notNull(f3ObjectsDir, "f3ObjectsDir must be used with AKUBRA or LEGACY source!");
-                Enforce.expressionTrue(f3ObjectsDir.exists(), f3ObjectsDir, "f3ObjectsDir must exist! " +
+                notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with AKUBRA or LEGACY source!");
+                notNull(f3ObjectsDir, "f3ObjectsDir must be used with AKUBRA or LEGACY source!");
+                expressionTrue(f3ObjectsDir.exists(), f3ObjectsDir, "f3ObjectsDir must exist! " +
                         f3ObjectsDir.getAbsolutePath());
 
                 idResolver = new LegacyFSIDResolver(f3DatastreamsDir);
