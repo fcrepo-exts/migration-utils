@@ -43,29 +43,41 @@ Background work
 
 General usage of the migration utils CLI is as follows:
 
-```java [system properties] -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar conf/fedora3.xml```
+```java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar [various options | --help]```
 
-The system properties determine the specific details of the migration, and are defined as follows:
-
-* `migration.layout` {exported, legacy, akubra}.  Foxml and datastream layout.  Default ***`exported`***
-* `migration.limit` Integer.  Maximum number of objects to export.  Default ***`2`***
-* `migration.strategy` {ldpFull, minimal}.  Migration strategy/technique from mapping Fedora 3 to LDP or OCFL.  `ldpFull` is the only option suitable for fcrepo4 and fcrepo5 migrations, as it performs the full suite of transformations from the fedora 3 model onto LDP.  `minimal` is an option for Fedora 6 for a transparent 1:1 mapping between fedora 3 objects and OCFL objects.  Default ***ldpFull***
-* `migration.import.external` {false, true}.  Whether to migrate external content.  Default ***`false`***
-* `migration.import.redirect` {false, true}.  Whether to migrate redirected content.  Default ***`false`***
-* `migration.mapping.file`.  File that has RDF predicate mappings in it for transforming migrated triples.  Default ***`src/test/resources/custom-mapping.properties`***
-* `migration.namespace.file`.  RDF namespace file.  Default  ***`src/main/resources/namespaces.properties`***
-* `migration.ocfl.storage.dir`.  Path to OCFL storage dir.  Only relevant when `fedora.client` is `ocfl`.  Default ***`target/test/ocfl`***
-* `migration.ocfl.staging.dir`.  Path to OCFL staging dir.  Only relevant when `fedora.client` is `ocfl`. Default ***`target/test/staging`***
-* `migration.ocfl.layout`.  Storage layout approach. Options include FLAT, PAIRTREE, and TRUNCATED. Only relevant when `fedora.client` is `ocfl`. Default ***`FLAT`***
-* `migration.pid.list.file`.  File containing list of PIDs to migrate.  Only relevant when `fedora.client` is `ocfl`. Default ***`null`***
-* `migration.pid.resume.dir`.  Path to directory in which a "resume file" will be created/used in the case that a previous run must be resumed from the last exported PID/Object.  Only relevant when `fedora.client` is `ocfl`. Default ***`target/test/pid`***
-* `migration.pid.resume.all`.  Boolean flag indicating whether the current execution should resume from the last exported PID/Object of process from the beginning.  Only relevant when `fedora.client` is `ocfl`. Default ***`true`***
-* `fedora.client`.  {fedora4, ocfl} Client to use for populating a fedora instance.  `fedora4` is an HTTP client used to populate Fedora via its APIs.  `ocfl` is a client that writes OCFL objects to a filesystem, rather than an HTTP API.  They are suitable only for migrating to Fedora 6.  Default: ***`fedora4`***
-* `fedora.from.server`.  Host and port of a fedora3, not sure what it is used for.  Default: ***localhost:8080***
-* `fedora.to.baseuri`.  For full ldp-based migration (when the `fedora.client` is `fedora4`), the Fedora baseURI you want triples to be migrated to, and/or the Fedora you want to deposit content into.  Default ***http://localhost:${fcrepo.dynamic.test.port:8080}/rest/***
-* `foxml.export.dir`: When using the exported foxml layout, this is the directory containing exported foxml.  Default ***src/test/resources/exported***
-* `foxml.datastream.dir`.  Datastream directory for legacy and akubra layouts.  Default is ***src/test/resources/legacyFS/datastreams***
-* `foxml.object.dir`.  Foxml object dir for legacy and akubra layouts.  Default is ***src/test/resources/legacyFS/objects***
+The following CLI options for specifying details of a given migration are available:
+```
+Usage: migration-utils [-hrV] [--debug] [-d=<f3DatastreamsDir>]
+                       [-e=<f3ExportedDir>] [-l=<objectLimit>]
+                       [-o=<f3ObjectsDir>] [-p=<pidFile>] -t=<f3SourceType>
+                       -w=<workingDir> [-y=<ocflLayout>]
+  -h, --help                 Show this help message and exit.
+  -V, --version              Print version information and exit.
+  -t, --source-type=<f3SourceType>
+                             Fedora 3 source type. Choices: AKUBRA | LEGACY |
+                               EXPORTED
+  -d, --datastreams-dir=<f3DatastreamsDir>
+                             Directory containing Fedora 3 datastreams (used
+                               with --source-type AKUBRA or LEGACY)
+  -o, --objects-dir=<f3ObjectsDir>
+                             Directory containing Fedora 3 objects (used with
+                               --source-type AKUBRA or LEGACY)
+  -e, --exported-dir=<f3ExportedDir>
+                             Directory containing Fedora 3 export (used with
+                               --source-type EXPORTED)
+  -w, --working-dir=<workingDir>
+                             Directory where OCFL storage root and supporting
+                               state will be written
+  -y, --layout=<ocflLayout>  OCFL layout of storage root
+                               Default: FLAT
+  -l, --limit=<objectLimit>  Limit number of objects to be processed.
+                               Default: -1
+  -r, --resume               Resume from last successfully migrated Fedora 3
+                               object
+                               Default: false
+  -p, --pid-file=<pidFile>   PID file listing which Fedora 3 objects to migrate
+      --debug                Enables debug logging
+```
 
 ### PID migration selection
 
@@ -82,12 +94,12 @@ There are three means by which a subset of objects may be selected for migration
 Run a minimal fedora 6 migration from fedora3 legacy foxml
 
 ```shell
-java  -Dmigration.strategy=minimal -Dmigration.layout=legacy -Dfedora.client=ocfl -Dmigration.limit=100 \
--Dmigration.ocfl.storage.dir=target/test/ocfl \
--Dmigration.ocfl.staging.dir=/tmp \
--Dfoxml.object.dir=src/test/resources/legacyFS/objects  \
--Dfoxml.datastream.dir=src/test/resources/legacyFS/datastreams  \
--jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar conf/fedora3.xml
+java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=legacy --limit=100 --working-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams
+```
+Run a minimal fedora 6 migration from a fedora3 archival export
+```shell
+java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exported --limit=100 --working-dir=target/test/ocfl --exported-dir=src/test/resources/exported
+
 ```
 
 ## Property Mappings

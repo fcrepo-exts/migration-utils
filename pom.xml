@@ -196,6 +196,11 @@
       <type>war</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>4.0.4</version>
+    </dependency>
   </dependencies>
 
   <repositories>
@@ -397,7 +402,7 @@
               </descriptors>
               <archive>
                 <manifest>
-                  <mainClass>org.fcrepo.migration.Migrator</mainClass>
+                  <mainClass>org.fcrepo.migration.PicocliMigrator</mainClass>
                 </manifest>
               </archive>
             </configuration>
