@@ -167,6 +167,9 @@ public class PicocliMigrator implements Callable<Integer> {
             pidDir.mkdirs();
         }
 
+        // Default "local Fedora server" URI... can expose as user-option in the future
+        final String localFedoraServer = "fedora.info";
+
         // Which F3 source are we using? - verify associated options
         ObjectSource objectSource;
         InternalIDResolver idResolver;
@@ -174,7 +177,7 @@ public class PicocliMigrator implements Callable<Integer> {
             case EXPORTED:
                 Enforce.notNull(f3ExportedDir, "f3ExportDir must be used with EXPORTED source!");
 
-                objectSource = new ArchiveExportedFoxmlDirectoryObjectSource(f3ExportedDir, null);
+                objectSource = new ArchiveExportedFoxmlDirectoryObjectSource(f3ExportedDir, localFedoraServer);
                 break;
             case AKUBRA:
                 Enforce.notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with AKUBRA or LEGACY source!");
@@ -183,7 +186,7 @@ public class PicocliMigrator implements Callable<Integer> {
                         f3ObjectsDir.getAbsolutePath());
 
                 idResolver = new AkubraFSIDResolver(f3DatastreamsDir);
-                objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, null);
+                objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, localFedoraServer);
                 break;
             case LEGACY:
                 Enforce.notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with AKUBRA or LEGACY source!");
@@ -192,7 +195,7 @@ public class PicocliMigrator implements Callable<Integer> {
                         f3ObjectsDir.getAbsolutePath());
 
                 idResolver = new LegacyFSIDResolver(f3DatastreamsDir);
-                objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, null);
+                objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, localFedoraServer);
                 break;
             default:
                 throw new RuntimeException("Should never happen");
