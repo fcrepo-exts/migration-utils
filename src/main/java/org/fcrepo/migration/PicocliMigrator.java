@@ -19,7 +19,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 
 import java.io.File;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -39,6 +39,7 @@ import org.fcrepo.migration.handlers.ocfl.HackyOcflDriver;
 import org.fcrepo.migration.handlers.ocfl.OcflDriver;
 import org.fcrepo.migration.pidlist.PidListManager;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
+import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.slf4j.Logger;
 
 import picocli.CommandLine;
@@ -96,6 +97,10 @@ public class PicocliMigrator implements Callable<Integer> {
     @Option(names = {"--resume", "-r"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 22,
             description = "Resume from last successfully migrated Fedora 3 object")
     private boolean resume;
+
+    @Option(names = {"--pid-file", "-p"}, order = 23,
+            description = "PID file listing which Fedora 3 objects to migrate")
+    private File pidFile;
 
     @Option(names = {"--debug"}, order = 30, description = "Enables debug logging")
     private boolean debug;
@@ -204,9 +209,14 @@ public class PicocliMigrator implements Callable<Integer> {
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 versionHandler);
 
-        // PID-list-managers (the second arg is "acceptAll". If resuming, we do not "acceptAll")
+        // PID-list-managers
+        // - Resume PID manager: the second arg is "acceptAll". If resuming, we do not "acceptAll")
         final ResumePidListManager resumeManager = new ResumePidListManager(pidDir, !resume);
-        final List<PidListManager> pidListManagerList = Collections.singletonList(resumeManager);
+
+        // - PID-list manager
+        final UserProvidedPidListManager pidListManager = new UserProvidedPidListManager(pidFile);
+
+        final List<PidListManager> pidListManagerList = Arrays.asList(pidListManager, resumeManager);
 
         final Migrator migrator = new Migrator();
         migrator.setLimit(objectLimit);
