@@ -47,10 +47,10 @@ General usage of the migration utils CLI is as follows:
 
 The following CLI options for specifying details of a given migration are available:
 ```
-Usage: migration-utils [-hrV] [--debug] [-d=<f3DatastreamsDir>]
+Usage: migration-utils [-hrV] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
                        [-e=<f3ExportedDir>] [-l=<objectLimit>]
                        [-o=<f3ObjectsDir>] [-p=<pidFile>] -t=<f3SourceType>
-                       -w=<workingDir> [-y=<ocflLayout>]
+                       [-y=<ocflLayout>]
   -h, --help                 Show this help message and exit.
   -V, --version              Print version information and exit.
   -t, --source-type=<f3SourceType>
@@ -65,13 +65,14 @@ Usage: migration-utils [-hrV] [--debug] [-d=<f3DatastreamsDir>]
   -e, --exported-dir=<f3ExportedDir>
                              Directory containing Fedora 3 export (used with
                                --source-type EXPORTED)
-  -w, --working-dir=<workingDir>
+  -a, --target-dir=<targetDir>
                              Directory where OCFL storage root and supporting
                                state will be written
-  -y, --layout=<ocflLayout>  OCFL layout of storage root
+  -y, --layout=<ocflLayout>  OCFL layout of storage root. Choices: FLAT |
+                               PAIRTREE | TRUNCATED
                                Default: FLAT
   -l, --limit=<objectLimit>  Limit number of objects to be processed.
-                               Default: -1
+                               Default: no limit
   -r, --resume               Resume from last successfully migrated Fedora 3
                                object
                                Default: false
