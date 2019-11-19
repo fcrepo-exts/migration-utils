@@ -86,16 +86,16 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Directory containing Fedora 3 export (used with --source-type EXPORTED)")
     private File f3ExportedDir;
 
-    @Option(names = {"--working-dir", "-w"}, required = true, order = 5,
+    @Option(names = {"--target-dir", "-a"}, required = true, order = 5,
             description = "Directory where OCFL storage root and supporting state will be written")
-    private File workingDir;
+    private File targetDir;
 
     @Option(names = {"--layout", "-y"}, defaultValue = "FLAT", showDefaultValue = ALWAYS, order = 20,
-            description = "OCFL layout of storage root")
+            description = "OCFL layout of storage root. Choices: FLAT | PAIRTREE | TRUNCATED")
     private ObjectIdMapperType ocflLayout;
 
-    @Option(names = {"--limit", "-l"}, defaultValue = "-1", showDefaultValue = ALWAYS, order = 21,
-            description = "Limit number of objects to be processed.")
+    @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 21,
+            description = "Limit number of objects to be processed.\n  Default: no limit")
     private int objectLimit;
 
     @Option(names = {"--resume", "-r"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 22,
@@ -148,25 +148,25 @@ public class PicocliMigrator implements Callable<Integer> {
     public Integer call() throws Exception {
 
         // Pre-processing directory verification
-        notNull(workingDir, "workingDir must be provided!");
-        if (!workingDir.exists()) {
-            workingDir.mkdirs();
+        notNull(targetDir, "targetDir must be provided!");
+        if (!targetDir.exists()) {
+            targetDir.mkdirs();
         }
 
         // Create OCFL Storage dir
-        final File ocflStorageDir = new File(workingDir, "ocfl");
+        final File ocflStorageDir = new File(targetDir, "ocfl");
         if (!ocflStorageDir.exists()) {
             ocflStorageDir.mkdirs();
         }
 
         // Create Staging dir
-        final File ocflStagingDir = new File(workingDir, "staging");
+        final File ocflStagingDir = new File(targetDir, "staging");
         if (!ocflStagingDir.exists()) {
             ocflStagingDir.mkdirs();
         }
 
         // Create PID list dir
-        final File pidDir = new File(workingDir, "pid");
+        final File pidDir = new File(targetDir, "pid");
         if (!pidDir.exists()) {
             pidDir.mkdirs();
         }
