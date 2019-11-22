@@ -45,6 +45,8 @@ General usage of the migration utils CLI is as follows:
 
 ```java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar [various options | --help]```
 
+*Note that the migration utility will only run under Java 11+.*  
+
 The following CLI options for specifying details of a given migration are available:
 ```
 Usage: migration-utils [-hrV] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
@@ -154,7 +156,7 @@ java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exporte
 
 ### Development
 
-The migration-utils software is built with [Maven 3](https://maven.apache.org) and requires either Java 8 or Java 11.
+The migration-utils software is built with [Maven 3](https://maven.apache.org) and requires Java 11 and Maven 3.1+.
 ```bash
 mvn clean install
 ```
@@ -162,8 +164,7 @@ The executable utility will be found in the `target` directory.
 
 ## Maintainers
 
-Current maintainers
+Current maintainer
 
-* [Mike Durbin](https://github.com/mikedurbin)
-* [Nick Ruest](https://github.com/ruebot)
+* [Andrew Woods](https://github.com/awoods)
 
