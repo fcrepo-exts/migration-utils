@@ -70,28 +70,32 @@ public class PicocliMigrator implements Callable<Integer> {
         }
     }
 
+    private static ObjectIdMapperType layoutToType(final String v) {
+        return ObjectIdMapperType.valueOf(v.toUpperCase());
+    }
+
     @Option(names = {"--source-type", "-t"}, required = true, order = 1,
-            description = "Fedora 3 source type. Choices: AKUBRA | LEGACY | EXPORTED")
+            description = "Fedora 3 source type. Choices: akubra | legacy | exported")
     private F3SourceTypes f3SourceType;
 
     @Option(names = {"--datastreams-dir", "-d"}, order = 2,
-            description = "Directory containing Fedora 3 datastreams (used with --source-type AKUBRA or LEGACY)")
+            description = "Directory containing Fedora 3 datastreams (used with --source-type 'akubra' or 'legacy')")
     private File f3DatastreamsDir;
 
     @Option(names = {"--objects-dir", "-o"}, order = 3,
-            description = "Directory containing Fedora 3 objects (used with --source-type AKUBRA or LEGACY)")
+            description = "Directory containing Fedora 3 objects (used with --source-type 'akubra' or 'legacy')")
     private File f3ObjectsDir;
 
     @Option(names = {"--exported-dir", "-e"}, order = 4,
-            description = "Directory containing Fedora 3 export (used with --source-type EXPORTED)")
+            description = "Directory containing Fedora 3 export (used with --source-type 'exported')")
     private File f3ExportedDir;
 
     @Option(names = {"--target-dir", "-a"}, required = true, order = 5,
             description = "Directory where OCFL storage root and supporting state will be written")
     private File targetDir;
 
-    @Option(names = {"--layout", "-y"}, defaultValue = "FLAT", showDefaultValue = ALWAYS, order = 20,
-            description = "OCFL layout of storage root. Choices: FLAT | PAIRTREE | TRUNCATED")
+    @Option(names = {"--layout", "-y"}, defaultValue = "flat", showDefaultValue = ALWAYS, order = 20,
+            description = "OCFL layout of storage root. Choices: flat | pairtree | truncated")
     private ObjectIdMapperType ocflLayout;
 
     @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 21,
@@ -117,6 +121,7 @@ public class PicocliMigrator implements Callable<Integer> {
         final PicocliMigrator migrator = new PicocliMigrator();
         final CommandLine cmd = new CommandLine(migrator);
         cmd.registerConverter(F3SourceTypes.class, F3SourceTypes::toType);
+        cmd.registerConverter(ObjectIdMapperType.class, PicocliMigrator::layoutToType);
         cmd.setExecutionExceptionHandler(new PicoliMigrationExceptionHandler(migrator));
 
         cmd.execute(args);
@@ -179,13 +184,13 @@ public class PicocliMigrator implements Callable<Integer> {
         InternalIDResolver idResolver;
         switch (f3SourceType) {
             case EXPORTED:
-                notNull(f3ExportedDir, "f3ExportDir must be used with EXPORTED source!");
+                notNull(f3ExportedDir, "f3ExportDir must be used with 'exported' source!");
 
                 objectSource = new ArchiveExportedFoxmlDirectoryObjectSource(f3ExportedDir, localFedoraServer);
                 break;
             case AKUBRA:
-                notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with AKUBRA or LEGACY source!");
-                notNull(f3ObjectsDir, "f3ObjectsDir must be used with AKUBRA or LEGACY source!");
+                notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with 'akubra' or 'legacy' source!");
+                notNull(f3ObjectsDir, "f3ObjectsDir must be used with 'akubra' or 'legacy' source!");
                 expressionTrue(f3ObjectsDir.exists(), f3ObjectsDir, "f3ObjectsDir must exist! " +
                         f3ObjectsDir.getAbsolutePath());
 
@@ -193,8 +198,8 @@ public class PicocliMigrator implements Callable<Integer> {
                 objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, localFedoraServer);
                 break;
             case LEGACY:
-                notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with AKUBRA or LEGACY source!");
-                notNull(f3ObjectsDir, "f3ObjectsDir must be used with AKUBRA or LEGACY source!");
+                notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with 'akubra' or 'legacy' source!");
+                notNull(f3ObjectsDir, "f3ObjectsDir must be used with 'akubra' or 'legacy' source!");
                 expressionTrue(f3ObjectsDir.exists(), f3ObjectsDir, "f3ObjectsDir must exist! " +
                         f3ObjectsDir.getAbsolutePath());
 
