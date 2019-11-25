@@ -56,23 +56,23 @@ Usage: migration-utils [-hrV] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
   -h, --help                 Show this help message and exit.
   -V, --version              Print version information and exit.
   -t, --source-type=<f3SourceType>
-                             Fedora 3 source type. Choices: AKUBRA | LEGACY |
-                               EXPORTED
+                             Fedora 3 source type. Choices: akubra | legacy |
+                               exported
   -d, --datastreams-dir=<f3DatastreamsDir>
                              Directory containing Fedora 3 datastreams (used
-                               with --source-type AKUBRA or LEGACY)
+                               with --source-type 'akubra' or 'legacy')
   -o, --objects-dir=<f3ObjectsDir>
                              Directory containing Fedora 3 objects (used with
-                               --source-type AKUBRA or LEGACY)
+                               --source-type 'akubra' or 'legacy')
   -e, --exported-dir=<f3ExportedDir>
                              Directory containing Fedora 3 export (used with
-                               --source-type EXPORTED)
+                               --source-type 'exported')
   -a, --target-dir=<targetDir>
                              Directory where OCFL storage root and supporting
                                state will be written
-  -y, --layout=<ocflLayout>  OCFL layout of storage root. Choices: FLAT |
-                               PAIRTREE | TRUNCATED
-                               Default: FLAT
+  -y, --layout=<ocflLayout>  OCFL layout of storage root. Choices: flat |
+                               pairtree | truncated
+                               Default: flat
   -l, --limit=<objectLimit>  Limit number of objects to be processed.
                                Default: no limit
   -r, --resume               Resume from last successfully migrated Fedora 3
