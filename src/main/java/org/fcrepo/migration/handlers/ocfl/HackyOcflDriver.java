@@ -53,17 +53,17 @@ implements OcflDriver {
 
                 // We exploit knowledge that client chops up the given path into ocfl object id
                 // path via the "/" separator. ContentType is unused by the OCFL Fedora4Client
-                // impls.
+                // impls, so we use the least-specific mime type
                 client.createOrUpdateNonRDFResource(id + "/" + path,
                                                     content,
-                        "foo/dontCare");
+                        "application/octet-stream");
             }
 
             @Override
             public void commit() {
 
                 // versionID is unused by the OCFL Fedora4Client impls
-                client.createVersionSnapshot(id, "foo");
+                client.createVersionSnapshot(id, "ignored");
             }
         };
     }
