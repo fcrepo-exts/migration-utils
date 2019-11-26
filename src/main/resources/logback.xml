@@ -24,7 +24,7 @@
         <appender-ref ref="IDFILE"/>
     </logger>
 
-    <logger name="org.fcrepo.migration" additivity="false" level="DEBUG">
+    <logger name="org.fcrepo.migration" additivity="false" level="INFO">
         <appender-ref ref="STDOUT"/>
     </logger>
 
