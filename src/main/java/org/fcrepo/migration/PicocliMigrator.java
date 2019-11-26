@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import org.apache.commons.io.FileUtils;
 import org.fcrepo.migration.f4clients.OCFLFedora4Client;
 import org.fcrepo.migration.f4clients.OCFLFedora4Client.ObjectIdMapperType;
@@ -43,6 +45,7 @@ import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.slf4j.Logger;
 
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -149,8 +152,19 @@ public class PicocliMigrator implements Callable<Integer> {
         }
     }
 
+    private static void setDebugLogLevel() {
+        final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final ch.qos.logback.classic.Logger logger = loggerContext.getLogger("org.fcrepo.migration");
+        logger.setLevel(Level.toLevel("DEBUG"));
+    }
+
     @Override
     public Integer call() throws Exception {
+
+        // Set debug log level if requested
+        if (debug) {
+            setDebugLogLevel();
+        }
 
         // Pre-processing directory verification
         notNull(targetDir, "targetDir must be provided!");
