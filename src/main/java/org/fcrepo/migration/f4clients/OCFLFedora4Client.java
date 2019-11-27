@@ -13,18 +13,17 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 import edu.wisc.library.ocfl.api.OcflOption;
+import edu.wisc.library.ocfl.api.OcflRepository;
+import edu.wisc.library.ocfl.api.model.CommitInfo;
 import edu.wisc.library.ocfl.api.model.ObjectVersionId;
+import edu.wisc.library.ocfl.api.model.User;
+import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
+import edu.wisc.library.ocfl.core.extension.layout.config.DefaultLayoutConfig;
+import edu.wisc.library.ocfl.core.extension.layout.config.LayoutConfig;
+import edu.wisc.library.ocfl.core.storage.FileSystemOcflStorage;
 import org.apache.commons.io.IOUtils;
 import org.fcrepo.migration.Fedora4Client;
 import org.slf4j.Logger;
-
-import edu.wisc.library.ocfl.api.OcflRepository;
-import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
-import edu.wisc.library.ocfl.core.mapping.ObjectIdPathMapper;
-import edu.wisc.library.ocfl.core.mapping.ObjectIdPathMapperBuilder;
-import edu.wisc.library.ocfl.core.storage.FileSystemOcflStorage;
-import edu.wisc.library.ocfl.api.model.CommitInfo;
-import edu.wisc.library.ocfl.api.model.User;
 
 
 /**
@@ -59,17 +58,16 @@ public class OCFLFedora4Client implements Fedora4Client {
         this.storageRoot = storage;
         this.stagingRoot = staging;
 
-        ObjectIdPathMapper objectIdPathMapper;
-        final ObjectIdPathMapperBuilder builder = new ObjectIdPathMapperBuilder().withDefaultCaffeineCache();
+        LayoutConfig layoutConfig;
         switch (mapper) {
         case FLAT:
-            objectIdPathMapper = builder.buildFlatMapper();
+            layoutConfig = DefaultLayoutConfig.flatUrlConfig();
             break;
         case PAIRTREE:
-            objectIdPathMapper = builder.buildDefaultPairTreeMapper();
+            layoutConfig = DefaultLayoutConfig.pairTreeConfig();
             break;
         case TRUNCATED:
-            objectIdPathMapper = builder.buildDefaultTruncatedHashMapper();
+            layoutConfig = DefaultLayoutConfig.nTupleHashConfig();
             break;
         default:
             throw new RuntimeException("No implementation for the mapper: " + mapper);
@@ -91,9 +89,9 @@ public class OCFLFedora4Client implements Fedora4Client {
 
         LOGGER.debug("OCFLFedora4Client: {}, {}", storage, staging);
         final Path repoDir = Paths.get(this.storageRoot);
-        ocflRepo =
-                new OcflRepositoryBuilder().build(new FileSystemOcflStorage(repoDir,
-                        objectIdPathMapper), stagingDir.toPath());
+        ocflRepo = new OcflRepositoryBuilder()
+                .layoutConfig(layoutConfig)
+                .build(FileSystemOcflStorage.builder().build(repoDir), stagingDir.toPath());
 
     }
 
