@@ -188,10 +188,8 @@ public class OCFLFedora4ClientIT {
         }
 
         assertNotNull(found);
-
-        // The "truncated" algorithm is three levels deep, with the fourth level being the full hash
-        // ..each of the three levels contains sets of three characters from the hash.
-        final String topLevelName = found.getParentFile().getParentFile().getParentFile().getName();
-        assertEquals(topLevelName, found.getName().substring(0, 3));
+        assertEquals(id, found.getName());
+        // Object directory is 3 directories down from the storage root
+        assertEquals(new File(storage2), found.getParentFile().getParentFile().getParentFile().getParentFile());
     }
 }
