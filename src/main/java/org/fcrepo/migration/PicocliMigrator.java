@@ -113,6 +113,10 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "PID file listing which Fedora 3 objects to migrate")
     private File pidFile;
 
+    @Option(names = {"--index-dir", "-i"}, order = 24,
+            description = "Directory where cached index of datastreams (will reuse index if already exists)")
+    private File indexDir;
+
     @Option(names = {"--debug"}, order = 30, description = "Enables debug logging")
     private boolean debug;
 
@@ -208,7 +212,7 @@ public class PicocliMigrator implements Callable<Integer> {
                 expressionTrue(f3ObjectsDir.exists(), f3ObjectsDir, "f3ObjectsDir must exist! " +
                         f3ObjectsDir.getAbsolutePath());
 
-                idResolver = new AkubraFSIDResolver(f3DatastreamsDir);
+                idResolver = new AkubraFSIDResolver(indexDir, f3DatastreamsDir);
                 objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, localFedoraServer);
                 break;
             case LEGACY:
@@ -217,7 +221,7 @@ public class PicocliMigrator implements Callable<Integer> {
                 expressionTrue(f3ObjectsDir.exists(), f3ObjectsDir, "f3ObjectsDir must exist! " +
                         f3ObjectsDir.getAbsolutePath());
 
-                idResolver = new LegacyFSIDResolver(f3DatastreamsDir);
+                idResolver = new LegacyFSIDResolver(indexDir, f3DatastreamsDir);
                 objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, localFedoraServer);
                 break;
             default:

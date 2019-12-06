@@ -102,7 +102,7 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
             iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
             final Directory dir = FSDirectory.open(indexDir.toPath());
             final IndexWriter writer = new IndexWriter(dir, iwc);
-            LOGGER.info("Builidng an index of all the datastreams in \"" + dsRoot.getPath() + "\"...");
+            LOGGER.info("Building an index of all the datastreams in \"" + dsRoot.getPath() + "\"...");
             indexDatastreams(writer, dsRoot);
 
             writer.commit();
