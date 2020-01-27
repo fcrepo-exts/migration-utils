@@ -93,7 +93,8 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
             indexDir = cachedIndexDir;
         }
 
-        if (indexDir.exists()) {
+        // Index dir exists and is non-empty
+        if (indexDir.exists() && indexDir.list().length > 0) {
             LOGGER.warn("Index exists at \"" + indexDir.getPath() + "\" and will be used.  "
                     + "To clear index, simply delete this directory and re-run the application.");
         } else {
