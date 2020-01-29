@@ -176,19 +176,20 @@ public class Migrator {
         sb.append("~~~~~~~~~~~~~~\n");
 
         final ClassPathResource resource = new ClassPathResource("spring/migration-bean.xml");
-        final InputStream example = resource.getInputStream();
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(example));
-        String line = reader.readLine();
-        while (null != line) {
-            sb.append(line);
-            sb.append("\n");
-            line = reader.readLine();
-        }
+        try (final InputStream example = resource.getInputStream();
+             final BufferedReader reader = new BufferedReader(new InputStreamReader(example))) {
+            String line = reader.readLine();
+            while (null != line) {
+                sb.append(line);
+                sb.append("\n");
+                line = reader.readLine();
+            }
 
-        sb.append("~~~~~~~~~~~~~~\n\n");
-        sb.append("See top of this output for details.\n");
-        sb.append("============================\n");
-        System.out.println(sb.toString());
+            sb.append("~~~~~~~~~~~~~~\n\n");
+            sb.append("See top of this output for details.\n");
+            sb.append("============================\n");
+            System.out.println(sb.toString());
+        }
     }
 
 }

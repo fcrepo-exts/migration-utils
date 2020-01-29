@@ -4,7 +4,6 @@ package org.fcrepo.migration.f4clients;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -183,14 +182,9 @@ public class OCFLFedora4Client implements Fedora4Client {
         }
 
         // Copy provided content into staging file
-        try {
-            final FileOutputStream outputStream = new FileOutputStream(stagingFile, false);
-            try {
-                IOUtils.copy(content, outputStream);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } catch (FileNotFoundException e) {
+        try (final FileOutputStream outputStream = new FileOutputStream(stagingFile, false)) {
+            IOUtils.copy(content, outputStream);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -91,6 +91,9 @@ public class OpaqueIDMapper implements MigrationIDMapper {
                 @Override
                 public void run() {
                     try {
+                        searcherManager.close();
+                        writer.close();
+                        writer.getDirectory().close();
                         LOGGER.info("Deleting generated ID index directory at \"" + indexDir.getAbsolutePath()
                                 + "\"...");
                         FileUtils.deleteDirectory(indexDir);
