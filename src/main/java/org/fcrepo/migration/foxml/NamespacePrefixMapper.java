@@ -38,9 +38,9 @@ public class NamespacePrefixMapper {
      */
     public NamespacePrefixMapper(final File namespaceFile) throws IOException {
         namespacePrefixes = new Properties();
-        final FileInputStream namespaceInputStream = new FileInputStream(namespaceFile);
-        namespacePrefixes.load(namespaceInputStream);
-        namespaceInputStream.close();
+        try (final FileInputStream namespaceInputStream = new FileInputStream(namespaceFile)) {
+            namespacePrefixes.load(namespaceInputStream);
+        }
     }
 
     /**

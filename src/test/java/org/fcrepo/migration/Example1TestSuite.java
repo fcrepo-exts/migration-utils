@@ -243,8 +243,8 @@ public abstract class Example1TestSuite {
         public void processDatastreamVersion(final DatastreamVersion dsVersion) {
             dsVersions.add(dsVersion);
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                IOUtils.copy(dsVersion.getContent(), baos);
+            try (InputStream content = dsVersion.getContent()) {
+                IOUtils.copy(content, baos);
                 cachedDsVersionBinaries.add(baos.toByteArray());
             } catch (final IOException e) {
                 throw new RuntimeException(e);

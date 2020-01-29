@@ -81,6 +81,9 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
                 @Override
                 public void run() {
                     try {
+                        if (searcher != null) {
+                            searcher.getIndexReader().close();
+                        }
                         LOGGER.info("Deleting index directory at \"" + indexDir.getAbsolutePath() + "\"...");
                         FileUtils.deleteDirectory(indexDir);
                     } catch (IOException e) {
@@ -101,13 +104,16 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
             final Analyzer analyzer = new StandardAnalyzer();
             final IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-            final Directory dir = FSDirectory.open(indexDir.toPath());
-            final IndexWriter writer = new IndexWriter(dir, iwc);
-            LOGGER.info("Building an index of all the datastreams in \"" + dsRoot.getPath() + "\"...");
-            indexDatastreams(writer, dsRoot);
 
-            writer.commit();
-            writer.close();
+            try (final Directory dir = FSDirectory.open(indexDir.toPath());
+                 final IndexWriter writer = new IndexWriter(dir, iwc)) {
+
+                LOGGER.info("Building an index of all the datastreams in \"" + dsRoot.getPath() + "\"...");
+                indexDatastreams(writer, dsRoot);
+
+                writer.commit();
+
+            }
         }
 
         final IndexReader reader = DirectoryReader.open(FSDirectory.open(indexDir.toPath()));

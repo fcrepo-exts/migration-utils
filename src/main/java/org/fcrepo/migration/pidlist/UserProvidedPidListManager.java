@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,15 +37,12 @@ public class UserProvidedPidListManager implements PidListManager {
                         pidListFile.getAbsolutePath());
             }
 
-            BufferedReader reader = null;
-            try {
-                reader = new BufferedReader(new FileReader(pidListFile));
-            } catch (FileNotFoundException e) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(pidListFile));) {
+                reader.lines().forEach(l -> pidList.add(l));
+            } catch (IOException e) {
                 // Should not happen based on previous check
                 throw new RuntimeException(e);
             }
-
-            reader.lines().forEach(l -> pidList.add(l));
         }
     }
 

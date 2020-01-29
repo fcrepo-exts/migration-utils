@@ -94,13 +94,14 @@ public class ResumePidListManager implements PidListManager {
             updateResumeFile(value, index);
         }
 
-        final BufferedReader reader = new BufferedReader(new FileReader(resumeFile));
+        try (final BufferedReader reader = new BufferedReader(new FileReader(resumeFile))) {
 
-        // First line contains PID
-        pidResumeValue = reader.readLine();
+            // First line contains PID
+            pidResumeValue = reader.readLine();
 
-        // Second line contains index
-        pidResumeIndex = Integer.parseInt(reader.readLine());
+            // Second line contains index
+            pidResumeIndex = Integer.parseInt(reader.readLine());
+        }
     }
 
 
