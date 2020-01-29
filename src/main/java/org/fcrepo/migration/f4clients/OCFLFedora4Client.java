@@ -91,7 +91,9 @@ public class OCFLFedora4Client implements Fedora4Client {
         final Path repoDir = Paths.get(this.storageRoot);
         ocflRepo = new OcflRepositoryBuilder()
                 .layoutConfig(layoutConfig)
-                .build(FileSystemOcflStorage.builder().build(repoDir), stagingDir.toPath());
+                .storage(FileSystemOcflStorage.builder().repositoryRoot(repoDir).build())
+                .workDir(stagingDir.toPath())
+                .build();
 
     }
 
