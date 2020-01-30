@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypeException;
+import org.apache.tika.mime.MimeTypes;
 import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.ObjectReference;
@@ -32,6 +35,9 @@ import org.fcrepo.migration.ObjectVersionReference;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import org.slf4j.Logger;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Writes a Fedora object as a single ArchiveGroup.
@@ -53,7 +59,10 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 public class ArchiveGroupHandler
 implements FedoraObjectVersionHandler {
 
+    private static Logger LOGGER = getLogger(ArchiveGroupHandler.class);
+
     private final OcflDriver driver;
+    private final boolean addDatastreamExtensions;
 
     /**
      * Create an ArchiveGroupHandler,
@@ -61,8 +70,9 @@ implements FedoraObjectVersionHandler {
      * @param driver
      *        OCFL driver
      */
-    public ArchiveGroupHandler(final OcflDriver driver) {
+    public ArchiveGroupHandler(final OcflDriver driver, final boolean addDatastreamExtensions) {
         this.driver = driver;
+        this.addDatastreamExtensions = addDatastreamExtensions;
     }
 
     @Override
@@ -87,6 +97,11 @@ implements FedoraObjectVersionHandler {
             // Write datastreams and their metadata
             ov.listChangedDatastreams().forEach(dv -> {
                 final String dsid = dv.getDatastreamInfo().getDatastreamId();
+                final String mime = dv.getMimeType();
+
+                if (!mime.isBlank()) {
+                    LOGGER.debug("mimetype of dsid({}): {}", dsid, mime);
+                }
 
                 // For redirect or external, lust record the URI for now as the "datastream content".
                 // Fedora's representation of redirect or external within OCFL objects hasn't been
@@ -101,7 +116,11 @@ implements FedoraObjectVersionHandler {
                      * Write datastream itself, catching that silly IOExeption
                      */
                     try {
-                        session.put(dsid, dv.getContent());
+                        if (addDatastreamExtensions && !mime.isBlank()) {
+                            session.put(dsid + getExtension(mime), dv.getContent());
+                        } else {
+                            session.put(dsid, dv.getContent());
+                        }
                     } catch (final IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -225,5 +244,27 @@ implements FedoraObjectVersionHandler {
                     m.createProperty(p),
                     m.createTypedLiteral(number, XSDDatatype.XSDlong));
         }
+    }
+
+    /**
+     * @param mime any mimetype as String
+     * @return extension associated with arg mime, return includes '.' in extension (.txt).
+     *                  ..Empty String if unrecognized mime
+     */
+    private static String getExtension(final String mime) {
+        final MimeTypes allTypes = MimeTypes.getDefaultMimeTypes();
+        MimeType type;
+        try {
+            type = allTypes.forName(mime);
+        } catch (final MimeTypeException e) {
+            type = null;
+        }
+
+        if (type != null) {
+            return type.getExtension();
+        }
+
+        LOGGER.warn("No mimetype found for '{}'", mime);
+        return "";
     }
 }

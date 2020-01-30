@@ -49,7 +49,7 @@ General usage of the migration utils CLI is as follows:
 
 The following CLI options for specifying details of a given migration are available:
 ```
-Usage: migration-utils [-hrV] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
+Usage: migration-utils [-hrVx] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
                        [-e=<f3ExportedDir>] [-i=<indexDir>] [-l=<objectLimit>]
                        [-o=<f3ObjectsDir>] [-p=<pidFile>] -t=<f3SourceType>
                        [-y=<ocflLayout>]
@@ -81,6 +81,9 @@ Usage: migration-utils [-hrV] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
   -p, --pid-file=<pidFile>   PID file listing which Fedora 3 objects to migrate
   -i, --index-dir=<indexDir> Directory where cached index of datastreams (will
                                reuse index if already exists)
+  -x, --extensions           Add file extensions to migrated datastreams based
+                               on mimetype recorded in FOXML
+                               Default: false
       --debug                Enables debug logging
 ```
 
