@@ -117,6 +117,10 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Directory where cached index of datastreams (will reuse index if already exists)")
     private File indexDir;
 
+    @Option(names = {"--extensions", "-x"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 25,
+            description = "Add file extensions to migrated datastreams based on mimetype recorded in FOXML")
+    private boolean addExtensions;
+
     @Option(names = {"--debug"}, order = 30, description = "Enables debug logging")
     private boolean debug;
 
@@ -234,7 +238,7 @@ public class PicocliMigrator implements Callable<Integer> {
                 ocflStagingDir.getAbsolutePath(),
                 ocflLayout);
         final OcflDriver ocflDriver = new HackyOcflDriver(fedora4Client);
-        final FedoraObjectVersionHandler archiveGroupHandler = new ArchiveGroupHandler(ocflDriver);
+        final FedoraObjectVersionHandler archiveGroupHandler = new ArchiveGroupHandler(ocflDriver, addExtensions);
         final FedoraObjectHandler versionHandler = new VersionAbstractionFedoraObjectHandler(archiveGroupHandler);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 versionHandler);

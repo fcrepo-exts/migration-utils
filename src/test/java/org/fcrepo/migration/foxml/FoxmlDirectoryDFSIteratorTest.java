@@ -38,17 +38,11 @@ public class FoxmlDirectoryDFSIteratorTest {
 
     @Mock private File f1;
 
-    @Mock private File f2;
-
     @Before
     public void setup() {
-        Mockito.when(root.isFile()).thenReturn(false);
-        Mockito.when(root.isDirectory()).thenReturn(true);
-        Mockito.when(root.getName()).thenReturn("root");
         Mockito.when(root.listFiles()).thenReturn(new File[] { f1 });
 
         Mockito.when(f1.isFile()).thenReturn(true);
-        Mockito.when(f1.isDirectory()).thenReturn(false);
         Mockito.when(f1.getName()).thenReturn(".hidden");
 
     }

@@ -21,7 +21,7 @@
     <jena.version>2.12.1</jena.version>
     <checkstyle.plugin.version>2.15</checkstyle.plugin.version>
     <logback.version>1.1.2</logback.version>
-    <mockito.version>1.10.8</mockito.version>
+    <mockito.version>2.22.0</mockito.version>
     <slf4j.version>1.7.10</slf4j.version>
     <junit.version>4.11</junit.version>
     <fcrepo-build-tools.version>4.3.0</fcrepo-build-tools.version>
@@ -128,6 +128,11 @@
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-common</artifactId>
       <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+      <version>1.23</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
