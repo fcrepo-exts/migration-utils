@@ -121,6 +121,10 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Add file extensions to migrated datastreams based on mimetype recorded in FOXML")
     private boolean addExtensions;
 
+    @Option(names = {"--f3hostname", "-f"}, defaultValue = "fedora.info", showDefaultValue = ALWAYS, order = 26,
+            description = "Hostname of Fedora 3, used for replacing placeholder in 'E' and 'R' datastream URLs")
+    private String f3hostname;
+
     @Option(names = {"--debug"}, order = 30, description = "Enables debug logging")
     private boolean debug;
 
@@ -198,9 +202,6 @@ public class PicocliMigrator implements Callable<Integer> {
             pidDir.mkdirs();
         }
 
-        // Default "local Fedora server" URI... can expose as user-option in the future
-        final String localFedoraServer = "fedora.info";
-
         // Which F3 source are we using? - verify associated options
         ObjectSource objectSource;
         InternalIDResolver idResolver;
@@ -208,7 +209,7 @@ public class PicocliMigrator implements Callable<Integer> {
             case EXPORTED:
                 notNull(f3ExportedDir, "f3ExportDir must be used with 'exported' source!");
 
-                objectSource = new ArchiveExportedFoxmlDirectoryObjectSource(f3ExportedDir, localFedoraServer);
+                objectSource = new ArchiveExportedFoxmlDirectoryObjectSource(f3ExportedDir, f3hostname);
                 break;
             case AKUBRA:
                 notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with 'akubra' or 'legacy' source!");
@@ -217,7 +218,7 @@ public class PicocliMigrator implements Callable<Integer> {
                         f3ObjectsDir.getAbsolutePath());
 
                 idResolver = new AkubraFSIDResolver(indexDir, f3DatastreamsDir);
-                objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, localFedoraServer);
+                objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, f3hostname);
                 break;
             case LEGACY:
                 notNull(f3DatastreamsDir, "f3DatastreamsDir must be used with 'akubra' or 'legacy' source!");
@@ -226,7 +227,7 @@ public class PicocliMigrator implements Callable<Integer> {
                         f3ObjectsDir.getAbsolutePath());
 
                 idResolver = new LegacyFSIDResolver(indexDir, f3DatastreamsDir);
-                objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, localFedoraServer);
+                objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectsDir, idResolver, f3hostname);
                 break;
             default:
                 throw new RuntimeException("Should never happen");
