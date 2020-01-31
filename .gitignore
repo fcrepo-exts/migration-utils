@@ -10,3 +10,5 @@ exported-id-index/
 .classpath
 .project
 .settings
+
+pids.txt
