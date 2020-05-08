@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 DuraSpace, Inc.
+ * Copyright 2019 DuraSpace, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.fcrepo.migration.handlers.ocfl;
+
+package org.fcrepo.migration;
 
 /**
- * Simple driver for creating OCFL objects
+ * Describes format to migrate objects to
  *
- * @author apb@jhu.edu
- **/
-public interface OcflDriver {
+ * @author pwinckles
+ */
+public enum MigrationType {
 
     /**
-     * Open a session for writing to an OCFL object with the given ID
-     *
-     * @param id
-     *        OCFL object ID
-     * @return A session for writing as many versions as desired to this object.
+     * An OCFL object without any F6 specific metadata
      */
-    OcflSession open(String id);
+    VANILLA_OCFL,
 
     /**
-     * Close the OCFL repository.
+     * An OCFL object with F6 specific metadata
      */
-    void close();
+    F6_OCFL
 
 }

@@ -70,9 +70,14 @@ Usage: migration-utils [-hrVx] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
   -a, --target-dir=<targetDir>
                              Directory where OCFL storage root and supporting
                                state will be written
+  -u, --username=<username>
+                             The username to associate with all of the migrated resources.
+  -m, --migration-type=<migrationType>  Type of OCFL objects to migrate to. Choices: 
+                               F6_OCFL | VANILLA_OCFL
+                               Default: F6_OCFL
   -y, --layout=<ocflLayout>  OCFL layout of storage root. Choices: flat |
                                pairtree | truncated
-                               Default: flat
+                               Default: truncated
   -l, --limit=<objectLimit>  Limit number of objects to be processed.
                                Default: no limit
   -r, --resume               Resume from last successfully migrated Fedora 3
@@ -106,11 +111,11 @@ There are three means by which a subset of objects may be selected for migration
 Run a minimal fedora 6 migration from fedora3 legacy foxml
 
 ```shell
-java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=legacy --limit=100 --working-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams
+java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --username fedoraAdmin --source-type=legacy --limit=100 --working-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams
 ```
 Run a minimal fedora 6 migration from a fedora3 archival export
 ```shell
-java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exported --limit=100 --working-dir=target/test/ocfl --exported-dir=src/test/resources/exported
+java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --username fedoraAdmin --source-type=exported --limit=100 --working-dir=target/test/ocfl --exported-dir=src/test/resources/exported
 
 ```
 

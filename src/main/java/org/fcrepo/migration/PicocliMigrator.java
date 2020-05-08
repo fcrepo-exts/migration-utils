@@ -15,21 +15,9 @@
  */
 package org.fcrepo.migration;
 
-import static edu.wisc.library.ocfl.api.util.Enforce.expressionTrue;
-import static edu.wisc.library.ocfl.api.util.Enforce.notNull;
-import static org.slf4j.LoggerFactory.getLogger;
-import static picocli.CommandLine.Help.Visibility.ALWAYS;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import org.apache.commons.io.FileUtils;
-import org.fcrepo.migration.f4clients.OCFLFedora4Client;
-import org.fcrepo.migration.f4clients.OCFLFedora4Client.ObjectIdMapperType;
 import org.fcrepo.migration.foxml.AkubraFSIDResolver;
 import org.fcrepo.migration.foxml.ArchiveExportedFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.foxml.InternalIDResolver;
@@ -38,17 +26,26 @@ import org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler;
 import org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler;
 import org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler;
-import org.fcrepo.migration.handlers.ocfl.HackyOcflDriver;
+import org.fcrepo.migration.handlers.ocfl.DefaultOcflDriver;
 import org.fcrepo.migration.handlers.ocfl.OcflDriver;
 import org.fcrepo.migration.pidlist.PidListManager;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.slf4j.Logger;
-
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import static edu.wisc.library.ocfl.api.util.Enforce.expressionTrue;
+import static edu.wisc.library.ocfl.api.util.Enforce.notNull;
+import static org.slf4j.LoggerFactory.getLogger;
+import static picocli.CommandLine.Help.Visibility.ALWAYS;
 
 
 /**
@@ -97,7 +94,15 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Directory where OCFL storage root and supporting state will be written")
     private File targetDir;
 
-    @Option(names = {"--layout", "-y"}, defaultValue = "flat", showDefaultValue = ALWAYS, order = 20,
+    @Option(names = {"--username", "-u"}, required = true, order = 6,
+            description = "The username to associate with all of the migrated resources.")
+    private String user;
+
+    @Option(names = {"--migration-type", "-m"}, defaultValue = "F6_OCFL", showDefaultValue = ALWAYS, order = 19,
+            description = "Type of OCFL objects to migrate to. Choices: F6_OCFL | VANILLA_OCFL")
+    private MigrationType migrationType;
+
+    @Option(names = {"--layout", "-y"}, defaultValue = "truncated", showDefaultValue = ALWAYS, order = 20,
             description = "OCFL layout of storage root. Choices: flat | pairtree | truncated")
     private ObjectIdMapperType ocflLayout;
 
@@ -233,13 +238,12 @@ public class PicocliMigrator implements Callable<Integer> {
                 throw new RuntimeException("Should never happen");
         }
 
-        // Build up the constituent parts of the 'migrator'
-        final OCFLFedora4Client fedora4Client = new OCFLFedora4Client(
-                ocflStorageDir.getAbsolutePath(),
+        final OcflDriver ocflDriver = new DefaultOcflDriver(ocflStorageDir.getAbsolutePath(),
                 ocflStagingDir.getAbsolutePath(),
-                ocflLayout);
-        final OcflDriver ocflDriver = new HackyOcflDriver(fedora4Client);
-        final FedoraObjectVersionHandler archiveGroupHandler = new ArchiveGroupHandler(ocflDriver, addExtensions);
+                ocflLayout, user
+        );
+        final FedoraObjectVersionHandler archiveGroupHandler =
+                new ArchiveGroupHandler(ocflDriver, migrationType, addExtensions, user);
         final FedoraObjectHandler versionHandler = new VersionAbstractionFedoraObjectHandler(archiveGroupHandler);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 versionHandler);
@@ -262,7 +266,7 @@ public class PicocliMigrator implements Callable<Integer> {
         try {
             migrator.run();
         } finally {
-            fedora4Client.close();
+            ocflDriver.close();
             FileUtils.deleteDirectory(ocflStagingDir);
         }
 

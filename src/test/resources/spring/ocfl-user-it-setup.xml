@@ -77,11 +77,16 @@
 
     <bean id="minimal" class="org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler">
         <constructor-arg name="driver" ref="ocflDriver" />
+        <constructor-arg name="migrationType" value="F6_OCFL" />
         <constructor-arg name="addDatastreamExtensions" value="false" />
+        <constructor-arg name="user" value="fedoraAdmin" />
     </bean>
 
-    <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.HackyOcflDriver">
-        <constructor-arg ref="ocfl"/>
+    <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.DefaultOcflDriver" destroy-method="close">
+        <constructor-arg name="storage" value="target/test/ocfl/user-it/storage"/>
+        <constructor-arg name="staging" value="target/test/ocfl/user-it/staging"/>
+        <constructor-arg name="mapper" value="FLAT"/>
+        <constructor-arg name="commitUser" value="fedoraAdmin" />
     </bean>
 
     <bean id="fedora4" class="org.fcrepo.migration.f4clients.StatelessFedora4Client">
@@ -89,12 +94,6 @@
         <!--If Fedora 4 requires authorized requests, uncomment the following and provide appropriate values.-->
         <!--<constructor-arg name="username" value="admin-username"/>-->
         <!--<constructor-arg name="password" value="admin-password"/>-->
-    </bean>
-
-    <bean id="ocfl" class="org.fcrepo.migration.f4clients.OCFLFedora4Client" destroy-method="close">
-        <constructor-arg name="storage" value="target/test/ocfl/user-it/storage"/>
-        <constructor-arg name="staging" value="target/test/ocfl/user-it/staging"/>
-        <constructor-arg name="mapper" value="FLAT"/>
     </bean>
 
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
