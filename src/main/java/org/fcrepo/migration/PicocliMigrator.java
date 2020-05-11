@@ -94,10 +94,6 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Directory where OCFL storage root and supporting state will be written")
     private File targetDir;
 
-    @Option(names = {"--username", "-u"}, required = true, order = 6,
-            description = "The username to associate with all of the migrated resources.")
-    private String user;
-
     @Option(names = {"--migration-type", "-m"}, defaultValue = "F6_OCFL", showDefaultValue = ALWAYS, order = 19,
             description = "Type of OCFL objects to migrate to. Choices: F6_OCFL | VANILLA_OCFL")
     private MigrationType migrationType;
@@ -129,6 +125,10 @@ public class PicocliMigrator implements Callable<Integer> {
     @Option(names = {"--f3hostname", "-f"}, defaultValue = "fedora.info", showDefaultValue = ALWAYS, order = 26,
             description = "Hostname of Fedora 3, used for replacing placeholder in 'E' and 'R' datastream URLs")
     private String f3hostname;
+
+    @Option(names = {"--username", "-u"}, defaultValue = "fedoraAdmin", showDefaultValue = ALWAYS, order = 27,
+            description = "The username to associate with all of the migrated resources.")
+    private String user;
 
     @Option(names = {"--debug"}, order = 30, description = "Enables debug logging")
     private boolean debug;
