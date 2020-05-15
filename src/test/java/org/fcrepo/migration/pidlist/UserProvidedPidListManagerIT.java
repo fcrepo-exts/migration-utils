@@ -48,6 +48,8 @@ public class UserProvidedPidListManagerIT {
     private File staging;
     private File pidFile;
 
+    private FileFilter fileFilter;
+
     @Before
     public void setup() throws Exception {
         // Create directories expected in this test (based on `spring/ocfl-user-it-setup.xml`)
@@ -70,6 +72,7 @@ public class UserProvidedPidListManagerIT {
 
         context = new ClassPathXmlApplicationContext("spring/ocfl-user-it-setup.xml");
         migrator = (Migrator) context.getBean("migrator");
+        fileFilter = new RegexFileFilter("info%3afedora%2fexample.*");
     }
 
     @After
@@ -94,7 +97,7 @@ public class UserProvidedPidListManagerIT {
         migrator.setPidListManagers(Collections.singletonList(manager));
         migrator.run();
 
-        final int numObjects = storage.listFiles((FileFilter) new RegexFileFilter("example.*")).length;
+        final int numObjects = storage.listFiles(fileFilter).length;
         Assert.assertEquals(3, numObjects) ;
     }
 
@@ -112,7 +115,7 @@ public class UserProvidedPidListManagerIT {
         migrator.run();
         context.close();
 
-        final int numObjects = storage.listFiles((FileFilter) new RegexFileFilter("example.*")).length;
+        final int numObjects = storage.listFiles(fileFilter).length;
         Assert.assertEquals(2, numObjects);
     }
 

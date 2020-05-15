@@ -13,27 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.fcrepo.migration.handlers.ocfl;
+
+package org.fcrepo.migration;
 
 /**
- * Simple driver for creating OCFL objects
+ * Indicates how object ids should be mapped to OCFL paths.
  *
- * @author apb@jhu.edu
- **/
-public interface OcflDriver {
+ * @author pwinckles
+ */
+public enum ObjectIdMapperType {
 
-    /**
-     * Open a session for writing to an OCFL object with the given ID
-     *
-     * @param id
-     *        OCFL object ID
-     * @return A session for writing as many versions as desired to this object.
-     */
-    OcflSession open(String id);
-
-    /**
-     * Close the OCFL repository.
-     */
-    void close();
+    FLAT,
+    PAIRTREE,
+    TRUNCATED
 
 }

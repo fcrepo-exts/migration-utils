@@ -70,9 +70,12 @@ Usage: migration-utils [-hrVx] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
   -a, --target-dir=<targetDir>
                              Directory where OCFL storage root and supporting
                                state will be written
+  -m, --migration-type=<migrationType>  Type of OCFL objects to migrate to. Choices: 
+                               F6_OCFL | VANILLA_OCFL
+                               Default: F6_OCFL
   -y, --layout=<ocflLayout>  OCFL layout of storage root. Choices: flat |
                                pairtree | truncated
-                               Default: flat
+                               Default: truncated
   -l, --limit=<objectLimit>  Limit number of objects to be processed.
                                Default: no limit
   -r, --resume               Resume from last successfully migrated Fedora 3
@@ -88,6 +91,9 @@ Usage: migration-utils [-hrVx] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
                              Hostname of Fedora 3, used for replacing
                                placeholder in 'E' and 'R' datastream URLs
                                Default: fedora.info
+  -u, --username=<username>
+                             The username to associate with all of the migrated resources.
+                               Default: fedoraAdmin
       --debug                Enables debug logging
 ```
 

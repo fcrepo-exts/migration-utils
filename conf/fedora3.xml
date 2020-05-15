@@ -123,7 +123,7 @@
       <constructor-arg name="addDatastreamExtensions" value="false" />
     </bean>
     
-    <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.HackyOcflDriver">
+    <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.DefaultOcflDriver">
         <constructor-arg ref="${fedora.client:ocfl}"/>
     </bean>
 

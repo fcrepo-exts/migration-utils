@@ -46,6 +46,8 @@ public class ResumePidListManagerIT {
     private File staging;
     private File pidDir;
 
+    private FileFilter fileFilter;
+
     @Before
     public void setup() throws Exception {
         // Create directories expected in this test (based on `spring/ocfl-pid-it-setup.xml`)
@@ -69,6 +71,7 @@ public class ResumePidListManagerIT {
 
         context = new ClassPathXmlApplicationContext("spring/ocfl-pid-it-setup.xml");
         migrator = (Migrator) context.getBean("migrator");
+        fileFilter = new RegexFileFilter("info%3afedora%2fexample.*");
     }
 
     @After
@@ -85,7 +88,7 @@ public class ResumePidListManagerIT {
         migrator.setPidListManagers(Collections.singletonList(manager));
         migrator.run();
 
-        final int numObjects = storage.listFiles((FileFilter) new RegexFileFilter("example.*")).length;
+        final int numObjects = storage.listFiles(fileFilter).length;
         Assert.assertEquals(3, numObjects);
     }
 
@@ -100,7 +103,7 @@ public class ResumePidListManagerIT {
         migrator.run();
         context.close();
 
-        int numObjects = storage.listFiles((FileFilter) new RegexFileFilter("example.*")).length;
+        int numObjects = storage.listFiles(fileFilter).length;
         Assert.assertEquals(2, numObjects);
 
         // Remove the previously exported objects, and resume the migration
@@ -115,7 +118,7 @@ public class ResumePidListManagerIT {
         migrator.setLimit(-1); // migrate all
         migrator.run();
 
-        numObjects = storage.listFiles((FileFilter) new RegexFileFilter("example.*")).length;
+        numObjects = storage.listFiles(fileFilter).length;
         Assert.assertEquals(1, numObjects);
     }
 
