@@ -39,13 +39,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Misuses Fedora4client to write OCFL objects.
- * <p>
- * Exploits knowledge of how OCFL-based f4 clients work internally in order to
- * write OCFL objects. It would be better to use an OCFL client directly.
- * </p>
+ * OCFL driver that uses ocfl-java to write OCFL objects.
  *
  * @author apb@jhu.edu
+ * @author pwinckles
  */
 public class DefaultOcflDriver implements OcflDriver {
 
