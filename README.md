@@ -112,11 +112,11 @@ There are three means by which a subset of objects may be selected for migration
 Run a minimal fedora 6 migration from fedora3 legacy foxml
 
 ```shell
-java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=legacy --limit=100 --working-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams
+java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=legacy --limit=100 --target-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams
 ```
 Run a minimal fedora 6 migration from a fedora3 archival export
 ```shell
-java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exported --limit=100 --working-dir=target/test/ocfl --exported-dir=src/test/resources/exported
+java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exported --limit=100 --target-dir=target/test/ocfl --exported-dir=src/test/resources/exported
 
 ```
 
