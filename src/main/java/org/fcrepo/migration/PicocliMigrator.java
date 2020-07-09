@@ -70,10 +70,6 @@ public class PicocliMigrator implements Callable<Integer> {
         }
     }
 
-    private static ObjectIdMapperType layoutToType(final String v) {
-        return ObjectIdMapperType.valueOf(v.toUpperCase());
-    }
-
     @Option(names = {"--source-type", "-t"}, required = true, order = 1,
             description = "Fedora 3 source type. Choices: akubra | legacy | exported")
     private F3SourceTypes f3SourceType;
@@ -97,10 +93,6 @@ public class PicocliMigrator implements Callable<Integer> {
     @Option(names = {"--migration-type", "-m"}, defaultValue = "F6_OCFL", showDefaultValue = ALWAYS, order = 19,
             description = "Type of OCFL objects to migrate to. Choices: F6_OCFL | VANILLA_OCFL")
     private MigrationType migrationType;
-
-    @Option(names = {"--layout", "-y"}, defaultValue = "truncated", showDefaultValue = ALWAYS, order = 20,
-            description = "OCFL layout of storage root. Choices: flat | pairtree | truncated")
-    private ObjectIdMapperType ocflLayout;
 
     @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 21,
             description = "Limit number of objects to be processed.\n  Default: no limit")
@@ -130,6 +122,10 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "The username to associate with all of the migrated resources.")
     private String user;
 
+    @Option(names = {"--user-uri", "-U"}, defaultValue = "info:fedora/fedoraAdmin", showDefaultValue = ALWAYS,
+            order = 28, description = "The username to associate with all of the migrated resources.")
+    private String userUri;
+
     @Option(names = {"--debug"}, order = 30, description = "Enables debug logging")
     private boolean debug;
 
@@ -141,7 +137,6 @@ public class PicocliMigrator implements Callable<Integer> {
         final PicocliMigrator migrator = new PicocliMigrator();
         final CommandLine cmd = new CommandLine(migrator);
         cmd.registerConverter(F3SourceTypes.class, F3SourceTypes::toType);
-        cmd.registerConverter(ObjectIdMapperType.class, PicocliMigrator::layoutToType);
         cmd.setExecutionExceptionHandler(new PicoliMigrationExceptionHandler(migrator));
 
         cmd.execute(args);
@@ -239,9 +234,7 @@ public class PicocliMigrator implements Callable<Integer> {
         }
 
         final OcflDriver ocflDriver = new DefaultOcflDriver(ocflStorageDir.getAbsolutePath(),
-                ocflStagingDir.getAbsolutePath(),
-                ocflLayout, user
-        );
+                ocflStagingDir.getAbsolutePath(), user, userUri);
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(ocflDriver, migrationType, addExtensions, user);
         final FedoraObjectHandler versionHandler = new VersionAbstractionFedoraObjectHandler(archiveGroupHandler);
