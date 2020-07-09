@@ -85,8 +85,8 @@
     <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.DefaultOcflDriver" destroy-method="close">
         <constructor-arg name="storage" value="target/test/ocfl/user-it/storage"/>
         <constructor-arg name="staging" value="target/test/ocfl/user-it/staging"/>
-        <constructor-arg name="mapper" value="FLAT"/>
         <constructor-arg name="commitUser" value="fedoraAdmin" />
+        <constructor-arg name="userUri" value="info:fedora/fedoraAdmin" />
     </bean>
 
     <bean id="fedora4" class="org.fcrepo.migration.f4clients.StatelessFedora4Client">

@@ -19,12 +19,11 @@ package org.fcrepo.migration.handlers.ocfl;
 import edu.wisc.library.ocfl.api.OcflRepository;
 import edu.wisc.library.ocfl.api.model.ObjectVersionId;
 import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
-import edu.wisc.library.ocfl.core.extension.layout.config.DefaultLayoutConfig;
-import edu.wisc.library.ocfl.core.extension.layout.config.LayoutConfig;
+import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedTruncatedNTupleConfig;
 import edu.wisc.library.ocfl.core.storage.filesystem.FileSystemOcflStorage;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.fcrepo.migration.ObjectIdMapperType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,12 +35,8 @@ import java.util.Collection;
 import java.util.UUID;
 
 import static org.apache.commons.io.filefilter.FileFilterUtils.trueFileFilter;
-import static org.fcrepo.migration.ObjectIdMapperType.FLAT;
-import static org.fcrepo.migration.ObjectIdMapperType.PAIRTREE;
-import static org.fcrepo.migration.ObjectIdMapperType.TRUNCATED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * A basic suite of integration tests to test certain interaction patterns (and code) against the an OCFL version of
@@ -53,6 +48,7 @@ import static org.junit.Assert.assertTrue;
 public class DefaultOcflDriverIT {
 
     private static final String USER = "fedoraAdmin";
+    private static final String URI = "info:fedora/fedoraAdmin";
 
     private OcflDriver ocflDriver;
     private OcflRepository ocflRepo;
@@ -82,7 +78,7 @@ public class DefaultOcflDriverIT {
 
     @Test
     public void testCreateOrUpdateNonRDFResource() throws IOException {
-        setupDriver(FLAT);
+        setupDriver();
         final String id = UUID.randomUUID().toString();
         final String path = "v1/content/file.xml";
         final var session = ocflDriver.open(id);
@@ -104,50 +100,11 @@ public class DefaultOcflDriverIT {
     }
 
     @Test
-    public void testFlatLayout() {
-        setupDriver(FLAT);
-        final String id = "flat-" + UUID.randomUUID().toString();
-        final var session = ocflDriver.open(id);
-
-        session.put("test.txt", new ByteArrayInputStream("testing".getBytes()));
-        session.commit();
-
-        assertTrue("Should exist in storage: " + id, new File(storage, id).exists());
-    }
-
-    @Test
-    public void testPairtreeLayout() {
-        setupDriver(PAIRTREE);
-
-        final String id = "pairtree-" + UUID.randomUUID().toString();
-        final var session = ocflDriver.open(id);
-
-        session.put("test.txt", new ByteArrayInputStream("testing".getBytes()));
-        session.commit();
-
-        final Collection<File> files = FileUtils.listFilesAndDirs(
-                storage,
-                trueFileFilter(),
-                trueFileFilter());
-
-        File found = null;
-        for (File f : files) {
-            if (f.getName().equals(id.substring(id.length() - 4))) {
-                found = f;
-            }
-        }
-
-        assertNotNull(found);
-        assertEquals(id.substring(id.length() - 4), found.getName());
-        assertTrue("Should be more than half as many path elements as length of ID",
-                id.length() / 2 < found.toPath().getNameCount());
-    }
-
-    @Test
     public void testTruncatedLayout() {
-        setupDriver(TRUNCATED);
+        setupDriver();
 
         final String id = "truncated-" + UUID.randomUUID().toString();
+        final String hashedId = DigestUtils.sha256Hex(id);
         final var session = ocflDriver.open(id);
 
         session.put("test.txt", new ByteArrayInputStream("testing".getBytes()));
@@ -166,33 +123,19 @@ public class DefaultOcflDriverIT {
         }
 
         assertNotNull(found);
-        assertEquals(id, found.getName());
+        assertEquals(hashedId, found.getName());
         // Object directory is 3 directories down from the storage root
         assertEquals(storage, found.getParentFile().getParentFile().getParentFile().getParentFile());
     }
 
-    private void setupDriver(final ObjectIdMapperType type) {
-        ocflDriver = new DefaultOcflDriver(storage.toString(), staging.toString(), type, USER);
-        setupRepo(type);
+    private void setupDriver() {
+        ocflDriver = new DefaultOcflDriver(storage.toString(), staging.toString(), USER, URI);
+        setupRepo();
     }
 
-    private void setupRepo(final ObjectIdMapperType type) {
-        LayoutConfig layout = null;
-
-        switch (type) {
-            case FLAT:
-                layout = DefaultLayoutConfig.flatUrlConfig();
-                break;
-            case PAIRTREE:
-                layout = DefaultLayoutConfig.pairTreeConfig();
-                break;
-            case TRUNCATED:
-                layout = DefaultLayoutConfig.nTupleHashConfig();
-                break;
-        }
-
+    private void setupRepo() {
         ocflRepo = new OcflRepositoryBuilder()
-                .layoutConfig(layout)
+                .layoutConfig(new HashedTruncatedNTupleConfig())
                 .storage(FileSystemOcflStorage.builder().repositoryRoot(storage.toPath()).build())
                 .workDir(staging.toPath())
                 .build();

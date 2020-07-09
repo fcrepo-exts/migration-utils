@@ -17,7 +17,7 @@
 package org.fcrepo.migration.pidlist;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.fcrepo.migration.Migrator;
 import org.junit.After;
 import org.junit.Assert;
@@ -71,7 +71,7 @@ public class ResumePidListManagerIT {
 
         context = new ClassPathXmlApplicationContext("spring/ocfl-pid-it-setup.xml");
         migrator = (Migrator) context.getBean("migrator");
-        fileFilter = new RegexFileFilter("info%3afedora%2fexample.*");
+        fileFilter = DirectoryFileFilter.INSTANCE;
     }
 
     @After
