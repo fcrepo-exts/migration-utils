@@ -359,7 +359,8 @@ public class ArchiveGroupHandlerTest {
                                      final String parentId,
                                      final int index) {
         final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session, atLeastOnce()).put(eq(".fcrepo/" + path + ".json"), captor.capture());
+        verify(session, atLeastOnce()).put(eq(PersistencePaths.binaryHeaderPath(path)),
+                captor.capture());
         try {
             final var headers = objectMapper.readValue(captor.getAllValues().get(index), ResourceHeaders.class);
             assertEquals(FCREPO_ROOT + parentId + "/" + path, headers.getId());
@@ -379,6 +380,7 @@ public class ArchiveGroupHandlerTest {
                     String.valueOf(Instant.parse(datastreamVersion.getCreated()).toEpochMilli())).toUpperCase(),
                     headers.getStateToken());
             assertEquals(1, headers.getDigests().size());
+            assertEquals(PersistencePaths.binaryContentPath(path), headers.getContentPath());
             assertEquals(datastreamVersion.getExternalOrRedirectURL(), headers.getExternalUrl());
             if (Objects.equals("R", datastreamVersion.getDatastreamInfo().getControlGroup())) {
                 assertEquals("redirect", headers.getExternalHandling());
@@ -395,7 +397,8 @@ public class ArchiveGroupHandlerTest {
                                          final String objectId,
                                          final int index) {
         final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session, atLeastOnce()).put(eq(".fcrepo/" + dsId + "-description.json"), captor.capture());
+        verify(session, atLeastOnce()).put(eq(PersistencePaths.binaryDescHeaderPath(dsId)),
+                captor.capture());
         try {
             final var parentId = FCREPO_ROOT + objectId + "/" + dsId;
             final var headers = objectMapper.readValue(captor.getAllValues().get(index), ResourceHeaders.class);
@@ -407,6 +410,7 @@ public class ArchiveGroupHandlerTest {
             assertFalse("not deleted", headers.isDeleted());
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
+            assertEquals(PersistencePaths.binaryDescContentPath(dsId), headers.getContentPath());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
             assertThat(headers.getCreatedDate().toString(), containsString(date));
         } catch (IOException e) {
@@ -417,7 +421,7 @@ public class ArchiveGroupHandlerTest {
     private void putObjectHeadersAndVerify(final OcflSession session,
                                              final String objectId) {
         final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session).put(eq(".fcrepo/" + objectId + ".json"), captor.capture());
+        verify(session).put(eq(PersistencePaths.rootHeaderPath(objectId)), captor.capture());
         try {
             final var headers = objectMapper.readValue(captor.getValue(), ResourceHeaders.class);
             assertEquals(FCREPO_ROOT + objectId, headers.getId());
@@ -428,6 +432,7 @@ public class ArchiveGroupHandlerTest {
             assertFalse("not deleted", headers.isDeleted());
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
+            assertEquals(PersistencePaths.rootContentPath(objectId), headers.getContentPath());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
             assertThat(headers.getCreatedDate().toString(), containsString(date));
         } catch (IOException e) {
@@ -440,7 +445,8 @@ public class ArchiveGroupHandlerTest {
                                    final DatastreamVersion datastreamVersion,
                                    final int index) {
         final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session, atLeastOnce()).put(eq(path + "-description.nt"), captor.capture());
+        verify(session, atLeastOnce()).put(eq(PersistencePaths.binaryDescContentPath(path)),
+                captor.capture());
         try {
             final var value = IOUtils.toString(captor.getAllValues().get(index));
             assertThat(value, allOf(
@@ -458,7 +464,8 @@ public class ArchiveGroupHandlerTest {
                                    final DatastreamVersion datastreamVersion,
                                    final int index) {
         final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session, atLeastOnce()).put(eq(path + "-description.nt"), captor.capture());
+        verify(session, atLeastOnce()).put(eq(PersistencePaths.binaryDescContentPath(path)),
+                captor.capture());
         try {
             final var value = IOUtils.toString(captor.getAllValues().get(index));
             assertThat(value, allOf(
@@ -479,7 +486,7 @@ public class ArchiveGroupHandlerTest {
 
     private void putObjectRdfAndVerify(final OcflSession session, final String path) {
         final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session).put(eq(path + ".nt"), captor.capture());
+        verify(session).put(eq(PersistencePaths.rootContentPath(path)), captor.capture());
         try {
             final var value = IOUtils.toString(captor.getValue());
             assertThat(value, allOf(
