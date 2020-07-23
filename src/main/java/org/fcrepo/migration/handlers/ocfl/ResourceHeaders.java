@@ -65,6 +65,8 @@ public class ResourceHeaders {
 
     private boolean deleted;
 
+    private String contentPath;
+
     /**
      * @return the fedora id
      */
@@ -309,6 +311,20 @@ public class ResourceHeaders {
         return deleted;
     }
 
+    /**
+     * @return the path to the associated content file
+     */
+    public String getContentPath() {
+        return contentPath;
+    }
+
+    /**
+     * @param contentPath the path to the associated content file
+     */
+    public void setContentPath(final String contentPath) {
+        this.contentPath = contentPath;
+    }
+
     @Override
     public String toString() {
         return "ResourceHeaders{" +
@@ -329,6 +345,7 @@ public class ResourceHeaders {
                 ", archivalGroup=" + archivalGroup +
                 ", objectRoot=" + objectRoot +
                 ", deleted=" + deleted +
+                ", contentPath='" + contentPath + '\'' +
                 '}';
     }
 
