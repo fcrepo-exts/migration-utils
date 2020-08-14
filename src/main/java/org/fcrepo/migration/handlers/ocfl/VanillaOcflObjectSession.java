@@ -153,6 +153,11 @@ public class VanillaOcflObjectSession implements OcflObjectSession {
     }
 
     @Override
+    public void close() {
+        abort();
+    }
+
+    @Override
     public boolean isOpen() {
         return !closed;
     }
@@ -199,6 +204,11 @@ public class VanillaOcflObjectSession implements OcflObjectSession {
 
     @Override
     public void commitType(final CommitType commitType) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public boolean containsResource(final String resourceId) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
