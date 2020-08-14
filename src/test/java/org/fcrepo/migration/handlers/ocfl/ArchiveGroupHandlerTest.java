@@ -3,8 +3,16 @@ package org.fcrepo.migration.handlers.ocfl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import edu.wisc.library.ocfl.api.MutableOcflRepository;
+import edu.wisc.library.ocfl.api.model.FileDetails;
+import edu.wisc.library.ocfl.api.model.ObjectVersionId;
+import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
+import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedTruncatedNTupleConfig;
+import edu.wisc.library.ocfl.core.path.mapper.LogicalPathMappers;
+import edu.wisc.library.ocfl.core.storage.filesystem.FileSystemOcflStorage;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.fcrepo.migration.ContentDigest;
 import org.fcrepo.migration.DatastreamInfo;
 import org.fcrepo.migration.DatastreamVersion;
@@ -13,66 +21,86 @@ import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectProperties;
 import org.fcrepo.migration.ObjectProperty;
 import org.fcrepo.migration.ObjectVersionReference;
+import org.fcrepo.storage.ocfl.CommitType;
+import org.fcrepo.storage.ocfl.DefaultOcflObjectSessionFactory;
+import org.fcrepo.storage.ocfl.InteractionModel;
+import org.fcrepo.storage.ocfl.OcflObjectSession;
+import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
+import org.fcrepo.storage.ocfl.PersistencePaths;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
-import static org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler.BASIC_CONTAINER;
-import static org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler.NON_RDF_SOURCE;
-import static org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler.NON_RDF_SOURCE_DESCRIPTION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.startsWith;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
  * @author pwinckles
  */
-@RunWith(MockitoJUnitRunner.Strict.class)
 public class ArchiveGroupHandlerTest {
 
     private static final String FCREPO_ROOT = "info:fedora/";
     private static final String USER = "fedoraAdmin";
 
-    @Mock
-    private OcflDriver ocflDriver;
+    @Rule
+    public TemporaryFolder tempDir = new TemporaryFolder();
+
+    private Path ocflRoot;
+    private Path staging;
+
+    private MutableOcflRepository ocflRepo;
+    private OcflObjectSessionFactory sessionFactory;
+    private OcflObjectSessionFactory vanillaSessionFactory;
 
     private ObjectMapper objectMapper;
-
     private String date;
 
     @Before
-    public void setup() {
-        date = Instant.now().toString().substring(0, 10);
+    public void setup() throws IOException {
+        ocflRoot = tempDir.newFolder("ocfl").toPath();
+        staging = tempDir.newFolder("staging").toPath();
+
+        final var logicalPathMapper = SystemUtils.IS_OS_WINDOWS ?
+                LogicalPathMappers.percentEncodingWindowsMapper() : LogicalPathMappers.percentEncodingLinuxMapper();
+
+        ocflRepo = new OcflRepositoryBuilder()
+                .layoutConfig(new HashedTruncatedNTupleConfig())
+                .logicalPathMapper(logicalPathMapper)
+                .storage(FileSystemOcflStorage.builder().repositoryRoot(ocflRoot).build())
+                .workDir(staging)
+                .buildMutable();
+
         objectMapper = new ObjectMapper()
                 .configure(WRITE_DATES_AS_TIMESTAMPS, false)
                 .registerModule(new JavaTimeModule())
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        sessionFactory = new DefaultOcflObjectSessionFactory(ocflRepo, staging, objectMapper, CommitType.NEW_VERSION,
+                "testing", USER, "info:fedora/fedoraAdmin");
+
+        vanillaSessionFactory = new VanillaOcflObjectSessionFactory(ocflRepo, staging,
+                "testing", USER, "info:fedora/fedoraAdmin");
+
+        date = Instant.now().toString().substring(0, 10);
     }
 
     @Test
@@ -86,26 +114,24 @@ public class ArchiveGroupHandlerTest {
         final var ds1 = datastreamVersion(dsId1, true, "M", "text/plain", "hello", null);
         final var ds2 = datastreamVersion(dsId2, true, "M", "text/plain", "goodbye", null);
 
-        final var session = openSession(pid);
-
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2))
         ));
 
-        putObjectRdfAndVerify(session, pid);
-        putObjectHeadersAndVerify(session, pid);
+        final var session = sessionFactory.newSession(resourceId(pid));
 
-        putBinaryAndVerify(session, dsId1, ds1, 0);
-        putHeadersAndVerify(session, dsId1, ds1, pid, 0);
-        putF6RdfAndVerify(session, dsId1, ds1, 0);
-        putDescHeadersAndVerify(session, dsId1, pid, 0);
+        verifyObjectRdf(contentToString(session, pid));
+        verifyObjectHeaders(session, pid);
 
-        putBinaryAndVerify(session, dsId2, ds2, 0);
-        putHeadersAndVerify(session, dsId2, ds2, pid, 0);
-        putF6RdfAndVerify(session, dsId2, ds2, 0);
-        putDescHeadersAndVerify(session, dsId2, pid, 0);
+        verifyBinary(contentToString(session, pid, dsId1), ds1);
+        verifyHeaders(session, pid, dsId1, ds1);
+        verifyDescRdf(session, pid, dsId1, ds1);
+        verifyDescHeaders(session, pid, dsId1);
 
-        verify(session).commit();
+        verifyBinary(contentToString(session, pid, dsId2), ds2);
+        verifyHeaders(session, pid, dsId2, ds2);
+        verifyDescRdf(session, pid, dsId2, ds2);
+        verifyDescHeaders(session, pid, dsId2);
     }
 
     @Test
@@ -121,32 +147,30 @@ public class ArchiveGroupHandlerTest {
 
         final var ds2V2 = datastreamVersion(dsId2, false, "M", "text/plain", "fedora", null);
 
-        final var session = openSession(pid);
-
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
         ));
 
-        putObjectRdfAndVerify(session, pid);
-        putObjectHeadersAndVerify(session, pid);
+        final var session = sessionFactory.newSession(resourceId(pid));
 
-        putBinaryAndVerify(session, dsId1, ds1V1, 0);
-        putHeadersAndVerify(session, dsId1, ds1V1, pid, 0);
-        putF6RdfAndVerify(session, dsId1, ds1V1, 0);
-        putDescHeadersAndVerify(session, dsId1, pid, 0);
+        verifyObjectRdf(contentToString(session, pid));
+        verifyObjectHeaders(session, pid);
 
-        putBinaryAndVerify(session, dsId2, ds2V1, 0);
-        putHeadersAndVerify(session, dsId2, ds2V1, pid, 0);
-        putF6RdfAndVerify(session, dsId2, ds2V1, 0);
-        putDescHeadersAndVerify(session, dsId2, pid, 0);
+        verifyBinary(contentToString(session, pid, dsId1), ds1V1);
+        verifyHeaders(session, pid, dsId1, ds1V1);
+        verifyDescRdf(session, pid, dsId1, ds1V1);
+        verifyDescHeaders(session, pid, dsId1);
 
-        putBinaryAndVerify(session, dsId2, ds2V2, 1);
-        putHeadersAndVerify(session, dsId2, ds2V2, pid, 1);
-        putF6RdfAndVerify(session, dsId2, ds2V2, 1);
-        putDescHeadersAndVerify(session, dsId2, pid, 1);
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, pid, dsId2, "v1");
 
-        verify(session, times(2)).commit();
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, pid, dsId2, "v2");
     }
 
     @Test
@@ -162,27 +186,38 @@ public class ArchiveGroupHandlerTest {
 
         final var ds2V2 = datastreamVersion(dsId2, false, "M", "text/plain", "fedora", null);
 
-        final var session = openSession(pid);
-
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
         ));
 
-        verify(session, never()).put(startsWith(".fcrepo"), any());
+        verifyFcrepoNotExists(pid);
 
-        putObjectRdfAndVerify(session, pid);
+        final var rootResourceId = resourceId(pid);
 
-        putBinaryAndVerify(session, dsId1, ds1V1, 0);
-        putVanillaRdfAndVerify(session, dsId1, ds1V1, 0);
+        verifyObjectRdf(rawContentToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+                .getContentFilePath()));
 
-        putBinaryAndVerify(session, dsId2, ds2V1, 0);
-        putVanillaRdfAndVerify(session, dsId2, ds2V1, 0);
+        verifyBinary(rawContentVersionToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1)).getContentFilePath(),
+                "v1"), ds1V1);
+        verifyVanillaDescRdf(rawContentVersionToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId1)).getContentFilePath(),
+                "v1"), ds1V1);
 
-        putBinaryAndVerify(session, dsId2, ds2V2, 1);
-        putVanillaRdfAndVerify(session, dsId2, ds2V2, 1);
+        verifyBinary(rawContentVersionToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
+                "v1"), ds2V1);
+        verifyVanillaDescRdf(rawContentVersionToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2)).getContentFilePath(),
+                "v1"), ds2V1);
 
-        verify(session, times(2)).commit();
+        verifyBinary(rawContentVersionToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
+                "v2"), ds2V2);
+        verifyVanillaDescRdf(rawContentVersionToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2)).getContentFilePath(),
+                "v2"), ds2V2);
     }
 
     @Test
@@ -201,31 +236,29 @@ public class ArchiveGroupHandlerTest {
         final var ds2 = datastreamVersion(dsId2, true, "M", "application/rdf+xml", "xml", null);
         final var ds3 = datastreamVersion(dsId3, true, "M", "image/jpeg", "image", null);
 
-        final var session = openSession(pid);
-
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
         ));
 
-        putObjectRdfAndVerify(session, pid);
-        putObjectHeadersAndVerify(session, pid);
+        final var session = sessionFactory.newSession(resourceId(pid));
 
-        putBinaryAndVerify(session, dsId1Ext, ds1, 0);
-        putHeadersAndVerify(session, dsId1Ext, ds1, pid, 0);
-        putF6RdfAndVerify(session, dsId1Ext, ds1, 0);
-        putDescHeadersAndVerify(session, dsId1Ext, pid, 0);
+        verifyObjectRdf(contentToString(session, pid));
+        verifyObjectHeaders(session, pid);
 
-        putBinaryAndVerify(session, dsId2Ext, ds2, 0);
-        putHeadersAndVerify(session, dsId2Ext, ds2, pid, 0);
-        putF6RdfAndVerify(session, dsId2Ext, ds2, 0);
-        putDescHeadersAndVerify(session, dsId2Ext, pid, 0);
+        verifyBinary(contentToString(session, pid, dsId1Ext), ds1);
+        verifyHeaders(session, pid, dsId1Ext, ds1);
+        verifyDescRdf(session, pid, dsId1Ext, ds1);
+        verifyDescHeaders(session, pid, dsId1Ext);
 
-        putBinaryAndVerify(session, dsId3Ext, ds3, 0);
-        putHeadersAndVerify(session, dsId3Ext, ds3, pid, 0);
-        putF6RdfAndVerify(session, dsId3Ext, ds3, 0);
-        putDescHeadersAndVerify(session, dsId3Ext, pid, 0);
+        verifyBinary(contentToString(session, pid, dsId2Ext), ds2);
+        verifyHeaders(session, pid, dsId2Ext, ds2);
+        verifyDescRdf(session, pid, dsId2Ext, ds2);
+        verifyDescHeaders(session, pid, dsId2Ext);
 
-        verify(session).commit();
+        verifyBinary(contentToString(session, pid, dsId3Ext), ds3);
+        verifyHeaders(session, pid, dsId3Ext, ds3);
+        verifyDescRdf(session, pid, dsId3Ext, ds3);
+        verifyDescHeaders(session, pid, dsId3Ext);
     }
 
     @Test
@@ -244,26 +277,37 @@ public class ArchiveGroupHandlerTest {
         final var ds2 = datastreamVersion(dsId2, true, "M", "application/rdf+xml", "xml", null);
         final var ds3 = datastreamVersion(dsId3, true, "M", "image/jpeg", "image", null);
 
-        final var session = openSession(pid);
-
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
         ));
 
-        verify(session, never()).put(startsWith(".fcrepo"), any());
+        verifyFcrepoNotExists(pid);
 
-        putObjectRdfAndVerify(session, pid);
+        final var rootResourceId = resourceId(pid);
 
-        putBinaryAndVerify(session, dsId1Ext, ds1, 0);
-        putVanillaRdfAndVerify(session, dsId1Ext, ds1, 0);
+        verifyObjectRdf(rawContentToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+                .getContentFilePath()));
 
-        putBinaryAndVerify(session, dsId2Ext, ds2, 0);
-        putVanillaRdfAndVerify(session, dsId2Ext, ds2, 0);
+        verifyBinary(rawContentToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1Ext)).getContentFilePath()),
+                ds1);
+        verifyVanillaDescRdf(rawContentToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId1Ext)).getContentFilePath()),
+                ds1);
 
-        putBinaryAndVerify(session, dsId3Ext, ds3, 0);
-        putVanillaRdfAndVerify(session, dsId3Ext, ds3, 0);
+        verifyBinary(rawContentToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2Ext)).getContentFilePath()),
+                ds2);
+        verifyVanillaDescRdf(rawContentToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2Ext)).getContentFilePath()),
+                ds2);
 
-        verify(session).commit();
+        verifyBinary(rawContentToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId3Ext)).getContentFilePath()),
+                ds3);
+        verifyVanillaDescRdf(rawContentToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId3Ext)).getContentFilePath()),
+                ds3);
     }
 
     @Test
@@ -279,27 +323,25 @@ public class ArchiveGroupHandlerTest {
         final var ds2 = datastreamVersion(dsId2, true, "E", "text/plain", "", "https://external");
         final var ds3 = datastreamVersion(dsId3, true, "R", "text/plain", "", "https://redirect");
 
-        final var session = openSession(pid);
-
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
         ));
 
-        putObjectRdfAndVerify(session, pid);
-        putObjectHeadersAndVerify(session, pid);
+        final var session = sessionFactory.newSession(resourceId(pid));
 
-        putBinaryAndVerify(session, dsId1, ds1, 0);
-        putHeadersAndVerify(session, dsId1, ds1, pid, 0);
-        putF6RdfAndVerify(session, dsId1, ds1, 0);
-        putDescHeadersAndVerify(session, dsId1, pid, 0);
+        verifyObjectRdf(contentToString(session, pid));
+        verifyObjectHeaders(session, pid);
 
-        verify(session, never()).put(startsWith(dsId2), any());
-        putHeadersAndVerify(session, dsId2, ds2, pid, 0);
+        verifyBinary(contentToString(session, pid, dsId1), ds1);
+        verifyHeaders(session, pid, dsId1, ds1);
+        verifyDescRdf(session, pid, dsId1, ds1);
+        verifyDescHeaders(session, pid, dsId1);
 
-        verify(session, never()).put(startsWith(dsId3), any());
-        putHeadersAndVerify(session, dsId3, ds3, pid, 0);
+        verifyNotExists(session, pid, dsId2);
+        verifyHeaders(session, pid, dsId2, ds2);
 
-        verify(session).commit();
+        verifyNotExists(session, pid, dsId3);
+        verifyHeaders(session, pid, dsId3, ds3);
     }
 
     @Test
@@ -315,57 +357,63 @@ public class ArchiveGroupHandlerTest {
         final var ds2 = datastreamVersion(dsId2, true, "E", "text/plain", "", "https://external");
         final var ds3 = datastreamVersion(dsId3, true, "R", "text/plain", "", "https://redirect");
 
-        final var session = openSession(pid);
-
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
         ));
 
-        verify(session, never()).put(startsWith(".fcrepo"), any());
+        verifyFcrepoNotExists(pid);
 
-        putObjectRdfAndVerify(session, pid);
+        final var rootResourceId = resourceId(pid);
 
-        putBinaryAndVerify(session, dsId1, ds1, 0);
-        putF6RdfAndVerify(session, dsId1, ds1, 0);
+        verifyObjectRdf(rawContentToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+                .getContentFilePath()));
 
-        putBinaryAndVerify(session, dsId2, ds2, 0);
+        verifyBinary(rawContentToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1)).getContentFilePath()),
+                ds1);
+        verifyVanillaDescRdf(rawContentToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId1)).getContentFilePath()),
+                ds1);
 
-        putBinaryAndVerify(session, dsId3, ds3, 0);
+        verifyBinary(rawContentToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath()),
+                ds2);
 
-        verify(session).commit();
+        verifyBinary(rawContentToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId3)).getContentFilePath()),
+                ds3);
     }
 
-    private void putBinaryAndVerify(final OcflSession session,
-                                    final String path,
-                                    final DatastreamVersion datastreamVersion,
-                                    final int index) {
-        final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session, atLeastOnce()).put(eq(path), captor.capture());
+    private void verifyBinary(final String content, final DatastreamVersion datastreamVersion) {
         try {
             if ("RE".contains(datastreamVersion.getDatastreamInfo().getControlGroup())) {
-                assertEquals(datastreamVersion.getExternalOrRedirectURL(),
-                        IOUtils.toString(captor.getAllValues().get(index)));
+                assertEquals(datastreamVersion.getExternalOrRedirectURL(), content);
             } else {
-                assertSame(datastreamVersion.getContent(), captor.getAllValues().get(index));
+                assertEquals(IOUtils.toString(datastreamVersion.getContent()), content);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private void putHeadersAndVerify(final OcflSession session,
-                                     final String path,
-                                     final DatastreamVersion datastreamVersion,
-                                     final String parentId,
-                                     final int index) {
-        final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session, atLeastOnce()).put(eq(PersistencePaths.binaryHeaderPath(path)),
-                captor.capture());
-        try {
-            final var headers = objectMapper.readValue(captor.getAllValues().get(index), ResourceHeaders.class);
-            assertEquals(FCREPO_ROOT + parentId + "/" + path, headers.getId());
-            assertEquals(FCREPO_ROOT + parentId, headers.getParent());
-            assertEquals(NON_RDF_SOURCE, headers.getInteractionModel());
+    private void verifyHeaders(final OcflObjectSession session,
+                               final String pid,
+                               final String dsId,
+                               final DatastreamVersion datastreamVersion) {
+        verifyHeaders(session, pid, dsId, datastreamVersion, null);
+    }
+
+    private void verifyHeaders(final OcflObjectSession session,
+                               final String pid,
+                               final String dsId,
+                               final DatastreamVersion datastreamVersion,
+                               final String versionNumber) {
+        final var resourceId = resourceId(pid, dsId);
+        try (final var content = session.readContent(resourceId, versionNumber)) {
+            final var headers = content.getHeaders();
+            assertEquals(resourceId, headers.getId());
+            assertEquals(resourceId(pid), headers.getParent());
+            assertEquals(InteractionModel.NON_RDF.getUri(), headers.getInteractionModel());
             assertFalse("not AG", headers.isArchivalGroup());
             assertFalse("not root", headers.isObjectRoot());
             assertFalse("not deleted", headers.isDeleted());
@@ -375,138 +423,171 @@ public class ArchiveGroupHandlerTest {
             assertThat(headers.getCreatedDate().toString(), containsString(date));
             assertEquals(Long.valueOf(datastreamVersion.getSize()), headers.getContentSize());
             assertEquals(datastreamVersion.getMimeType(), headers.getMimeType());
-            assertEquals(path, headers.getFilename());
+            assertEquals(dsId, headers.getFilename());
             assertEquals(DigestUtils.md5Hex(
                     String.valueOf(Instant.parse(datastreamVersion.getCreated()).toEpochMilli())).toUpperCase(),
                     headers.getStateToken());
-            assertEquals(1, headers.getDigests().size());
-            assertEquals(PersistencePaths.binaryContentPath(path), headers.getContentPath());
+            if (headers.getExternalHandling() != null) {
+                assertEquals(1, headers.getDigests().size());
+            } else {
+                assertEquals(2, headers.getDigests().size());
+            }
             assertEquals(datastreamVersion.getExternalOrRedirectURL(), headers.getExternalUrl());
             if (Objects.equals("R", datastreamVersion.getDatastreamInfo().getControlGroup())) {
                 assertEquals("redirect", headers.getExternalHandling());
             } else if (Objects.equals("E", datastreamVersion.getDatastreamInfo().getControlGroup())) {
                 assertEquals("proxy", headers.getExternalHandling());
             }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void putDescHeadersAndVerify(final OcflSession session,
-                                         final String dsId,
-                                         final String objectId,
-                                         final int index) {
-        final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session, atLeastOnce()).put(eq(PersistencePaths.binaryDescHeaderPath(dsId)),
-                captor.capture());
-        try {
-            final var parentId = FCREPO_ROOT + objectId + "/" + dsId;
-            final var headers = objectMapper.readValue(captor.getAllValues().get(index), ResourceHeaders.class);
-            assertEquals(parentId + "/fcr:metadata", headers.getId());
-            assertEquals(parentId, headers.getParent());
-            assertEquals(NON_RDF_SOURCE_DESCRIPTION, headers.getInteractionModel());
+    private void verifyDescHeaders(final OcflObjectSession session,
+                                   final String pid,
+                                   final String dsId) {
+        verifyDescHeaders(session, pid, dsId, null);
+    }
+
+    private void verifyDescHeaders(final OcflObjectSession session,
+                                   final String pid,
+                                   final String dsId,
+                                   final String versionNumber) {
+        try (final var content = session.readContent(medadataId(pid, dsId), versionNumber)) {
+            final var headers = content.getHeaders();
+            assertEquals(medadataId(pid, dsId), headers.getId());
+            assertEquals(resourceId(pid, dsId), headers.getParent());
+            assertEquals(InteractionModel.NON_RDF_DESCRIPTION.getUri(), headers.getInteractionModel());
             assertFalse("not AG", headers.isArchivalGroup());
             assertFalse("not root", headers.isObjectRoot());
             assertFalse("not deleted", headers.isDeleted());
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
-            assertEquals(PersistencePaths.binaryDescContentPath(dsId), headers.getContentPath());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
             assertThat(headers.getCreatedDate().toString(), containsString(date));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void putObjectHeadersAndVerify(final OcflSession session,
-                                             final String objectId) {
-        final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session).put(eq(PersistencePaths.rootHeaderPath(objectId)), captor.capture());
-        try {
-            final var headers = objectMapper.readValue(captor.getValue(), ResourceHeaders.class);
-            assertEquals(FCREPO_ROOT + objectId, headers.getId());
+    private void verifyObjectHeaders(final OcflObjectSession session,
+                                     final String pid) {
+        try (final var content = session.readContent(resourceId(pid))) {
+            final var headers = content.getHeaders();
+            assertEquals(resourceId(pid), headers.getId());
             assertEquals(FCREPO_ROOT, headers.getParent());
-            assertEquals(BASIC_CONTAINER, headers.getInteractionModel());
+            assertEquals(InteractionModel.BASIC_CONTAINER.getUri(), headers.getInteractionModel());
             assertTrue("is AG", headers.isArchivalGroup());
             assertTrue("is root", headers.isObjectRoot());
             assertFalse("not deleted", headers.isDeleted());
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
-            assertEquals(PersistencePaths.rootContentPath(objectId), headers.getContentPath());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
             assertThat(headers.getCreatedDate().toString(), containsString(date));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void putF6RdfAndVerify(final OcflSession session,
-                                   final String path,
-                                   final DatastreamVersion datastreamVersion,
-                                   final int index) {
-        final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session, atLeastOnce()).put(eq(PersistencePaths.binaryDescContentPath(path)),
-                captor.capture());
-        try {
-            final var value = IOUtils.toString(captor.getAllValues().get(index));
+    private void verifyDescRdf(final OcflObjectSession session,
+                               final String pid,
+                               final String dsId,
+                               final DatastreamVersion datastreamVersion) {
+        verifyDescRdf(session, pid, dsId, datastreamVersion, null);
+    }
+
+    private void verifyDescRdf(final OcflObjectSession session,
+                               final String pid,
+                               final String dsId,
+                               final DatastreamVersion datastreamVersion,
+                               final String versionNumber) {
+        try (final var content = session.readContent(medadataId(pid, dsId), versionNumber)) {
+            final var value = IOUtils.toString(content.getContentStream().get());
             assertThat(value, allOf(
                     containsString(datastreamVersion.getLabel()),
                     containsString(datastreamVersion.getFormatUri()),
                     containsString("objState")
             ));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void verifyVanillaDescRdf(final String content,
+                                      final DatastreamVersion datastreamVersion) {
+        assertThat(content, allOf(
+                containsString(datastreamVersion.getLabel()),
+                containsString(datastreamVersion.getFormatUri()),
+                containsString(datastreamVersion.getMimeType()),
+                containsString(datastreamVersion.getDatastreamInfo().getDatastreamId()),
+                containsString("objState"),
+                containsString("hasMessageDigest"),
+                containsString("lastModified"),
+                containsString(date),
+                containsString("created")));
+    }
+
+    private void verifyObjectRdf(final String content) {
+        assertThat(content, allOf(
+                containsString("lastModifiedDate"),
+                containsString(date),
+                containsString("createdDate")
+        ));
+    }
+
+    private String contentToString(final OcflObjectSession session, final String pid) {
+        return contentVersionToString(session, pid, null);
+    }
+
+    private String contentVersionToString(final OcflObjectSession session,
+                                          final String pid,
+                                          final String versionNumber) {
+        try (final var content = session.readContent(resourceId(pid), versionNumber)) {
+            return IOUtils.toString(content.getContentStream().get());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private void putVanillaRdfAndVerify(final OcflSession session,
-                                   final String path,
-                                   final DatastreamVersion datastreamVersion,
-                                   final int index) {
-        final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session, atLeastOnce()).put(eq(PersistencePaths.binaryDescContentPath(path)),
-                captor.capture());
-        try {
-            final var value = IOUtils.toString(captor.getAllValues().get(index));
-            assertThat(value, allOf(
-                    containsString(datastreamVersion.getLabel()),
-                    containsString(datastreamVersion.getFormatUri()),
-                    containsString(datastreamVersion.getMimeType()),
-                    containsString(path),
-                    containsString("objState"),
-                    containsString("hasMessageDigest"),
-                    containsString("lastModified"),
-                    containsString(date),
-                    containsString("created")
-            ));
+    private String contentToString(final OcflObjectSession session, final String pid, final String dsId) {
+        return contentVersionToString(session, pid, dsId, null);
+    }
+
+    private String contentVersionToString(final OcflObjectSession session,
+                                          final String pid,
+                                          final String dsId,
+                                          final String versionNumber) {
+        try (final var content = session.readContent(resourceId(pid, dsId), versionNumber)) {
+            return IOUtils.toString(content.getContentStream().get());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private void putObjectRdfAndVerify(final OcflSession session, final String path) {
-        final var captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(session).put(eq(PersistencePaths.rootContentPath(path)), captor.capture());
-        try {
-            final var value = IOUtils.toString(captor.getValue());
-            assertThat(value, allOf(
-                    containsString("lastModifiedDate"),
-                    containsString(date),
-                    containsString("createdDate")
-            ));
+    private String rawContentToString(final String pid, final String path) {
+        try (final var content = ocflRepo.getObject(ObjectVersionId.head(resourceId(pid)))
+                .getFile(path).getStream()) {
+            return IOUtils.toString(content);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private String rawContentVersionToString(final String pid, final String path, final String versionNumber) {
+        try (final var content = ocflRepo.getObject(ObjectVersionId.version(resourceId(pid), versionNumber))
+                .getFile(path).getStream()) {
+            return IOUtils.toString(content);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     private ArchiveGroupHandler createHandler(final MigrationType migrationType, final boolean addExtensions) {
-        return new ArchiveGroupHandler(ocflDriver, migrationType, addExtensions, USER);
-    }
-
-    private OcflSession openSession(final String pid) {
-        final var mock = Mockito.mock(OcflSession.class);
-        when(ocflDriver.open(FCREPO_ROOT + pid)).thenReturn(mock);
-        return mock;
+        if (migrationType == MigrationType.VANILLA_OCFL) {
+            return new ArchiveGroupHandler(vanillaSessionFactory, migrationType, addExtensions, USER);
+        } else {
+            return new ArchiveGroupHandler(sessionFactory, migrationType, addExtensions, USER);
+        }
     }
 
     private ObjectVersionReference objectVersionReference(final String pid,
@@ -551,7 +632,9 @@ public class ArchiveGroupHandlerTest {
         when(mock.getDatastreamInfo()).thenReturn(info);
         when(mock.getMimeType()).thenReturn(mimeType);
         try {
-            when(mock.getContent()).thenReturn(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+            when(mock.getContent()).thenAnswer((Answer<InputStream>) invocation -> {
+                return new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+            });
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -579,6 +662,34 @@ public class ArchiveGroupHandlerTest {
         when(mock.getType()).thenReturn("md5");
         when(mock.getDigest()).thenReturn(DigestUtils.md5Hex(content));
         return mock;
+    }
+
+    private String resourceId(final String pid) {
+        return FCREPO_ROOT + pid;
+    }
+
+    private String resourceId(final String pid, final String dsId) {
+        return resourceId(pid) + "/" + dsId;
+    }
+
+    private String medadataId(final String pid, final String dsId) {
+        return resourceId(pid, dsId) + "/fcr:metadata";
+    }
+
+    private void verifyFcrepoNotExists(final String pid) {
+        final var count = ocflRepo.describeVersion(ObjectVersionId.head(resourceId(pid))).getFiles().stream()
+                .map(FileDetails::getPath)
+                .filter(file -> file.startsWith(".fcrepo/"))
+                .count();
+        assertEquals(0, count);
+    }
+
+    private void verifyNotExists(final OcflObjectSession session, final String pid, final String dsId) {
+        try (final var content = session.readContent(resourceId(pid, dsId))) {
+            assertTrue("Content should not exist", content.getContentStream().isEmpty());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 }

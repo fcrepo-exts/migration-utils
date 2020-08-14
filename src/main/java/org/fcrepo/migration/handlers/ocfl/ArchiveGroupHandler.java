@@ -16,10 +16,6 @@
 
 package org.fcrepo.migration.handlers.ocfl;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
@@ -38,6 +34,10 @@ import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectVersionReference;
+import org.fcrepo.storage.ocfl.InteractionModel;
+import org.fcrepo.storage.ocfl.OcflObjectSession;
+import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
+import org.fcrepo.storage.ocfl.ResourceHeaders;
 import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -47,11 +47,10 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -76,29 +75,23 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private static final Logger LOGGER = getLogger(ArchiveGroupHandler.class);
 
     private static final String FCREPO_ROOT = "info:fedora/";
-    static final String BASIC_CONTAINER = "http://www.w3.org/ns/ldp#BasicContainer";
-    static final String NON_RDF_SOURCE = "http://www.w3.org/ns/ldp#NonRDFSource";
-    static final String NON_RDF_SOURCE_DESCRIPTION =
-            "http://fedora.info/definitions/v4/repository#NonRdfSourceDescription";
 
     private static final Map<String, String> externalHandlingMap = Map.of(
             "E", "proxy",
             "R", "redirect"
     );
 
-    private final OcflDriver driver;
+    private final OcflObjectSessionFactory sessionFactory;
     private final boolean addDatastreamExtensions;
     private final MigrationType migrationType;
     private final String user;
-
-    private final ObjectMapper objectMapper;
     private final Detector mimeDetector;
 
     /**
      * Create an ArchiveGroupHandler,
      *
-     * @param driver
-     *        OCFL driver
+     * @param sessionFactory
+     *        OCFL session factory
      * @param migrationType
      *        the type of migration to do
      * @param addDatastreamExtensions
@@ -106,18 +99,14 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      * @param user
      *        the username to associated with the migrated resources
      */
-    public ArchiveGroupHandler(final OcflDriver driver,
+    public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
                                final MigrationType migrationType,
                                final boolean addDatastreamExtensions,
                                final String user) {
-        this.driver = Preconditions.checkNotNull(driver, "driver cannot be null");
+        this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
         this.addDatastreamExtensions = addDatastreamExtensions;
         this.user = Preconditions.checkNotNull(Strings.emptyToNull(user), "user cannot be blank");
-        this.objectMapper = new ObjectMapper()
-                .configure(WRITE_DATES_AS_TIMESTAMPS, false)
-                .registerModule(new JavaTimeModule())
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL);
         try {
             this.mimeDetector = new TikaConfig().getDetector();
         } catch (Exception e) {
@@ -135,7 +124,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             // We use the PID to identify the OCFL object
             final String objectId = ov.getObjectInfo().getPid();
             final String f6ObjectId = FCREPO_ROOT + objectId;
-            final OcflSession session = driver.open(f6ObjectId);
+            final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
 
             // Object properties are written only once (as fcrepo3 object properties were unversioned).
             if (ov.isFirstVersion()) {
@@ -148,7 +137,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 final String dsId = dv.getDatastreamInfo().getDatastreamId();
                 final String f6DsId = resolveF6DatastreamId(dsId, f6ObjectId, mimeType);
                 final var datastreamFilename = lastPartFromId(f6DsId);
-                final var contentPath = PersistencePaths.binaryContentPath(datastreamFilename);
 
                 if (dv.isFirstVersionIn(ov.getObject())) {
                     dsCreateDates.put(dsId, dv.getCreated());
@@ -156,28 +144,27 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 final var createDate = dsCreateDates.get(dsId);
 
                 final var datastreamHeaders = createDatastreamHeaders(dv, f6DsId, f6ObjectId,
-                        datastreamFilename, mimeType, createDate, contentPath);
+                        datastreamFilename, mimeType, createDate);
 
                 if ("RE".contains(dv.getDatastreamInfo().getControlGroup())) {
+                    InputStream content = null;
                     // Write a file for external content only for vanilla OCFL migration
                     if (migrationType == MigrationType.VANILLA_OCFL) {
-                        session.put(contentPath, IOUtils.toInputStream(dv.getExternalOrRedirectURL()));
+                        content = IOUtils.toInputStream(dv.getExternalOrRedirectURL());
                     }
+                    session.writeResource(datastreamHeaders, content);
                 } else {
                     try (var content = dv.getContent()) {
-                        session.put(contentPath, content);
+                        session.writeResource(datastreamHeaders, content);
                     } catch (final IOException e) {
                         throw new UncheckedIOException(e);
                     }
 
                     writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
                 }
-
-                if (migrationType == MigrationType.F6_OCFL) {
-                    session.put(PersistencePaths.binaryHeaderPath(datastreamFilename),
-                            serializeHeaders(datastreamHeaders));
-                }
             });
+
+            LOGGER.debug("Committing object <{}>", f6ObjectId);
 
             session.commit();
         });
@@ -185,14 +172,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
     private void writeObjectFiles(final String f6ObjectId,
                                   final ObjectVersionReference ov,
-                                  final OcflSession session) {
-        final var lastPart = lastPartFromId(f6ObjectId);
-        final var contentPath = PersistencePaths.rootContentPath(lastPart);
-        final var objectHeaders = createObjectHeaders(f6ObjectId, ov, contentPath);
-        session.put(contentPath, getObjTriples(ov));
-        if (migrationType == MigrationType.F6_OCFL) {
-            session.put(PersistencePaths.rootHeaderPath(lastPart), serializeHeaders(objectHeaders));
-        }
+                                  final OcflObjectSession session) {
+        final var objectHeaders = createObjectHeaders(f6ObjectId, ov);
+        final var content = getObjTriples(ov);
+        session.writeResource(objectHeaders, content);
     }
 
     private void writeDescriptionFiles(final String f6Dsid,
@@ -200,16 +183,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                        final String createDate,
                                        final ResourceHeaders datastreamHeaders,
                                        final DatastreamVersion dv,
-                                       final OcflSession session) {
-        final var contentPath = PersistencePaths.binaryDescContentPath(datastreamFilename);
-        session.put(contentPath, getDsTriples(dv, f6Dsid, createDate));
-
-        if (migrationType == MigrationType.F6_OCFL) {
-            final var descriptionHeaders = createDescriptionHeaders(f6Dsid, datastreamFilename,
-                    datastreamHeaders, contentPath);
-            session.put(PersistencePaths.binaryDescHeaderPath(datastreamFilename),
-                    serializeHeaders(descriptionHeaders));
-        }
+                                       final OcflObjectSession session) {
+        final var descriptionHeaders = createDescriptionHeaders(f6Dsid,
+                datastreamFilename,
+                datastreamHeaders);
+        session.writeResource(descriptionHeaders, getDsTriples(dv, f6Dsid, createDate));
     }
 
     private String f6DescriptionId(final String f6ResourceId) {
@@ -230,19 +208,16 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         return id;
     }
 
-    private ResourceHeaders createHeaders(final String id, final String parentId,
-                                          final String model, final String contentPath) {
+    private ResourceHeaders createHeaders(final String id, final String parentId, final InteractionModel model) {
         final var headers = new ResourceHeaders();
         headers.setId(id);
         headers.setParent(parentId);
-        headers.setInteractionModel(model);
-        headers.setContentPath(contentPath);
+        headers.setInteractionModel(model.getUri());
         return headers;
     }
 
-    private ResourceHeaders createObjectHeaders(final String f6ObjectId, final ObjectVersionReference ov,
-                                                final String contentPath) {
-        final var headers = createHeaders(f6ObjectId, FCREPO_ROOT, BASIC_CONTAINER, contentPath);
+    private ResourceHeaders createObjectHeaders(final String f6ObjectId, final ObjectVersionReference ov) {
+        final var headers = createHeaders(f6ObjectId, FCREPO_ROOT, InteractionModel.BASIC_CONTAINER);
         headers.setArchivalGroup(true);
         headers.setObjectRoot(true);
         headers.setLastModifiedBy(user);
@@ -267,9 +242,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                                     final String f6ObjectId,
                                                     final String filename,
                                                     final String mime,
-                                                    final String createDate,
-                                                    final String contentPath) {
-        final ResourceHeaders headers = createHeaders(f6DsId, f6ObjectId, NON_RDF_SOURCE, contentPath);
+                                                    final String createDate) {
+        final ResourceHeaders headers = createHeaders(f6DsId, f6ObjectId, InteractionModel.NON_RDF);
         headers.setFilename(filename);
         headers.setCreatedDate(Instant.parse(createDate));
         headers.setLastModifiedDate(Instant.parse(dv.getCreated()));
@@ -288,8 +262,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
         if (dv.getContentDigest() != null && !Strings.isNullOrEmpty(dv.getContentDigest().getDigest())) {
             final var digest = dv.getContentDigest();
-            headers.setDigests(List.of(URI.create(
-                    digest.getType().toLowerCase() + ":" + digest.getDigest().toLowerCase())));
+            final var digests = new ArrayList<URI>();
+            digests.add(URI.create("urn:" + digest.getType().toLowerCase() + ":" + digest.getDigest().toLowerCase()));
+            headers.setDigests(digests);
         }
 
         headers.setMimeType(mime);
@@ -301,10 +276,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
     private ResourceHeaders createDescriptionHeaders(final String f6DsId,
                                                      final String filename,
-                                                     final ResourceHeaders datastreamHeaders,
-                                                     final String contentPath) {
+                                                     final ResourceHeaders datastreamHeaders) {
         final var id = f6DescriptionId(f6DsId);
-        final var headers = createHeaders(id, f6DsId, NON_RDF_SOURCE_DESCRIPTION, contentPath);
+        final var headers = createHeaders(id, f6DsId, InteractionModel.NON_RDF_DESCRIPTION);
 
         headers.setFilename(filename);
         headers.setCreatedDate(datastreamHeaders.getCreatedDate());
@@ -333,14 +307,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
 
         return mime;
-    }
-
-    private InputStream serializeHeaders(final ResourceHeaders headers) {
-        try {
-            return new ByteArrayInputStream(objectMapper.writeValueAsBytes(headers));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     // Get object-level triples

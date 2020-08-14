@@ -26,11 +26,10 @@ import org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler;
 import org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler;
 import org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler;
-import org.fcrepo.migration.handlers.ocfl.DefaultOcflDriver;
-import org.fcrepo.migration.handlers.ocfl.OcflDriver;
 import org.fcrepo.migration.pidlist.PidListManager;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
+import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -233,10 +232,11 @@ public class PicocliMigrator implements Callable<Integer> {
                 throw new RuntimeException("Should never happen");
         }
 
-        final OcflDriver ocflDriver = new DefaultOcflDriver(ocflStorageDir.getAbsolutePath(),
-                ocflStagingDir.getAbsolutePath(), user, userUri);
+        final OcflObjectSessionFactory ocflSessionFactory = new OcflSessionFactoryFactoryBean(ocflStorageDir.toPath(),
+                ocflStagingDir.toPath(), migrationType, user, userUri).getObject();
+
         final FedoraObjectVersionHandler archiveGroupHandler =
-                new ArchiveGroupHandler(ocflDriver, migrationType, addExtensions, user);
+                new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, user);
         final FedoraObjectHandler versionHandler = new VersionAbstractionFedoraObjectHandler(archiveGroupHandler);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 versionHandler);
@@ -259,7 +259,7 @@ public class PicocliMigrator implements Callable<Integer> {
         try {
             migrator.run();
         } finally {
-            ocflDriver.close();
+            ocflSessionFactory.close();
             FileUtils.deleteDirectory(ocflStagingDir);
         }
 
