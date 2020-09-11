@@ -16,15 +16,12 @@
 package org.fcrepo.migration;
 
 import static org.slf4j.LoggerFactory.getLogger;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
-
 import javax.xml.stream.XMLStreamException;
-
 import org.fcrepo.migration.pidlist.PidListManager;
 import org.slf4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -75,6 +72,8 @@ public class Migrator {
 
     private List<PidListManager> pidListManagers;
 
+    private boolean continueOnError;
+
     /**
      * the migrator. set limit to -1.
      */
@@ -117,6 +116,15 @@ public class Migrator {
     }
 
     /**
+     * set the continue on error flag
+     *
+     * @param flag flag indicating whether or not to continue on error.
+     */
+    public void setContinueOnError(final boolean flag) {
+        this.continueOnError = flag;
+    }
+
+    /**
      * The constructor for migrator.
      * @param source the source
      * @param handler the handler
@@ -129,19 +137,44 @@ public class Migrator {
 
     /**
      * the run method for migrator.
+     *
      * @throws XMLStreamException xml stream exception
      */
     public void run() throws XMLStreamException {
         int index = 0;
-        for (final FedoraObjectProcessor o : source) {
-            final String pid = o.getObjectInfo().getPid();
-            if (pid != null) {
 
-                // Process if limit is '-1', or we have not hit the non-negative 'limit'...
-                //  ..and the PidListManager accepts the PID
-                if ((limit < 0 || index++ < limit) && acceptPid(pid)) {
-                    LOGGER.info("Processing \"" + pid + "\"...");
-                    o.processObject(handler);
+        final var iterator = source.iterator();
+        while (true) {
+            try {
+                if (!iterator.hasNext()) {
+                    break;
+                }
+                final var o = iterator.next();
+                final String pid = o.getObjectInfo().getPid();
+                if (pid != null) {
+                    // Process if limit is '-1', or we have not hit the non-negative 'limit'...
+                    //  ..and the PidListManager accepts the PID
+                    if ((limit < 0 || index++ < limit) && acceptPid(pid)) {
+                        LOGGER.info("Processing \"" + pid + "\"...");
+                        try {
+                            o.processObject(handler);
+                        } catch (Exception ex) {
+                            LOGGER.error("MIGRATION_FAILURE: pid=\"{}\", message=\"{}\"", pid, ex.getMessage(), ex);
+                            if (this.continueOnError) {
+                                continue;
+                            } else {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                    }
+                }
+
+            } catch (Exception ex) {
+                if (this.continueOnError) {
+                    LOGGER.error("MIGRATION_FAILURE: UNREADABLE_OBJECT: message=\"{}\"", ex.getMessage(), ex);
+                    continue;
+                } else {
+                    throw new RuntimeException(ex);
                 }
             }
         }
