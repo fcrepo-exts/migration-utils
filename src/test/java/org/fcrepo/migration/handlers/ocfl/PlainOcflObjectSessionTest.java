@@ -44,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author pwinckles
  */
-public class VanillaOcflObjectSessionTest {
+public class PlainOcflObjectSessionTest {
 
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
@@ -53,7 +53,7 @@ public class VanillaOcflObjectSessionTest {
     private Path staging;
 
     private MutableOcflRepository ocflRepo;
-    private OcflObjectSessionFactory vanillaSessionFactory;
+    private OcflObjectSessionFactory plainSessionFactory;
 
     private static final String AG_ID = "info:fedora/foo";
 
@@ -72,7 +72,7 @@ public class VanillaOcflObjectSessionTest {
                 .workDir(staging)
                 .buildMutable();
 
-        vanillaSessionFactory = new VanillaOcflObjectSessionFactory(ocflRepo, staging,
+        plainSessionFactory = new PlainOcflObjectSessionFactory(ocflRepo, staging,
                 "testing", "fedoraAdmin", "info:fedora/fedoraAdmin");
     }
 
@@ -160,7 +160,7 @@ public class VanillaOcflObjectSessionTest {
     }
 
     private OcflObjectSession newSession() {
-        return vanillaSessionFactory.newSession(AG_ID);
+        return plainSessionFactory.newSession(AG_ID);
     }
 
     private ResourceContent ag(final String resourceId, final String content) {

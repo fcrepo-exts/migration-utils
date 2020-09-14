@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author pwinckles
  */
-public class VanillaOcflObjectSessionFactoryTest {
+public class PlainOcflObjectSessionFactoryTest {
 
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
@@ -65,7 +65,7 @@ public class VanillaOcflObjectSessionFactoryTest {
                 .workDir(staging)
                 .buildMutable();
 
-        sessionFactory = new VanillaOcflObjectSessionFactory(ocflRepo, staging,
+        sessionFactory = new PlainOcflObjectSessionFactory(ocflRepo, staging,
                 "testing", "fedoraAdmin", "info:fedora/fedoraAdmin");
     }
 

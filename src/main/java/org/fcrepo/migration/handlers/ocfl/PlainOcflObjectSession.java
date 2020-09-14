@@ -52,7 +52,7 @@ import java.util.stream.Stream;
  *
  * @author pwinckles
  */
-public class VanillaOcflObjectSession implements OcflObjectSession {
+public class PlainOcflObjectSession implements OcflObjectSession {
 
     private final MutableOcflRepository ocflRepo;
     private final String sessionId;
@@ -72,11 +72,11 @@ public class VanillaOcflObjectSession implements OcflObjectSession {
      * @param objectStaging the object's staging directory
      * @param deregisterHook hook to remove the session from the factory when it's closed
      */
-    public VanillaOcflObjectSession(final String sessionId,
-                                    final MutableOcflRepository ocflRepo,
-                                    final String ocflObjectId,
-                                    final Path objectStaging,
-                                    final Runnable deregisterHook) {
+    public PlainOcflObjectSession(final String sessionId,
+                                  final MutableOcflRepository ocflRepo,
+                                  final String ocflObjectId,
+                                  final Path objectStaging,
+                                  final Runnable deregisterHook) {
         this.sessionId = sessionId;
         this.ocflRepo = ocflRepo;
         this.ocflObjectId = ocflObjectId;

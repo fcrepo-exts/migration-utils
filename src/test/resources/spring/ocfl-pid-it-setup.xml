@@ -77,7 +77,7 @@
 
     <bean id="minimal" class="org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler">
         <constructor-arg name="sessionFactory" ref="ocflSessionFactory" />
-        <constructor-arg name="migrationType" value="F6_OCFL" />
+        <constructor-arg name="migrationType" value="FEDORA_OCFL" />
         <constructor-arg name="addDatastreamExtensions" value="false" />
         <constructor-arg name="user" value="fedoraAdmin" />
     </bean>
@@ -85,7 +85,7 @@
     <bean id="ocflSessionFactory" class="org.fcrepo.migration.OcflSessionFactoryFactoryBean">
         <constructor-arg name="ocflRoot" value="target/test/ocfl/pid-it/storage" />
         <constructor-arg name="stagingDir" value="target/test/ocfl/pid-it/staging" />
-        <constructor-arg name="migrationType" value="F6_OCFL" />
+        <constructor-arg name="migrationType" value="FEDORA_OCFL" />
         <constructor-arg name="user" value="fedoraAdmin" />
         <constructor-arg name="userUri" value="info:fedora/fedoraAdmin" />
     </bean>

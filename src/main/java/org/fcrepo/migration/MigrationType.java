@@ -26,11 +26,11 @@ public enum MigrationType {
     /**
      * An OCFL object without any F6 specific metadata
      */
-    VANILLA_OCFL,
+    PLAIN_OCFL,
 
     /**
-     * An OCFL object with F6 specific metadata
+     * An OCFL object with Fedora specific metadata
      */
-    F6_OCFL
+    FEDORA_OCFL
 
 }

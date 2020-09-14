@@ -146,10 +146,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 final var datastreamHeaders = createDatastreamHeaders(dv, f6DsId, f6ObjectId,
                         datastreamFilename, mimeType, createDate);
 
-                if ("RE".contains(dv.getDatastreamInfo().getControlGroup())) {
+                if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
                     InputStream content = null;
-                    // Write a file for external content only for vanilla OCFL migration
-                    if (migrationType == MigrationType.VANILLA_OCFL) {
+                    // Write a file for external content only for plain OCFL migration
+                    if (migrationType == MigrationType.PLAIN_OCFL) {
                         content = IOUtils.toInputStream(dv.getExternalOrRedirectURL());
                     }
                     session.writeResource(datastreamHeaders, content);
@@ -250,7 +250,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         headers.setLastModifiedBy(user);
         headers.setCreatedBy(user);
 
-        if ("RE".contains(dv.getDatastreamInfo().getControlGroup())) {
+        if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
             headers.setExternalHandling(
                     externalHandlingMap.get(dv.getDatastreamInfo().getControlGroup()));
             headers.setExternalUrl(dv.getExternalOrRedirectURL());
@@ -258,7 +258,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
         headers.setArchivalGroup(false);
         headers.setObjectRoot(false);
-        headers.setContentSize(dv.getSize());
+        if (dv.getSize() > -1) {
+            headers.setContentSize(dv.getSize());
+        }
 
         if (dv.getContentDigest() != null && !Strings.isNullOrEmpty(dv.getContentDigest().getDigest())) {
             final var digest = dv.getContentDigest();
@@ -334,7 +336,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Model triples = ModelFactory.createDefaultModel();
 
-        if (migrationType == MigrationType.VANILLA_OCFL) {
+        if (migrationType == MigrationType.PLAIN_OCFL) {
             // These triples are server managed in F6
             addDateLiteral(triples,
                     f6DsId,

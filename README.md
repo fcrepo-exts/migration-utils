@@ -71,8 +71,8 @@ Usage: migration-utils [-hrVx] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
                              Directory where OCFL storage root and supporting
                                state will be written
   -m, --migration-type=<migrationType>  Type of OCFL objects to migrate to. Choices: 
-                               F6_OCFL | VANILLA_OCFL
-                               Default: F6_OCFL
+                               FEDORA_OCFL | PLAIN_OCFL
+                               Default: FEDORA_OCFL
   -l, --limit=<objectLimit>  Limit number of objects to be processed.
                                Default: no limit
   -r, --resume               Resume from last successfully migrated Fedora 3

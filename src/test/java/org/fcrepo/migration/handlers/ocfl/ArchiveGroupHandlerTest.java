@@ -60,6 +60,9 @@ public class ArchiveGroupHandlerTest {
 
     private static final String FCREPO_ROOT = "info:fedora/";
     private static final String USER = "fedoraAdmin";
+    private static final String PROXY = "E";
+    private static final String REDIRECT = "R";
+    private static final String MANAGED = "M";
 
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
@@ -69,7 +72,7 @@ public class ArchiveGroupHandlerTest {
 
     private MutableOcflRepository ocflRepo;
     private OcflObjectSessionFactory sessionFactory;
-    private OcflObjectSessionFactory vanillaSessionFactory;
+    private OcflObjectSessionFactory plainSessionFactory;
 
     private ObjectMapper objectMapper;
     private String date;
@@ -97,7 +100,7 @@ public class ArchiveGroupHandlerTest {
         sessionFactory = new DefaultOcflObjectSessionFactory(ocflRepo, staging, objectMapper, CommitType.NEW_VERSION,
                 "testing", USER, "info:fedora/fedoraAdmin");
 
-        vanillaSessionFactory = new VanillaOcflObjectSessionFactory(ocflRepo, staging,
+        plainSessionFactory = new PlainOcflObjectSessionFactory(ocflRepo, staging,
                 "testing", USER, "info:fedora/fedoraAdmin");
 
         date = Instant.now().toString().substring(0, 10);
@@ -105,14 +108,14 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionF6Format() {
-        final var handler = createHandler(MigrationType.F6_OCFL, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
         final var dsId2 = "ds2";
 
-        final var ds1 = datastreamVersion(dsId1, true, "M", "text/plain", "hello", null);
-        final var ds2 = datastreamVersion(dsId2, true, "M", "text/plain", "goodbye", null);
+        final var ds1 = datastreamVersion(dsId1, true, MANAGED, "text/plain", "hello", null);
+        final var ds2 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2))
@@ -136,16 +139,16 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsF6Format() {
-        final var handler = createHandler(MigrationType.F6_OCFL, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
         final var dsId2 = "ds4";
 
-        final var ds1V1 = datastreamVersion(dsId1, true, "M", "application/xml", "<h1>hello</h1>", null);
-        final var ds2V1 = datastreamVersion(dsId2, true, "M", "text/plain", "goodbye", null);
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
 
-        final var ds2V2 = datastreamVersion(dsId2, false, "M", "text/plain", "fedora", null);
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", null);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
@@ -174,17 +177,17 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectMultipleVersionsVanillaFormat() {
-        final var handler = createHandler(MigrationType.VANILLA_OCFL, false);
+    public void processObjectMultipleVersionsPlainFormat() {
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
         final var dsId2 = "ds4";
 
-        final var ds1V1 = datastreamVersion(dsId1, true, "M", "application/xml", "<h1>hello</h1>", null);
-        final var ds2V1 = datastreamVersion(dsId2, true, "M", "text/plain", "goodbye", null);
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
 
-        final var ds2V2 = datastreamVersion(dsId2, false, "M", "text/plain", "fedora", null);
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", null);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
@@ -201,28 +204,28 @@ public class ArchiveGroupHandlerTest {
         verifyBinary(rawContentVersionToString(pid,
                 PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1)).getContentFilePath(),
                 "v1"), ds1V1);
-        verifyVanillaDescRdf(rawContentVersionToString(pid,
+        verifyPlainDescRdf(rawContentVersionToString(pid,
                 PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId1)).getContentFilePath(),
                 "v1"), ds1V1);
 
         verifyBinary(rawContentVersionToString(pid,
                 PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
                 "v1"), ds2V1);
-        verifyVanillaDescRdf(rawContentVersionToString(pid,
+        verifyPlainDescRdf(rawContentVersionToString(pid,
                 PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2)).getContentFilePath(),
                 "v1"), ds2V1);
 
         verifyBinary(rawContentVersionToString(pid,
                 PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
                 "v2"), ds2V2);
-        verifyVanillaDescRdf(rawContentVersionToString(pid,
+        verifyPlainDescRdf(rawContentVersionToString(pid,
                 PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2)).getContentFilePath(),
                 "v2"), ds2V2);
     }
 
     @Test
     public void processObjectSingleVersionF6FormatWithExtensions() {
-        final var handler = createHandler(MigrationType.F6_OCFL, true);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, true);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -232,9 +235,9 @@ public class ArchiveGroupHandlerTest {
         final var dsId3 = "ds3";
         final var dsId3Ext = "ds3.jpg";
 
-        final var ds1 = datastreamVersion(dsId1, true, "M", "text/plain", "text", null);
-        final var ds2 = datastreamVersion(dsId2, true, "M", "application/rdf+xml", "xml", null);
-        final var ds3 = datastreamVersion(dsId3, true, "M", "image/jpeg", "image", null);
+        final var ds1 = datastreamVersion(dsId1, true, MANAGED, "text/plain", "text", null);
+        final var ds2 = datastreamVersion(dsId2, true, MANAGED, "application/rdf+xml", "xml", null);
+        final var ds3 = datastreamVersion(dsId3, true, MANAGED, "image/jpeg", "image", null);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
@@ -262,8 +265,8 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectSingleVersionVanillaFormatWithExtensions() {
-        final var handler = createHandler(MigrationType.VANILLA_OCFL, true);
+    public void processObjectSingleVersionPlainFormatWithExtensions() {
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, true);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -273,9 +276,9 @@ public class ArchiveGroupHandlerTest {
         final var dsId3 = "ds3";
         final var dsId3Ext = "ds3.jpg";
 
-        final var ds1 = datastreamVersion(dsId1, true, "M", "text/plain", "text", null);
-        final var ds2 = datastreamVersion(dsId2, true, "M", "application/rdf+xml", "xml", null);
-        final var ds3 = datastreamVersion(dsId3, true, "M", "image/jpeg", "image", null);
+        final var ds1 = datastreamVersion(dsId1, true, MANAGED, "text/plain", "text", null);
+        final var ds2 = datastreamVersion(dsId2, true, MANAGED, "application/rdf+xml", "xml", null);
+        final var ds3 = datastreamVersion(dsId3, true, MANAGED, "image/jpeg", "image", null);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
@@ -291,37 +294,37 @@ public class ArchiveGroupHandlerTest {
         verifyBinary(rawContentToString(pid,
                 PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1Ext)).getContentFilePath()),
                 ds1);
-        verifyVanillaDescRdf(rawContentToString(pid,
+        verifyPlainDescRdf(rawContentToString(pid,
                 PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId1Ext)).getContentFilePath()),
                 ds1);
 
         verifyBinary(rawContentToString(pid,
                 PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2Ext)).getContentFilePath()),
                 ds2);
-        verifyVanillaDescRdf(rawContentToString(pid,
+        verifyPlainDescRdf(rawContentToString(pid,
                 PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2Ext)).getContentFilePath()),
                 ds2);
 
         verifyBinary(rawContentToString(pid,
                 PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId3Ext)).getContentFilePath()),
                 ds3);
-        verifyVanillaDescRdf(rawContentToString(pid,
+        verifyPlainDescRdf(rawContentToString(pid,
                 PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId3Ext)).getContentFilePath()),
                 ds3);
     }
 
     @Test
     public void processObjectSingleVersionF6FormatWithExternalBinary() {
-        final var handler = createHandler(MigrationType.F6_OCFL, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
         final var dsId2 = "ds2";
         final var dsId3 = "ds3";
 
-        final var ds1 = datastreamVersion(dsId1, true, "M", "text/plain", "hello", null);
-        final var ds2 = datastreamVersion(dsId2, true, "E", "text/plain", "", "https://external");
-        final var ds3 = datastreamVersion(dsId3, true, "R", "text/plain", "", "https://redirect");
+        final var ds1 = datastreamVersion(dsId1, true, MANAGED, "text/plain", "hello", null);
+        final var ds2 = datastreamVersion(dsId2, true, PROXY, "text/plain", "", "https://external");
+        final var ds3 = datastreamVersion(dsId3, true, REDIRECT, "text/plain", "", "https://redirect");
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
@@ -345,17 +348,17 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectSingleVersionVanillaFormatWithExternalBinary() {
-        final var handler = createHandler(MigrationType.VANILLA_OCFL, false);
+    public void processObjectSingleVersionPlainFormatWithExternalBinary() {
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
         final var dsId2 = "ds2";
         final var dsId3 = "ds3";
 
-        final var ds1 = datastreamVersion(dsId1, true, "M", "text/plain", "hello", null);
-        final var ds2 = datastreamVersion(dsId2, true, "E", "text/plain", "", "https://external");
-        final var ds3 = datastreamVersion(dsId3, true, "R", "text/plain", "", "https://redirect");
+        final var ds1 = datastreamVersion(dsId1, true, MANAGED, "text/plain", "hello", null);
+        final var ds2 = datastreamVersion(dsId2, true, PROXY, "text/plain", "", "https://external");
+        final var ds3 = datastreamVersion(dsId3, true, REDIRECT, "text/plain", "", "https://redirect");
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
@@ -371,7 +374,7 @@ public class ArchiveGroupHandlerTest {
         verifyBinary(rawContentToString(pid,
                 PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1)).getContentFilePath()),
                 ds1);
-        verifyVanillaDescRdf(rawContentToString(pid,
+        verifyPlainDescRdf(rawContentToString(pid,
                 PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId1)).getContentFilePath()),
                 ds1);
 
@@ -433,9 +436,9 @@ public class ArchiveGroupHandlerTest {
                 assertEquals(2, headers.getDigests().size());
             }
             assertEquals(datastreamVersion.getExternalOrRedirectURL(), headers.getExternalUrl());
-            if (Objects.equals("R", datastreamVersion.getDatastreamInfo().getControlGroup())) {
+            if (Objects.equals(REDIRECT, datastreamVersion.getDatastreamInfo().getControlGroup())) {
                 assertEquals("redirect", headers.getExternalHandling());
-            } else if (Objects.equals("E", datastreamVersion.getDatastreamInfo().getControlGroup())) {
+            } else if (Objects.equals(PROXY, datastreamVersion.getDatastreamInfo().getControlGroup())) {
                 assertEquals("proxy", headers.getExternalHandling());
             }
         } catch (Exception e) {
@@ -513,8 +516,8 @@ public class ArchiveGroupHandlerTest {
         }
     }
 
-    private void verifyVanillaDescRdf(final String content,
-                                      final DatastreamVersion datastreamVersion) {
+    private void verifyPlainDescRdf(final String content,
+                                    final DatastreamVersion datastreamVersion) {
         assertThat(content, allOf(
                 containsString(datastreamVersion.getLabel()),
                 containsString(datastreamVersion.getFormatUri()),
@@ -583,8 +586,8 @@ public class ArchiveGroupHandlerTest {
     }
 
     private ArchiveGroupHandler createHandler(final MigrationType migrationType, final boolean addExtensions) {
-        if (migrationType == MigrationType.VANILLA_OCFL) {
-            return new ArchiveGroupHandler(vanillaSessionFactory, migrationType, addExtensions, USER);
+        if (migrationType == MigrationType.PLAIN_OCFL) {
+            return new ArchiveGroupHandler(plainSessionFactory, migrationType, addExtensions, USER);
         } else {
             return new ArchiveGroupHandler(sessionFactory, migrationType, addExtensions, USER);
         }

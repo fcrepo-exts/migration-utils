@@ -30,13 +30,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Factory for VanillaOcflObjectSessions
+ * Factory for PlainOcflObjectSessions
  *
  * @author pwinckles
  */
-public class VanillaOcflObjectSessionFactory implements OcflObjectSessionFactory {
+public class PlainOcflObjectSessionFactory implements OcflObjectSessionFactory {
 
-    private static final Logger LOG = LoggerFactory.getLogger(VanillaOcflObjectSessionFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PlainOcflObjectSessionFactory.class);
 
     private final MutableOcflRepository ocflRepo;
     private final Path stagingRoot;
@@ -55,11 +55,11 @@ public class VanillaOcflObjectSessionFactory implements OcflObjectSessionFactory
      * @param defaultVersionUserName OCFL version user
      * @param defaultVersionUserAddress OCFL version user address
      */
-    public VanillaOcflObjectSessionFactory(final MutableOcflRepository ocflRepo,
-                                           final Path stagingRoot,
-                                           final String defaultVersionMessage,
-                                           final String defaultVersionUserName,
-                                           final String defaultVersionUserAddress) {
+    public PlainOcflObjectSessionFactory(final MutableOcflRepository ocflRepo,
+                                         final Path stagingRoot,
+                                         final String defaultVersionMessage,
+                                         final String defaultVersionUserName,
+                                         final String defaultVersionUserAddress) {
         this.ocflRepo = ocflRepo;
         this.stagingRoot = stagingRoot;
         this.defaultVersionMessage = defaultVersionMessage;
@@ -73,7 +73,7 @@ public class VanillaOcflObjectSessionFactory implements OcflObjectSessionFactory
         enforceOpen();
 
         final var sessionId = UUID.randomUUID().toString();
-        final var session = new VanillaOcflObjectSession(
+        final var session = new PlainOcflObjectSession(
                 sessionId,
                 ocflRepo,
                 ocflObjectId,

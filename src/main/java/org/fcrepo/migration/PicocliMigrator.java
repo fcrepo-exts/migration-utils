@@ -89,8 +89,8 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Directory where OCFL storage root and supporting state will be written")
     private File targetDir;
 
-    @Option(names = {"--migration-type", "-m"}, defaultValue = "F6_OCFL", showDefaultValue = ALWAYS, order = 19,
-            description = "Type of OCFL objects to migrate to. Choices: F6_OCFL | VANILLA_OCFL")
+    @Option(names = {"--migration-type", "-m"}, defaultValue = "FEDORA_OCFL", showDefaultValue = ALWAYS, order = 19,
+            description = "Type of OCFL objects to migrate to. Choices: FEDORA_OCFL | PLAIN_OCFL")
     private MigrationType migrationType;
 
     @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 21,
