@@ -119,12 +119,18 @@
     </bean>
     
     <bean id="minimal" class="org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler">
-    	<constructor-arg name="driver" ref="ocflDriver" />
-      <constructor-arg name="addDatastreamExtensions" value="false" />
+        <constructor-arg name="sessionFactory" ref="ocflSessionFactory" />
+        <constructor-arg name="migrationType" value="FEDORA_OCFL" />
+        <constructor-arg name="addDatastreamExtensions" value="false" />
+        <constructor-arg name="user" value="fedoraAdmin" />
     </bean>
-    
-    <bean id="ocflDriver" class="org.fcrepo.migration.handlers.ocfl.DefaultOcflDriver">
-        <constructor-arg ref="${fedora.client:ocfl}"/>
+
+    <bean id="ocflSessionFactory" class="org.fcrepo.migration.OcflSessionFactoryFactoryBean">
+        <constructor-arg name="ocflRoot" value="${migration.ocfl.storage.dir:target/test/storage}" />
+        <constructor-arg name="stagingDir" value="${migration.ocfl.staging.dir:target/test/staging}" />
+        <constructor-arg name="migrationType" value="FEDORA_OCFL" />
+        <constructor-arg name="user" value="fedoraAdmin" />
+        <constructor-arg name="userUri" value="info:fedora/fedoraAdmin" />
     </bean>
 
     <bean id="fedora4" class="org.fcrepo.migration.f4clients.StatelessFedora4Client">
@@ -134,12 +140,6 @@
         <!--<constructor-arg name="password" value="admin-password"/>-->
     </bean>
     
-    <bean id="ocfl" class="org.fcrepo.migration.f4clients.OCFLFedora4Client" destroy-method="close">
-        <constructor-arg name="storage" value="${migration.ocfl.storage.dir:target/test/storage}"/>
-        <constructor-arg name="staging" value="${migration.ocfl.staging.dir:target/test/staging}"/>
-        <constructor-arg name="mapper" value="${migration.ocfl.layout:FLAT}"/>
-    </bean>
-
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
 
     <!-- CHANGE THIS TO THE FEDORA 4 URL TO WHICH YOU WANT TO MIGRATE THE CONTENT -->
