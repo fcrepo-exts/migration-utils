@@ -50,6 +50,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +61,7 @@ public class ArchiveGroupHandlerTest {
 
     private static final String FCREPO_ROOT = "info:fedora/";
     private static final String USER = "fedoraAdmin";
+    private static final String INLINE = "X";
     private static final String PROXY = "E";
     private static final String REDIRECT = "R";
     private static final String MANAGED = "M";
@@ -115,7 +117,8 @@ public class ArchiveGroupHandlerTest {
         final var dsId2 = "ds2";
 
         final var ds1 = datastreamVersion(dsId1, true, MANAGED, "text/plain", "hello", null);
-        final var ds2 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
+        final var ds2 = datastreamVersion(dsId2, true, INLINE, "application/xml", "<xml>goodbye</xml>", null);
+        when(ds2.getSize()).thenReturn(100L);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2))
@@ -424,7 +427,11 @@ public class ArchiveGroupHandlerTest {
             assertEquals(USER, headers.getLastModifiedBy());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
             assertThat(headers.getCreatedDate().toString(), containsString(date));
-            assertEquals(Long.valueOf(datastreamVersion.getSize()), headers.getContentSize());
+            if (INLINE.equals(datastreamVersion.getDatastreamInfo().getControlGroup())) {
+                assertNotEquals(Long.valueOf(datastreamVersion.getSize()), headers.getContentSize());
+            } else {
+                assertEquals(Long.valueOf(datastreamVersion.getSize()), headers.getContentSize());
+            }
             assertEquals(datastreamVersion.getMimeType(), headers.getMimeType());
             assertEquals(dsId, headers.getFilename());
             assertEquals(DigestUtils.md5Hex(

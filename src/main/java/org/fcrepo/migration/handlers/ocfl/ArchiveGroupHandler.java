@@ -81,6 +81,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             "R", "redirect"
     );
 
+    private static final String INLINE_XML = "X";
+
     private final OcflObjectSessionFactory sessionFactory;
     private final boolean addDatastreamExtensions;
     private final MigrationType migrationType;
@@ -258,7 +260,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
         headers.setArchivalGroup(false);
         headers.setObjectRoot(false);
-        if (dv.getSize() > -1) {
+        if (dv.getSize() > -1 && !INLINE_XML.equals(dv.getDatastreamInfo().getControlGroup())) {
             headers.setContentSize(dv.getSize());
         }
 
