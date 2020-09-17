@@ -143,12 +143,8 @@ public class Migrator {
     public void run() throws XMLStreamException {
         int index = 0;
 
-        final var iterator = source.iterator();
-        while (true) {
+        for (final var iterator = source.iterator(); iterator.hasNext();) {
             try {
-                if (!iterator.hasNext()) {
-                    break;
-                }
                 final var o = iterator.next();
                 final String pid = o.getObjectInfo().getPid();
                 if (pid != null) {
