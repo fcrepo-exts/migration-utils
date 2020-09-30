@@ -197,7 +197,7 @@ public class Migrator {
         sb.append("============================\n");
         sb.append("Please provide the directory path to a configuration file!");
         sb.append("\n");
-        sb.append("See: https://github.com/fcrepo4-exts/migration-utils/blob/master/");
+        sb.append("See: https://github.com/fcrepo-exts/migration-utils/blob/master/");
         sb.append("src/main/resources/spring/migration-bean.xml");
         sb.append("\n\n");
         sb.append("The configuration file should contain the following (with appropriate values):");
