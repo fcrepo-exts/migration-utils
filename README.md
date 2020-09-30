@@ -37,7 +37,7 @@ Background work
     * If so, you will need all of the export FOXML in a known directory.
   * Will you be migrating from from a native fcrepo3 filesystem?
     * If so, fcrepo3 should not be running, and you will need to determine if you're using legacy or akubra storage
-* Determine your fcrepo url (ex: http://localhost:8080/rest/, http://yourHostName.ca:8080/fcrepo/rest/)
+* Determine your fcrepo 4+ url (ex: http://localhost:8080/rest/, http://yourHostName.ca:8080/fcrepo/rest/)
 
 *Warning*: _The migration tool is under active development, so these instructions will change as the configuration process becomes more refined_  
 
@@ -122,9 +122,9 @@ java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exporte
 
 ## Property Mappings
 
-### fcrepo3 Object properties to fcrepo
+### fcrepo 3 Object properties to fcrepo 4+
 
-| fcrepo 3         | fcrepo                             | Example                  |
+| fcrepo 3         | fcrepo 4+                           | Example                  |
 |------------------|-------------------------------------|--------------------------|
 | PID              | fedora3model:PID†                   | yul:328697               |
 | state            | fedoraaccess:objState               | Active                   |
@@ -133,9 +133,9 @@ java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exporte
 | lastModifiedDate | fcrepo:lastModified                 | 2015-03-16T20:11:06.683Z |
 | ownerId          | fedora3model:ownerId†               | nruest                   |
 
-### fcrepo3 Datastream properties to fcrepo
+### fcrepo3 Datastream properties to fcrepo 4+
 
-| fcrepo3       | fcrepo                                                      | Example                                                    |
+| fcrepo 3      | fcrepo 4+                                                    | Example                                                    |
 |---------------|--------------------------------------------------------------|------------------------------------------------------------|
 | DSID          | dcterms:identifier                                           | OBJ                                                        |
 | Label         | dcterms:title‡                                               | ASC19109.tif                                               |
@@ -150,7 +150,7 @@ java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exporte
 
 ### auditTrail mapping
 
-| fcrepo3 event                      | fcrepo Event Type                              |
+| fcrepo 3 event                      | fcrepo 4+ Event Type                            |
 |------------------------------------|-------------------------------------------------|
 | addDatastream                      | premis:ing‡                                     |
 | modifyDatastreamByReference        | audit:contentModification/metadataModification‡ |
@@ -159,11 +159,11 @@ java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exporte
 | modifyDatastreamByValue            | audit:contentModification/metadataModification‡ |
 | purgeDatastream                    | audit:contentRemoval‡                           |
 
-† The `fedora3model` namespace is not a published namespace. It is a representation of the fcrepo3 namespace `info:fedora/fedora-system:def/model`.
+† The `fedora3model` namespace is not a published namespace. It is a representation of the fcrepo 3 namespace `info:fedora/fedora-system:def/model`.
 
 ‡ Not yet implemented
 
-**Note**: All fcrepo3 DC (Dublin Core) datastream values are mapped as dcterms properties on the Object in fcrepo. The same goes for any properties in the RELS-EXT and RELS-INT datastreams.
+**Note**: All fcrepo 3 DC (Dublin Core) datastream values are mapped as dcterms properties on the Object in fcrepo 4+. The same goes for any properties in the RELS-EXT and RELS-INT datastreams.
 
 ## Additional Documentation
 
