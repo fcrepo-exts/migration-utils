@@ -15,6 +15,32 @@
  */
 package org.fcrepo.migration.foxml;
 
+import org.apache.commons.codec.binary.Base64OutputStream;
+import org.fcrepo.migration.ContentDigest;
+import org.fcrepo.migration.DatastreamInfo;
+import org.fcrepo.migration.DatastreamVersion;
+import org.fcrepo.migration.DefaultContentDigest;
+import org.fcrepo.migration.DefaultObjectInfo;
+import org.fcrepo.migration.FedoraObjectProcessor;
+import org.fcrepo.migration.ObjectInfo;
+import org.fcrepo.migration.ObjectProperties;
+import org.fcrepo.migration.ObjectReference;
+import org.fcrepo.migration.StreamingFedoraObjectHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.XMLEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,37 +57,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.events.XMLEvent;
-
-import org.apache.commons.codec.binary.Base64OutputStream;
-import org.fcrepo.migration.ContentDigest;
-import org.fcrepo.migration.DatastreamInfo;
-import org.fcrepo.migration.DatastreamVersion;
-import org.fcrepo.migration.DefaultContentDigest;
-import org.fcrepo.migration.DefaultObjectInfo;
-import org.fcrepo.migration.FedoraObjectProcessor;
-import org.fcrepo.migration.ObjectInfo;
-import org.fcrepo.migration.ObjectProperties;
-import org.fcrepo.migration.ObjectReference;
-import org.fcrepo.migration.StreamingFedoraObjectHandler;
-
 /**
  * A FedoraObjectProcessor implementation that uses the STaX API to process
  * a FOXML XML InputStream.
  * @author mdurbin
  */
 public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProcessor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FoxmlInputStreamFedoraObjectProcessor.class);
 
     private static final String FOXML_NS = "info:fedora/fedora-system:def/foxml#";
 
@@ -70,6 +73,8 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
     private String localFedoraServer;
 
     private InternalIDResolver idResolver;
+
+    private InputStream stream;
 
     private XMLStreamReader reader;
 
@@ -99,6 +104,7 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         this.idResolver = resolver;
         this.localFedoraServer = localFedoraServer;
         final XMLInputFactory factory = XMLInputFactory.newFactory();
+        stream = is;
         reader = factory.createXMLStreamReader(is);
         reader.nextTag();
         final Map<String, String> attributes = getAttributes(reader, "PID", "VERSION", "FEDORA_URI", "schemaLocation");
@@ -166,7 +172,12 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
             try {
                 reader.close();
             } catch (final XMLStreamException e) {
-                throw new RuntimeException(e);
+                LOG.warn("Failed to close reader cleanly", e);
+            }
+            try {
+                stream.close();
+            } catch (IOException e) {
+                LOG.warn("Failed to close file cleanly", e);
             }
         }
     }
