@@ -303,8 +303,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         if (Strings.isNullOrEmpty(mime)) {
             final var meta = new Metadata();
             meta.set(Metadata.RESOURCE_NAME_KEY, dv.getDatastreamInfo().getDatastreamId());
-            try (var content = dv.getContent()) {
-                mime = mimeDetector.detect(TikaInputStream.get(content), meta).toString();
+            try (var content = TikaInputStream.get(dv.getContent())) {
+                mime = mimeDetector.detect(content, meta).toString();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
