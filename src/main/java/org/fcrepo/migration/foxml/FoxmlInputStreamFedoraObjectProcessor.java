@@ -169,16 +169,23 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
             cleanUpTempFiles();
             throw new RuntimeException(e);
         } finally {
-            try {
-                reader.close();
-            } catch (final XMLStreamException e) {
-                LOG.warn("Failed to close reader cleanly", e);
-            }
-            try {
-                stream.close();
-            } catch (IOException e) {
-                LOG.warn("Failed to close file cleanly", e);
-            }
+            close();
+        }
+    }
+
+    /**
+     * Close resources associated to the processor
+     */
+    public void close() {
+        try {
+            reader.close();
+        } catch (final XMLStreamException e) {
+            LOG.warn("Failed to close reader cleanly", e);
+        }
+        try {
+            stream.close();
+        } catch (IOException e) {
+            LOG.warn("Failed to close file cleanly", e);
         }
     }
 
