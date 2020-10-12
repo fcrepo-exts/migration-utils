@@ -15,18 +15,20 @@
  */
 package org.fcrepo.migration;
 
-import static org.slf4j.LoggerFactory.getLogger;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
-import javax.xml.stream.XMLStreamException;
 import org.fcrepo.migration.pidlist.PidListManager;
 import org.slf4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+
+import javax.xml.stream.XMLStreamException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A class that represents a command-line program to migrate a fedora 3
@@ -144,8 +146,7 @@ public class Migrator {
         int index = 0;
 
         for (final var iterator = source.iterator(); iterator.hasNext();) {
-            try {
-                final var o = iterator.next();
+            try (final var o = iterator.next()) {
                 final String pid = o.getObjectInfo().getPid();
                 if (pid != null) {
                     // Process if limit is '-1', or we have not hit the non-negative 'limit'...

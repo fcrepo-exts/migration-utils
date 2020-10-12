@@ -23,7 +23,7 @@ import javax.xml.stream.XMLStreamException;
  * StreamingFedoraObjectHandler.
  * @author mdurbin
  */
-public interface FedoraObjectProcessor {
+public interface FedoraObjectProcessor extends AutoCloseable {
 
     /**
      * get object information.
@@ -37,4 +37,10 @@ public interface FedoraObjectProcessor {
      * @throws XMLStreamException xml stream exception
      */
     public void processObject(StreamingFedoraObjectHandler handler) throws XMLStreamException;
+
+    /**
+     * Close resources associated to the processor
+     */
+    void close();
+
 }

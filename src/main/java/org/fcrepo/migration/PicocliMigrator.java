@@ -56,7 +56,7 @@ import static picocli.CommandLine.Help.Visibility.ALWAYS;
  * @since 2019-11-15
  */
 @Command(name = "migration-utils", mixinStandardHelpOptions = true, sortOptions = false,
-        version = "Migration Utils - 4.4.1.a")
+        version = "Migration Utils - 4.4.1.b")
 public class PicocliMigrator implements Callable<Integer> {
 
     private static final Logger LOGGER = getLogger(PicocliMigrator.class);
