@@ -88,19 +88,6 @@
 
     <!-- ID MAPPERS: defines the IDs that are generated for the new Fedora 4 objects. -->
 
-    <!-- The following ID mapper take advantage of hierarchy in ways that
-         isn't well supported in Fedora 4 and may exposes problems.  It shouldn't
-         be used until the following issue has been resolved:
-
-         https://jira.duraspace.org/browse/FCREPO-1547
-
-    <bean id="deprecatedIDMapper" class="org.fcrepo.migration.idmappers.SimpleIDMapper">
-        <constructor-arg name="baseUrl" ref="fedora4Url" />
-        <constructor-arg name="rootPath" value="migrated-fedora3" />
-        <property name="charDepth" value="2" />
-    </bean>
-    -->
-
     <!--
        Mints a new fedora 4 path for each PID encountered during the migration.
        The mappings are persisted in a lucene index configured in the "idIndex"
