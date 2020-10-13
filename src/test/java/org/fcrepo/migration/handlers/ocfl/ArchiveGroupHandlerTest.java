@@ -52,6 +52,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 /**
@@ -618,9 +619,9 @@ public class ArchiveGroupHandlerTest {
         return mock;
     }
 
-    private ObjectProperties objectProperties(final List properties) {
+    private ObjectProperties objectProperties(final List<? extends ObjectProperty> properties) {
         final var mock = Mockito.mock(ObjectProperties.class);
-        when(mock.listProperties()).thenReturn(properties);
+        doReturn(properties).when(mock).listProperties();
         return mock;
     }
 

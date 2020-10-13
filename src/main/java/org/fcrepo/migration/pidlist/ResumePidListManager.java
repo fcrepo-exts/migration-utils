@@ -64,6 +64,7 @@ public class ResumePidListManager implements PidListManager {
      * Constructor
      *
      * @param pidDir where resume file will be read/created
+     * @param acceptAll whether to process all pids even if they've been processed before.
      */
     public ResumePidListManager(final File pidDir, final boolean acceptAll) {
         if (!pidDir.exists()) {

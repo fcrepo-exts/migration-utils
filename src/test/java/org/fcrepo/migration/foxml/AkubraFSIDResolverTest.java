@@ -15,7 +15,8 @@
  */
 package org.fcrepo.migration.foxml;
 
-import junit.framework.Assert;
+import static org.junit.Assert.assertEquals;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -44,7 +45,7 @@ public class AkubraFSIDResolverTest {
 
     @Test
     public void testIDMapping() throws UnsupportedEncodingException {
-        Assert.assertEquals("example:1+DS2+DS2.0",
+        assertEquals("example:1+DS2+DS2.0",
                 idResolver.getInternalIdForFile(new File("info%3Afedora%2Fexample%3A1%2FDS2%2FDS2.0")));
     }
 

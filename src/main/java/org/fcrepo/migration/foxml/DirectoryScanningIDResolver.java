@@ -58,7 +58,7 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
      * id field is the internal id, the path field is the full path to the
      * file containing that datastream content.
      */
-    private IndexSearcher searcher;
+    private final IndexSearcher searcher;
 
     /**
      * directory scanning ID resolver
@@ -66,7 +66,7 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
      *                 cache will be built at that location.  If it is null, a new cache will be built in
      *                 the temp file space that will be deleted upon application shutdown.
      * @param dsRoot the datastream root
-     * @throws IOException IO exception
+     * @throws IOException IO exception creating temp and index files/directories
      */
     public DirectoryScanningIDResolver(final File cachedIndexDir, final File dsRoot) throws IOException {
         final File indexDir;

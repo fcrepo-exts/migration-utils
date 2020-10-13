@@ -56,14 +56,18 @@ public class StatelessFedora4Client implements Fedora4Client {
     /**
      * Constructor for repositories for which Authentication is disabled;
      * requires the base URL for the Fedora 4 repository.
+     * @param fcrepoBaseURL the base URL for a Fedora 4 repository.
      */
     public StatelessFedora4Client(final String fcrepoBaseURL) {
         baseUri = fcrepoBaseURL;
     }
 
     /**
-     * Constructor for repositories for which Authentication is disabled;
+     * Constructor for repositories for which Authentication is not disabled;
      * requires the base URL for the Fedora 4 repository.
+     * @param username the username to authenticate with.
+     * @param password the password to authenticate with.
+     * @param fcrepoBaseURL the base URL for a Fedora 4 repository.
      */
     public StatelessFedora4Client(final String username, final String password, final String fcrepoBaseURL) {
         baseUri = fcrepoBaseURL;

@@ -134,7 +134,7 @@ public class PicocliMigrator implements Callable<Integer> {
 
 
     /**
-     * @param args
+     * @param args Command line arguments
      */
     public static void main(final String[] args) {
         final PicocliMigrator migrator = new PicocliMigrator();
@@ -147,7 +147,7 @@ public class PicocliMigrator implements Callable<Integer> {
 
     private static class PicoliMigrationExceptionHandler implements CommandLine.IExecutionExceptionHandler {
 
-        private PicocliMigrator migrator;
+        private final PicocliMigrator migrator;
 
         PicoliMigrationExceptionHandler(final PicocliMigrator migrator) {
             this.migrator = migrator;
