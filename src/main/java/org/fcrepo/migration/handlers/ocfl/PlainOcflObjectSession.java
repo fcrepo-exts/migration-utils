@@ -98,7 +98,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     }
 
     @Override
-    public synchronized void writeResource(final ResourceHeaders headers, final InputStream content) {
+    public synchronized ResourceHeaders writeResource(final ResourceHeaders headers, final InputStream content) {
         enforceOpen();
 
         final var paths = resolvePersistencePaths(headers);
@@ -107,6 +107,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
 
         final var contentDst = createStagingPath(contentPath);
         write(content, contentDst);
+        return headers;
     }
 
     @Override

@@ -27,6 +27,7 @@ import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.fcrepo.storage.ocfl.PersistencePaths;
+import org.fcrepo.storage.ocfl.cache.NoOpCache;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -99,7 +100,8 @@ public class ArchiveGroupHandlerTest {
                 .registerModule(new JavaTimeModule())
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-        sessionFactory = new DefaultOcflObjectSessionFactory(ocflRepo, staging, objectMapper, CommitType.NEW_VERSION,
+        sessionFactory = new DefaultOcflObjectSessionFactory(ocflRepo, staging, objectMapper,
+                new NoOpCache<>(), CommitType.NEW_VERSION,
                 "testing", USER, "info:fedora/fedoraAdmin");
 
         plainSessionFactory = new PlainOcflObjectSessionFactory(ocflRepo, staging,

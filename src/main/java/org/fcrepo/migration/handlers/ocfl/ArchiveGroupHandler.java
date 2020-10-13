@@ -210,33 +210,35 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         return id;
     }
 
-    private ResourceHeaders createHeaders(final String id, final String parentId, final InteractionModel model) {
-        final var headers = new ResourceHeaders();
-        headers.setId(id);
-        headers.setParent(parentId);
-        headers.setInteractionModel(model.getUri());
+    private ResourceHeaders.Builder createHeaders(final String id,
+                                                  final String parentId,
+                                                  final InteractionModel model) {
+        final var headers = ResourceHeaders.builder();
+        headers.withId(id);
+        headers.withParent(parentId);
+        headers.withInteractionModel(model.getUri());
         return headers;
     }
 
     private ResourceHeaders createObjectHeaders(final String f6ObjectId, final ObjectVersionReference ov) {
         final var headers = createHeaders(f6ObjectId, FCREPO_ROOT, InteractionModel.BASIC_CONTAINER);
-        headers.setArchivalGroup(true);
-        headers.setObjectRoot(true);
-        headers.setLastModifiedBy(user);
-        headers.setCreatedBy(user);
+        headers.withArchivalGroup(true);
+        headers.withObjectRoot(true);
+        headers.withLastModifiedBy(user);
+        headers.withCreatedBy(user);
 
         ov.getObjectProperties().listProperties().forEach(p -> {
             if (p.getName().contains("lastModifiedDate")) {
-                headers.setLastModifiedDate(Instant.parse(p.getValue()));
+                final var lastModified = Instant.parse(p.getValue());
+                headers.withLastModifiedDate(lastModified);
+                headers.withStateToken(DigestUtils.md5Hex(
+                        String.valueOf(lastModified.toEpochMilli())).toUpperCase());
             } else if (p.getName().contains("createdDate")) {
-                headers.setCreatedDate(Instant.parse(p.getValue()));
+                headers.withCreatedDate(Instant.parse(p.getValue()));
             }
         });
 
-        headers.setStateToken(DigestUtils.md5Hex(
-                String.valueOf(headers.getLastModifiedDate().toEpochMilli())).toUpperCase());
-
-        return headers;
+        return headers.build();
     }
 
     private ResourceHeaders createDatastreamHeaders(final DatastreamVersion dv,
@@ -245,37 +247,38 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                                     final String filename,
                                                     final String mime,
                                                     final String createDate) {
-        final ResourceHeaders headers = createHeaders(f6DsId, f6ObjectId, InteractionModel.NON_RDF);
-        headers.setFilename(filename);
-        headers.setCreatedDate(Instant.parse(createDate));
-        headers.setLastModifiedDate(Instant.parse(dv.getCreated()));
-        headers.setLastModifiedBy(user);
-        headers.setCreatedBy(user);
+        final var lastModified = Instant.parse(dv.getCreated());
+        final var headers = createHeaders(f6DsId, f6ObjectId, InteractionModel.NON_RDF);
+        headers.withFilename(filename);
+        headers.withCreatedDate(Instant.parse(createDate));
+        headers.withLastModifiedDate(lastModified);
+        headers.withLastModifiedBy(user);
+        headers.withCreatedBy(user);
 
         if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
-            headers.setExternalHandling(
+            headers.withExternalHandling(
                     externalHandlingMap.get(dv.getDatastreamInfo().getControlGroup()));
-            headers.setExternalUrl(dv.getExternalOrRedirectURL());
+            headers.withExternalUrl(dv.getExternalOrRedirectURL());
         }
 
-        headers.setArchivalGroup(false);
-        headers.setObjectRoot(false);
+        headers.withArchivalGroup(false);
+        headers.withObjectRoot(false);
         if (dv.getSize() > -1 && !INLINE_XML.equals(dv.getDatastreamInfo().getControlGroup())) {
-            headers.setContentSize(dv.getSize());
+            headers.withContentSize(dv.getSize());
         }
 
         if (dv.getContentDigest() != null && !Strings.isNullOrEmpty(dv.getContentDigest().getDigest())) {
             final var digest = dv.getContentDigest();
             final var digests = new ArrayList<URI>();
             digests.add(URI.create("urn:" + digest.getType().toLowerCase() + ":" + digest.getDigest().toLowerCase()));
-            headers.setDigests(digests);
+            headers.withDigests(digests);
         }
 
-        headers.setMimeType(mime);
-        headers.setStateToken(DigestUtils.md5Hex(
-                String.valueOf(headers.getLastModifiedDate().toEpochMilli())).toUpperCase());
+        headers.withMimeType(mime);
+        headers.withStateToken(DigestUtils.md5Hex(
+                String.valueOf(lastModified.toEpochMilli())).toUpperCase());
 
-        return headers;
+        return headers.build();
     }
 
     private ResourceHeaders createDescriptionHeaders(final String f6DsId,
@@ -284,17 +287,17 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final var id = f6DescriptionId(f6DsId);
         final var headers = createHeaders(id, f6DsId, InteractionModel.NON_RDF_DESCRIPTION);
 
-        headers.setFilename(filename);
-        headers.setCreatedDate(datastreamHeaders.getCreatedDate());
-        headers.setLastModifiedDate(datastreamHeaders.getLastModifiedDate());
-        headers.setCreatedBy(datastreamHeaders.getCreatedBy());
-        headers.setLastModifiedBy(datastreamHeaders.getLastModifiedBy());
+        headers.withFilename(filename);
+        headers.withCreatedDate(datastreamHeaders.getCreatedDate());
+        headers.withLastModifiedDate(datastreamHeaders.getLastModifiedDate());
+        headers.withCreatedBy(datastreamHeaders.getCreatedBy());
+        headers.withLastModifiedBy(datastreamHeaders.getLastModifiedBy());
 
-        headers.setArchivalGroup(false);
-        headers.setObjectRoot(false);
-        headers.setStateToken(datastreamHeaders.getStateToken());
+        headers.withArchivalGroup(false);
+        headers.withObjectRoot(false);
+        headers.withStateToken(datastreamHeaders.getStateToken());
 
-        return headers;
+        return headers.build();
     }
 
     private String resolveMimeType(final DatastreamVersion dv) {

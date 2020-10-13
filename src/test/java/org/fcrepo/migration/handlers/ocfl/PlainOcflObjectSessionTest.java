@@ -165,27 +165,27 @@ public class PlainOcflObjectSessionTest {
 
     private ResourceContent ag(final String resourceId, final String content) {
         final var headers = headers(resourceId);
-        headers.setInteractionModel(InteractionModel.BASIC_CONTAINER.getUri());
-        headers.setArchivalGroup(true);
-        return new ResourceContent(IOUtils.toInputStream(content), headers);
+        headers.withInteractionModel(InteractionModel.BASIC_CONTAINER.getUri());
+        headers.withArchivalGroup(true);
+        return new ResourceContent(IOUtils.toInputStream(content), headers.build());
     }
 
     private ResourceContent binary(final String resourceId, final String content) {
         final var headers = headers(resourceId);
-        headers.setInteractionModel(InteractionModel.NON_RDF.getUri());
-        return new ResourceContent(IOUtils.toInputStream(content), headers);
+        headers.withInteractionModel(InteractionModel.NON_RDF.getUri());
+        return new ResourceContent(IOUtils.toInputStream(content), headers.build());
     }
 
     private ResourceContent rdf(final String resourceId, final String content) {
         final var headers = headers(resourceId);
-        headers.setInteractionModel(InteractionModel.NON_RDF_DESCRIPTION.getUri());
-        return new ResourceContent(IOUtils.toInputStream(content), headers);
+        headers.withInteractionModel(InteractionModel.NON_RDF_DESCRIPTION.getUri());
+        return new ResourceContent(IOUtils.toInputStream(content), headers.build());
     }
 
-    private ResourceHeaders headers(final String resourceId) {
-        final var headers = new ResourceHeaders();
-        headers.setId(resourceId);
-        headers.setParent(AG_ID);
+    private ResourceHeaders.Builder headers(final String resourceId) {
+        final var headers = ResourceHeaders.builder();
+        headers.withId(resourceId);
+        headers.withParent(AG_ID);
         return headers;
     }
 
