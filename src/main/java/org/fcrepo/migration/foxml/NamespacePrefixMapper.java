@@ -29,12 +29,12 @@ import com.hp.hpl.jena.update.UpdateRequest;
  */
 public class NamespacePrefixMapper {
 
-    private Properties namespacePrefixes;
+    private final Properties namespacePrefixes;
 
     /**
      * Constructor.
      * @param namespaceFile Namespace properties file that gets injected in via Spring
-     * @throws IOException
+     * @throws IOException Issues loading the properties file.
      */
     public NamespacePrefixMapper(final File namespaceFile) throws IOException {
         namespacePrefixes = new Properties();

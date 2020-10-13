@@ -32,7 +32,7 @@ public class AkubraFSIDResolver extends DirectoryScanningIDResolver {
      * Basic constructor.
      * @param indexDir A directory that will serve as a lucene index directory to cache ID resolution.
      * @param dsRoot the root directory of the AkubraFS datastream store.
-     * @throws IOException
+     * @throws IOException IO exception creating temp and index files/directories
      */
     public AkubraFSIDResolver(final File indexDir, final File dsRoot) throws IOException {
         super(indexDir, dsRoot);
@@ -41,7 +41,7 @@ public class AkubraFSIDResolver extends DirectoryScanningIDResolver {
     /**
      * Basic constructor.
      * @param dsRoot the root directory of the AkubraFS datastream store.
-     * @throws IOException
+     * @throws IOException IO exception creating temp and index files/directories
      */
     public AkubraFSIDResolver(final File dsRoot) throws IOException {
         super(null, dsRoot);

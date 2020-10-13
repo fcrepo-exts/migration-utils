@@ -93,6 +93,7 @@ public class BasicObjectVersionHandler implements FedoraObjectVersionHandler {
      * @param client a fedora4 client
      * @param idMapper the id mapper
      * @param localFedoraServer uri to fedora server
+     * @param namespacePrefixMapper a namespace prefix mapper.
      */
     public BasicObjectVersionHandler(final Fedora4Client client,
                                      final MigrationIDMapper idMapper,

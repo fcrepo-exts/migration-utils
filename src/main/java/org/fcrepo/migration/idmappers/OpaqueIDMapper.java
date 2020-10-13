@@ -75,7 +75,7 @@ public class OpaqueIDMapper implements MigrationIDMapper {
      * A constructor.
      * @param cachedIDIndexDir the directory (or null) where the index of generated pids should be maintained
      * @param f4Client a Fedora 4 client to mediate interactions with the repository
-     * @throws IOException
+     * @throws IOException IO exception creating temp and index files/directories
      */
     public OpaqueIDMapper(final File cachedIDIndexDir, final Fedora4Client f4Client) throws IOException {
         this.f4Client = f4Client;
@@ -122,11 +122,6 @@ public class OpaqueIDMapper implements MigrationIDMapper {
         searcherManager = new SearcherManager(writer, false, false, null);
     }
 
-    /**
-     *
-     * @param pid a PID for a Fedora 3 object.
-     * @return
-     */
     @Override
     public String mapObjectPath(final String pid) {
         final String cachedPath = getCachedObjectPath(pid);

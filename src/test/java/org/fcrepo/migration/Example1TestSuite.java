@@ -57,7 +57,7 @@ public abstract class Example1TestSuite {
 
     @Test
     public void testPropertiesParsing() {
-        final List<ObjectProperty> propertyList = (List<ObjectProperty>) getResult().properties.listProperties();
+        final List<? extends ObjectProperty> propertyList = getResult().properties.listProperties();
         Assert.assertEquals(5, propertyList.size());
         Assert.assertEquals("info:fedora/fedora-system:def/model#state", propertyList.get(0).getName());
         Assert.assertEquals("Active", propertyList.get(0).getValue());
