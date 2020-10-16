@@ -59,7 +59,6 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     private final String ocflObjectId;
     private final VersionInfo versionInfo;
     private final Path objectStaging;
-    private final Runnable deregisterHook;
 
     private final OcflOption[] ocflOptions;
 
@@ -70,18 +69,15 @@ public class PlainOcflObjectSession implements OcflObjectSession {
      * @param ocflRepo the OCFL client
      * @param ocflObjectId the OCFL object id
      * @param objectStaging the object's staging directory
-     * @param deregisterHook hook to remove the session from the factory when it's closed
      */
     public PlainOcflObjectSession(final String sessionId,
                                   final MutableOcflRepository ocflRepo,
                                   final String ocflObjectId,
-                                  final Path objectStaging,
-                                  final Runnable deregisterHook) {
+                                  final Path objectStaging) {
         this.sessionId = sessionId;
         this.ocflRepo = ocflRepo;
         this.ocflObjectId = ocflObjectId;
         this.objectStaging = objectStaging;
-        this.deregisterHook = deregisterHook;
 
         this.versionInfo = new VersionInfo();
         this.ocflOptions = new OcflOption[] {OcflOption.MOVE_SOURCE, OcflOption.OVERWRITE};
@@ -293,7 +289,6 @@ public class PlainOcflObjectSession implements OcflObjectSession {
         if (Files.exists(objectStaging)) {
             FileUtils.deleteQuietly(objectStaging.toFile());
         }
-        deregisterHook.run();
     }
 
     private void enforceOpen() {
