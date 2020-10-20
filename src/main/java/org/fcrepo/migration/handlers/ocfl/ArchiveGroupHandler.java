@@ -161,9 +161,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     } catch (final IOException e) {
                         throw new UncheckedIOException(e);
                     }
-
-                    writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
                 }
+
+                writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
             });
 
             LOGGER.debug("Committing object <{}>", f6ObjectId);

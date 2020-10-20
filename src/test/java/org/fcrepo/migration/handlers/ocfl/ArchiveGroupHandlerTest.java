@@ -348,9 +348,13 @@ public class ArchiveGroupHandlerTest {
 
         verifyNotExists(session, pid, dsId2);
         verifyHeaders(session, pid, dsId2, ds2);
+        verifyDescRdf(session, pid, dsId2, ds2);
+        verifyDescHeaders(session, pid, dsId2);
 
         verifyNotExists(session, pid, dsId3);
         verifyHeaders(session, pid, dsId3, ds3);
+        verifyDescRdf(session, pid, dsId3, ds3);
+        verifyDescHeaders(session, pid, dsId3);
     }
 
     @Test
