@@ -76,6 +76,8 @@ public class Migrator {
 
     private boolean continueOnError;
 
+    private int maxErrors;
+
     /**
      * the migrator. set limit to -1.
      */
@@ -127,6 +129,13 @@ public class Migrator {
     }
 
     /**
+     * set the maximum number of sequential errors to skip before exiting
+     *
+     * @param maxErrors the maximum number of errors.
+     */
+    public void setMaxErrors(final int maxErrors) { this.maxErrors = maxErrors; }
+
+    /**
      * The constructor for migrator.
      * @param source the source
      * @param handler the handler
@@ -144,6 +153,7 @@ public class Migrator {
      */
     public void run() throws XMLStreamException {
         int index = 0;
+        int numErrors = 0;
 
         for (final var iterator = source.iterator(); iterator.hasNext();) {
             try (final var o = iterator.next()) {
@@ -155,9 +165,15 @@ public class Migrator {
                         LOGGER.info("Processing \"" + pid + "\"...");
                         try {
                             o.processObject(handler);
+                            numErrors = 0;
                         } catch (Exception ex) {
                             LOGGER.error("MIGRATION_FAILURE: pid=\"{}\", message=\"{}\"", pid, ex.getMessage(), ex);
                             if (this.continueOnError) {
+                                numErrors++;
+                                if (maxErrors > 0 && numErrors > maxErrors) {
+                                    LOGGER.error("Maximum number of sequential errors reached: {}.  Exiting.", maxErrors);
+                                    throw new RuntimeException(ex);
+                                }
                                 continue;
                             } else {
                                 throw new RuntimeException(ex);
@@ -169,6 +185,11 @@ public class Migrator {
             } catch (Exception ex) {
                 if (this.continueOnError) {
                     LOGGER.error("MIGRATION_FAILURE: UNREADABLE_OBJECT: message=\"{}\"", ex.getMessage(), ex);
+                    numErrors++;
+                    if (maxErrors > 0 && numErrors > maxErrors) {
+                        LOGGER.error("Maximum number of sequential errors reached: {}.  Exiting.", maxErrors);
+                        throw new RuntimeException(ex);
+                    }
                     continue;
                 } else {
                     throw new RuntimeException(ex);
@@ -221,5 +242,4 @@ public class Migrator {
             System.out.println(sb.toString());
         }
     }
-
 }
