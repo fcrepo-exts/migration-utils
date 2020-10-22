@@ -133,7 +133,8 @@ public class Migrator {
      *
      * @param maxErrors the maximum number of errors.
      */
-    public void setMaxErrors(final int maxErrors) { this.maxErrors = maxErrors; }
+    public void setMaxErrors(final int maxErrors) {
+        this.maxErrors = maxErrors; }
 
     /**
      * The constructor for migrator.
@@ -171,7 +172,8 @@ public class Migrator {
                             if (this.continueOnError) {
                                 numErrors++;
                                 if (maxErrors > 0 && numErrors > maxErrors) {
-                                    LOGGER.error("Maximum number of sequential errors reached: {}.  Exiting.", maxErrors);
+                                    LOGGER.error("Maximum number of sequential errors reached: {}.  Exiting.",
+                                            maxErrors);
                                     throw new RuntimeException(ex);
                                 }
                                 continue;

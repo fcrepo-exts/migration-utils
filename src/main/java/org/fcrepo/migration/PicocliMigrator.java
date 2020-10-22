@@ -106,7 +106,8 @@ public class PicocliMigrator implements Callable<Integer> {
     private boolean continueOnError;
 
     @Option(names = {"--max-errors", "-M"}, defaultValue = "0", showDefaultValue = ALWAYS, order = 23,
-            description = "Maximum number of errors in sequence to skip before exiting.  Used in conjunction with --continue-on-error.  Default: no maximum")
+            description = "Maximum number of errors in a row to skip before exiting. " +
+                    "Used in conjunction with --continue-on-error.  Default: no maximum")
     private int maxErrors;
 
     @Option(names = {"--pid-file", "-p"}, order = 24,
