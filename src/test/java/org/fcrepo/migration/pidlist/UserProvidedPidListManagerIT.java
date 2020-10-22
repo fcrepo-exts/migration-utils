@@ -90,6 +90,7 @@ public class UserProvidedPidListManagerIT {
         writer.newLine();
         writer.write("example:1");
         writer.flush();
+        writer.close();
 
         final UserProvidedPidListManager manager = new UserProvidedPidListManager(pidFile);
 
@@ -109,6 +110,7 @@ public class UserProvidedPidListManagerIT {
         writer.newLine();
         writer.write("example:1");
         writer.flush();
+        writer.close();
 
         // There are three test OCFL objects: example%3a1, example%3a2, example%3a3
         migrator.setPidListManagers(Collections.singletonList(new UserProvidedPidListManager(pidFile)));
