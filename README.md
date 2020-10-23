@@ -49,10 +49,11 @@ General usage of the migration utils CLI is as follows:
 
 The following CLI options for specifying details of a given migration are available:
 ```
-Usage: migration-utils [-hrVx] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
-                       [-e=<f3ExportedDir>] [-f=<f3hostname>] [-i=<indexDir>]
-                       [-l=<objectLimit>] [-o=<f3ObjectsDir>] [-p=<pidFile>]
-                       -t=<f3SourceType> [-y=<ocflLayout>]
+Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
+                       [-d=<f3DatastreamsDir>] [-e=<f3ExportedDir>]
+                       [-f=<f3hostname>] [-i=<indexDir>] [-l=<objectLimit>]
+                       [-m=<migrationType>] [-o=<f3ObjectsDir>] [-p=<pidFile>]
+                       -t=<f3SourceType> [-u=<user>] [-U=<userUri>]
   -h, --help                 Show this help message and exit.
   -V, --version              Print version information and exit.
   -t, --source-type=<f3SourceType>
@@ -70,13 +71,17 @@ Usage: migration-utils [-hrVx] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
   -a, --target-dir=<targetDir>
                              Directory where OCFL storage root and supporting
                                state will be written
-  -m, --migration-type=<migrationType>  Type of OCFL objects to migrate to. Choices: 
+  -m, --migration-type=<migrationType>
+                             Type of OCFL objects to migrate to. Choices:
                                FEDORA_OCFL | PLAIN_OCFL
                                Default: FEDORA_OCFL
   -l, --limit=<objectLimit>  Limit number of objects to be processed.
                                Default: no limit
   -r, --resume               Resume from last successfully migrated Fedora 3
                                object
+                               Default: false
+  -c, --continue-on-error    Continue to next PID if an error occurs (instead
+                               of exiting). Disabled by default.
                                Default: false
   -p, --pid-file=<pidFile>   PID file listing which Fedora 3 objects to migrate
   -i, --index-dir=<indexDir> Directory where cached index of datastreams (will
@@ -88,11 +93,11 @@ Usage: migration-utils [-hrVx] [--debug] -a=<targetDir> [-d=<f3DatastreamsDir>]
                              Hostname of Fedora 3, used for replacing
                                placeholder in 'E' and 'R' datastream URLs
                                Default: fedora.info
-  -u, --username=<username>
-                             The username to associate with all of the migrated resources.
+  -u, --username=<user>      The username to associate with all of the migrated
+                               resources.
                                Default: fedoraAdmin
-  -U, --user-uri=<uri>
-                             The URI associated with the username
+  -U, --user-uri=<userUri>   The username to associate with all of the migrated
+                               resources.
                                Default: info:fedora/fedoraAdmin
       --debug                Enables debug logging
 ```
