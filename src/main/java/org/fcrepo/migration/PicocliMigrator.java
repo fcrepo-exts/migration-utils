@@ -101,32 +101,32 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Resume from last successfully migrated Fedora 3 object")
     private boolean resume;
 
-    @Option(names = {"--continue-on-error", "-c"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 22,
+    @Option(names = {"--continue-on-error", "-c"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 23,
             description = "Continue to next PID if an error occurs (instead of exiting). Disabled by default.")
     private boolean continueOnError;
 
-    @Option(names = {"--pid-file", "-p"}, order = 23,
+    @Option(names = {"--pid-file", "-p"}, order = 24,
             description = "PID file listing which Fedora 3 objects to migrate")
     private File pidFile;
 
-    @Option(names = {"--index-dir", "-i"}, order = 24,
+    @Option(names = {"--index-dir", "-i"}, order = 25,
             description = "Directory where cached index of datastreams (will reuse index if already exists)")
     private File indexDir;
 
-    @Option(names = {"--extensions", "-x"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 25,
+    @Option(names = {"--extensions", "-x"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 26,
             description = "Add file extensions to migrated datastreams based on mimetype recorded in FOXML")
     private boolean addExtensions;
 
-    @Option(names = {"--f3hostname", "-f"}, defaultValue = "fedora.info", showDefaultValue = ALWAYS, order = 26,
+    @Option(names = {"--f3hostname", "-f"}, defaultValue = "fedora.info", showDefaultValue = ALWAYS, order = 27,
             description = "Hostname of Fedora 3, used for replacing placeholder in 'E' and 'R' datastream URLs")
     private String f3hostname;
 
-    @Option(names = {"--username", "-u"}, defaultValue = "fedoraAdmin", showDefaultValue = ALWAYS, order = 27,
+    @Option(names = {"--username", "-u"}, defaultValue = "fedoraAdmin", showDefaultValue = ALWAYS, order = 28,
             description = "The username to associate with all of the migrated resources.")
     private String user;
 
     @Option(names = {"--user-uri", "-U"}, defaultValue = "info:fedora/fedoraAdmin", showDefaultValue = ALWAYS,
-            order = 28, description = "The username to associate with all of the migrated resources.")
+            order = 29, description = "The username to associate with all of the migrated resources.")
     private String userUri;
 
     @Option(names = {"--debug"}, order = 30, description = "Enables debug logging")
