@@ -105,11 +105,6 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Continue to next PID if an error occurs (instead of exiting). Disabled by default.")
     private boolean continueOnError;
 
-    @Option(names = {"--max-errors", "-M"}, defaultValue = "0", showDefaultValue = ALWAYS, order = 23,
-            description = "Maximum number of errors in a row to skip before exiting. " +
-                    "Used in conjunction with --continue-on-error.  Default: no maximum")
-    private int maxErrors;
-
     @Option(names = {"--pid-file", "-p"}, order = 24,
             description = "PID file listing which Fedora 3 objects to migrate")
     private File pidFile;
@@ -265,7 +260,6 @@ public class PicocliMigrator implements Callable<Integer> {
         migrator.setHandler(objectHandler);
         migrator.setPidListManagers(pidListManagerList);
         migrator.setContinueOnError(continueOnError);
-        migrator.setMaxErrors(maxErrors);
 
         try {
             migrator.run();
