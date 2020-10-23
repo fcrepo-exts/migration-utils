@@ -86,33 +86,36 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
 
     @Override
     public void completeObject(final ObjectInfo object) {
-        handler.processObject(new ObjectReference() {
-            @Override
-            public ObjectInfo getObjectInfo() {
-                return objectInfo;
-            }
+        try {
+            handler.processObject(new ObjectReference() {
+                @Override
+                public ObjectInfo getObjectInfo() {
+                    return objectInfo;
+                }
 
-            @Override
-            public ObjectProperties getObjectProperties() {
-                return objectProperties;
-            }
+                @Override
+                public ObjectProperties getObjectProperties() {
+                    return objectProperties;
+                }
 
-            @Override
-            public List<String> listDatastreamIds() {
-                return dsIds;
-            }
+                @Override
+                public List<String> listDatastreamIds() {
+                    return dsIds;
+                }
 
-            @Override
-            public List<DatastreamVersion> getDatastreamVersions(final String datastreamId) {
-                return dsIdToVersionListMap.get(datastreamId);
-            }
+                @Override
+                public List<DatastreamVersion> getDatastreamVersions(final String datastreamId) {
+                    return dsIdToVersionListMap.get(datastreamId);
+                }
 
-            @Override
-            public boolean hadFedora2Disseminators() {
-                return disseminatorsSkipped > 0;
-            }
-        });
-        cleanForReuse();
+                @Override
+                public boolean hadFedora2Disseminators() {
+                    return disseminatorsSkipped > 0;
+                }
+            });
+        } finally {
+            cleanForReuse();
+        }
     }
 
     @Override

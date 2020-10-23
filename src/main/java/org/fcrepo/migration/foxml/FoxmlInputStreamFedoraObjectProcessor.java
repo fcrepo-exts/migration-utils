@@ -164,11 +164,14 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                 reader.next();
             }
 
-        } catch (XMLStreamException | JAXBException e) {
+        } catch (Exception e) {
             handler.abortObject(objectInfo);
-            cleanUpTempFiles();
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            }
             throw new RuntimeException(e);
         } finally {
+            cleanUpTempFiles();
             close();
         }
     }
@@ -191,7 +194,9 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
     private void cleanUpTempFiles() {
         for (final File f : this.tempFiles) {
-            f.delete();
+            if (f.exists()) {
+                f.delete();
+            }
         }
     }
 
