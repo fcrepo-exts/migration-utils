@@ -1,17 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.fcrepo</groupId>
-    <artifactId>fcrepo-parent</artifactId>
-    <version>4.7.2</version>
-  </parent>
   <groupId>org.fcrepo.migration</groupId>
   <artifactId>migration-utils</artifactId>
   <version>6.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>migration-utils</name>
-  <url>http://maven.apache.org</url>
+  <url>https://github.com/fcrepo-exts/migration-utils</url>
 
   <properties>
     <project_name>migration-utils</project_name>
@@ -26,8 +21,8 @@
     <junit.version>4.13.1</junit.version>
     <fcrepo-build-tools.version>4.3.0</fcrepo-build-tools.version>
     <fcrepo-java-client.version>0.2.1</fcrepo-java-client.version>
-    <fcrepo.version>4.7.4</fcrepo.version>
     <fcrepo.storage.ocfl.version>6.0.0-SNAPSHOT</fcrepo.storage.ocfl.version>
+    <fcrepo.version>6.0.0-SNAPSHOT</fcrepo.version>
     <javaee.xml.version>2.3.1</javaee.xml.version>
     <jaxb.core.version>2.3.0.1</jaxb.core.version>
     <jaxb.impl.version>2.3.1</jaxb.impl.version>
@@ -158,21 +153,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.fcrepo.client</groupId>
-      <artifactId>fcrepo-java-client</artifactId>
-      <version>${fcrepo-java-client.version}</version>
-        <exclusions>
-            <exclusion>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-            </exclusion>
-            <exclusion>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-            </exclusion>
-        </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-server</artifactId>
       <version>2.13</version>
@@ -242,29 +222,6 @@
 
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.codehaus.cargo</groupId>
-          <artifactId>cargo-maven2-plugin</artifactId>
-          <version>1.4.12</version>
-          <configuration>
-            <configuration>
-              <properties>
-                <cargo.servlet.port>${fcrepo.dynamic.test.port}</cargo.servlet.port>
-              </properties>
-            </configuration>
-            <deployables>
-              <deployable>
-                <groupId>org.fcrepo</groupId>
-                <artifactId>fcrepo-webapp</artifactId>
-                <type>war</type>
-              </deployable>
-            </deployables>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -348,15 +305,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <!-- export ports for integration tests to system.env-->
-          <systemPropertyVariables>
-            <fcrepo.dynamic.jms.port>${fcrepo.dynamic.jms.port}</fcrepo.dynamic.jms.port>
-            <fcrepo.dynamic.test.port>${fcrepo.dynamic.test.port}</fcrepo.dynamic.test.port>
-            <fcrepo.dynamic.stomp.port>${fcrepo.dynamic.stomp.port}</fcrepo.dynamic.stomp.port>
-            <integration-test>true</integration-test>
-          </systemPropertyVariables>
-        </configuration>
         <executions>
           <execution>
             <id>perform-it</id>
@@ -372,27 +320,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.cargo</groupId>
-        <artifactId>cargo-maven2-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>start-cargo</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>start</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>stop-cargo</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>stop</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.5.4</version>
@@ -432,107 +359,4 @@
 
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>jetty7x</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.cargo</groupId>
-              <artifactId>cargo-maven2-plugin</artifactId>
-              <configuration>
-                <container>
-                  <containerId>jetty7x</containerId>
-                  <artifactInstaller>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>jetty-distribution</artifactId>
-                    <version>7.6.15.v20140411</version>
-                  </artifactInstaller>
-                  <systemProperties>
-                    <fcrepo.properties.management>relaxed</fcrepo.properties.management>
-                    <fcrepo.dynamic.jms.port>${fcrepo.dynamic.jms.port}</fcrepo.dynamic.jms.port>
-                    <fcrepo.dynamic.stomp.port>${fcrepo.dynamic.stomp.port}</fcrepo.dynamic.stomp.port>
-                    <fcrepo.modeshape.configuration>classpath:/config/file-simple/repository.json</fcrepo.modeshape.configuration>
-                  </systemProperties>
-                </container>
-              </configuration>
-              <dependencies>
-                <dependency>
-                  <groupId>commons-logging</groupId>
-                  <artifactId>commons-logging</artifactId>
-                  <version>1.2</version>
-                </dependency>
-              </dependencies>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
-
-    <!-- Use this profile to build fcrepo quickly, skipping all nonessential plugins -->
-    <profile>
-      <id>fast-build</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <skipTests>true</skipTests>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <configuration>
-              <skipTests>true</skipTests>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-checkstyle-plugin</artifactId>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <configuration>
-              <skipSource>true</skipSource>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-maven-plugin</artifactId>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.codehaus.cargo</groupId>
-            <artifactId>cargo-maven2-plugin</artifactId>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

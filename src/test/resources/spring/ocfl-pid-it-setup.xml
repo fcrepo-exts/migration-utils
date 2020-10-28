@@ -91,19 +91,8 @@
         <constructor-arg name="userUri" value="info:fedora/fedoraAdmin" />
     </bean>
 
-    <bean id="fedora4" class="org.fcrepo.migration.f4clients.StatelessFedora4Client">
-        <constructor-arg name="fcrepoBaseURL" ref="fedora4Url" />
-        <!--If Fedora 4 requires authorized requests, uncomment the following and provide appropriate values.-->
-        <!--<constructor-arg name="username" value="admin-username"/>-->
-        <!--<constructor-arg name="password" value="admin-password"/>-->
-    </bean>
-
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
 
-    <!-- CHANGE THIS TO THE FEDORA 4 URL TO WHICH YOU WANT TO MIGRATE THE CONTENT -->
-    <bean id="fedora4Url" class="java.lang.String">
-        <constructor-arg value="http://localhost:${fcrepo.dynamic.test.port:8080}/rest/" />
-    </bean>
 
     <!-- The fedora 2 or 3 server migrated content is coming from -->
     <bean id="localFedoraServer" class="java.lang.String">
