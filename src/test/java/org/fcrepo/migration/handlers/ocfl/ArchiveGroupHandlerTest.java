@@ -616,12 +616,14 @@ public class ArchiveGroupHandlerTest {
         if (isFirst) {
             final var properties = objectProperties(List.of(
                     objectProperty("info:fedora/fedora-system:def/view#lastModifiedDate", Instant.now().toString()),
-                    objectProperty("info:fedora/fedora-system:def/model#createdDate", Instant.now().toString())
+                    objectProperty("info:fedora/fedora-system:def/model#createdDate", Instant.now().toString()),
+                    objectProperty("info:fedora/fedora-system:def/model#state", "Active")
             ));
             when(mock.getObjectProperties()).thenReturn(properties);
         }
         when(mock.getObject()).thenReturn(null);
         when(mock.listChangedDatastreams()).thenReturn(datastreamVersions);
+        when(mock.getVersionDate()).thenReturn(Instant.now().toString());
         return mock;
     }
 

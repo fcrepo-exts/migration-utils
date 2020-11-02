@@ -47,9 +47,11 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -82,6 +84,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     );
 
     private static final String INLINE_XML = "X";
+
+    private static final String DS_ACTIVE = "A";
+
+    private static final String OBJ_STATE_PROP = "info:fedora/fedora-system:def/model#state";
+    private static final String OBJ_ACTIVE = "Active";
 
     private final OcflObjectSessionFactory sessionFactory;
     private final boolean addDatastreamExtensions;
@@ -118,14 +125,23 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
     @Override
     public void processObjectVersions(final Iterable<ObjectVersionReference> versions) {
+        // We use the PID to identify the OCFL object
+        String objectId = null;
+        String f6ObjectId = null;
+
         // We need to manually keep track of the datastream creation dates
         final Map<String, String> dsCreateDates = new HashMap<>();
 
-        versions.forEach(ov -> {
+        String objectState = null;
+        final Map<String, String> datastreamStates = new HashMap<>();
 
-            // We use the PID to identify the OCFL object
-            final String objectId = ov.getObjectInfo().getPid();
-            final String f6ObjectId = FCREPO_ROOT + objectId;
+        for (var ov : versions) {
+            if (ov.isFirstVersion()) {
+                objectId = ov.getObjectInfo().getPid();
+                f6ObjectId = FCREPO_ROOT + objectId;
+                objectState = getObjectState(ov);
+            }
+
             final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
 
             // Object properties are written only once (as fcrepo3 object properties were unversioned).
@@ -134,7 +150,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             }
 
             // Write datastreams and their metadata
-            ov.listChangedDatastreams().forEach(dv -> {
+            for (var dv : ov.listChangedDatastreams()) {
                 final var mimeType = resolveMimeType(dv);
                 final String dsId = dv.getDatastreamInfo().getDatastreamId();
                 final String f6DsId = resolveF6DatastreamId(dsId, f6ObjectId, mimeType);
@@ -142,6 +158,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
                 if (dv.isFirstVersionIn(ov.getObject())) {
                     dsCreateDates.put(dsId, dv.getCreated());
+                    datastreamStates.put(f6DsId, dv.getDatastreamInfo().getState());
                 }
                 final var createDate = dsCreateDates.get(dsId);
 
@@ -164,12 +181,57 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
 
                 writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
-            });
+            }
 
             LOGGER.debug("Committing object <{}>", f6ObjectId);
 
+            session.versionCreationTimestamp(OffsetDateTime.parse(ov.getVersionDate()));
             session.commit();
-        });
+        }
+
+        handleDeletedResources(f6ObjectId, objectState, datastreamStates);
+    }
+
+    private void handleDeletedResources(final String f6ObjectId,
+                                        final String objectState,
+                                        final Map<String, String> datastreamStates) {
+        final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
+
+        try {
+            final var now = OffsetDateTime.now();
+            final var hasDeletes = new AtomicBoolean(false);
+
+            if (!OBJ_ACTIVE.equals(objectState)) {
+                hasDeletes.set(true);
+
+                datastreamStates.keySet().forEach(f6DsId -> {
+                    deleteDatastream(f6DsId, now.toInstant(), session);
+                });
+
+                if (migrationType == MigrationType.PLAIN_OCFL) {
+                    deleteOcflMigratedResource(f6ObjectId, InteractionModel.BASIC_CONTAINER, session);
+                } else {
+                    deleteF6MigratedResource(f6ObjectId, now.toInstant(), session);
+                }
+            } else {
+                datastreamStates.forEach((f6DsId, state) -> {
+                    if (!DS_ACTIVE.equals(state)) {
+                        hasDeletes.set(true);
+                        deleteDatastream(f6DsId, now.toInstant(), session);
+                    }
+                });
+            }
+
+            if (hasDeletes.get()) {
+                session.versionCreationTimestamp(now);
+                session.commit();
+            } else {
+                session.abort();
+            }
+        } catch (RuntimeException e) {
+            session.abort();
+            throw e;
+        }
     }
 
     private void writeObjectFiles(final String f6ObjectId,
@@ -314,6 +376,49 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
 
         return mime;
+    }
+
+    private void deleteDatastream(final String id,
+                                  final Instant lastModified,
+                                  final OcflObjectSession session) {
+        if (migrationType == MigrationType.PLAIN_OCFL) {
+            // TODO this method is not currently implemented
+            deleteOcflMigratedResource(id, InteractionModel.NON_RDF, session);
+            deleteOcflMigratedResource(f6DescriptionId(id), InteractionModel.NON_RDF_DESCRIPTION, session);
+        } else {
+            deleteF6MigratedResource(id, lastModified, session);
+            deleteF6MigratedResource(f6DescriptionId(id), lastModified, session);
+        }
+    }
+
+    private void deleteF6MigratedResource(final String id,
+                                          final Instant lastModified,
+                                          final OcflObjectSession session) {
+        LOGGER.debug("Deleting resource {}", id);
+        final var headers = session.readHeaders(id);
+        session.deleteContentFile(ResourceHeaders.builder(headers)
+                .withDeleted(true)
+                .withLastModifiedDate(lastModified)
+                .build());
+    }
+
+    private void deleteOcflMigratedResource(final String id,
+                                            final InteractionModel interactionModel,
+                                            final OcflObjectSession session) {
+        LOGGER.debug("Deleting resource {}", id);
+        session.deleteContentFile(ResourceHeaders.builder()
+                .withId(id)
+                .withInteractionModel(interactionModel.getUri())
+                .build());
+    }
+
+    private String getObjectState(final ObjectVersionReference ov) {
+        return ov.getObjectProperties().listProperties().stream()
+                .filter(prop -> OBJ_STATE_PROP.equals(prop.getName()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(String.format("Object %s is missing state information",
+                        ov.getObjectInfo().getPid())))
+                .getValue();
     }
 
     // Get object-level triples
