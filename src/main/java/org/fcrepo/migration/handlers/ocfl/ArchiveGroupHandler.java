@@ -85,13 +85,16 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
     private static final String INLINE_XML = "X";
 
-    private static final String DS_ACTIVE = "A";
+    private static final String DS_INACTIVE = "I";
+    private static final String DS_DELETED = "D";
 
     private static final String OBJ_STATE_PROP = "info:fedora/fedora-system:def/model#state";
-    private static final String OBJ_ACTIVE = "Active";
+    private static final String OBJ_INACTIVE = "Inactive";
+    private static final String OBJ_DELETED = "Deleted";
 
     private final OcflObjectSessionFactory sessionFactory;
     private final boolean addDatastreamExtensions;
+    private final boolean deleteInactive;
     private final MigrationType migrationType;
     private final String user;
     private final Detector mimeDetector;
@@ -105,16 +108,20 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *        the type of migration to do
      * @param addDatastreamExtensions
      *        true if datastreams should be written with file extensions
+     * @param deleteInactive
+     *        true if inactive objects and datastreams should be migrated as deleted
      * @param user
      *        the username to associated with the migrated resources
      */
     public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
                                final MigrationType migrationType,
                                final boolean addDatastreamExtensions,
+                               final boolean deleteInactive,
                                final String user) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
         this.addDatastreamExtensions = addDatastreamExtensions;
+        this.deleteInactive = deleteInactive;
         this.user = Preconditions.checkNotNull(Strings.emptyToNull(user), "user cannot be blank");
         try {
             this.mimeDetector = new TikaConfig().getDetector();
@@ -201,7 +208,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             final var now = OffsetDateTime.now();
             final var hasDeletes = new AtomicBoolean(false);
 
-            if (!OBJ_ACTIVE.equals(objectState)) {
+            if (OBJ_DELETED.equals(objectState) || (deleteInactive && OBJ_INACTIVE.equals(objectState))) {
                 hasDeletes.set(true);
 
                 datastreamStates.keySet().forEach(f6DsId -> {
@@ -215,7 +222,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
             } else {
                 datastreamStates.forEach((f6DsId, state) -> {
-                    if (!DS_ACTIVE.equals(state)) {
+                    if (DS_DELETED.equals(state) || (deleteInactive && DS_INACTIVE.equals(state))) {
                         hasDeletes.set(true);
                         deleteDatastream(f6DsId, now.toInstant(), session);
                     }
@@ -382,7 +389,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                   final Instant lastModified,
                                   final OcflObjectSession session) {
         if (migrationType == MigrationType.PLAIN_OCFL) {
-            // TODO this method is not currently implemented
             deleteOcflMigratedResource(id, InteractionModel.NON_RDF, session);
             deleteOcflMigratedResource(f6DescriptionId(id), InteractionModel.NON_RDF_DESCRIPTION, session);
         } else {

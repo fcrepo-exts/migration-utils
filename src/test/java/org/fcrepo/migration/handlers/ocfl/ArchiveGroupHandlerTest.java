@@ -67,6 +67,12 @@ public class ArchiveGroupHandlerTest {
     private static final String PROXY = "E";
     private static final String REDIRECT = "R";
     private static final String MANAGED = "M";
+    private static final String DS_ACTIVE = "A";
+    private static final String DS_INACTIVE = "I";
+    private static final String DS_DELETED = "D";
+    private static final String OBJ_ACTIVE = "Active";
+    private static final String OBJ_INACTIVE = "Inactive";
+    private static final String OBJ_DELETED = "Deleted";
 
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
@@ -113,7 +119,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionF6Format() {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -145,7 +151,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsF6Format() {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -183,8 +189,186 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
+    public void processObjectMultipleVersionsWithDeletedDsF6Format() {
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+
+        final var pid = "obj2";
+        final var dsId1 = "ds3";
+        final var dsId2 = "ds4";
+
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>",
+                DS_INACTIVE, null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", DS_DELETED, null);
+
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", DS_DELETED, null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
+                objectVersionReference(pid, false, List.of(ds2V2))
+        ));
+
+        final var session = sessionFactory.newSession(resourceId(pid));
+
+        verifyObjectRdf(contentToString(session, pid));
+        verifyObjectHeaders(session, pid);
+
+        verifyBinary(contentToString(session, pid, dsId1), ds1V1);
+        verifyHeaders(session, pid, dsId1, ds1V1);
+        verifyDescRdf(session, pid, dsId1, ds1V1);
+        verifyDescHeaders(session, pid, dsId1);
+
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, pid, dsId2, "v1");
+
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, pid, dsId2, "v2");
+
+        verifyResourceDeleted(session, resourceId(pid, dsId2));
+        verifyResourceDeleted(session, medadataId(pid, dsId2));
+    }
+
+    @Test
+    public void processObjectMultipleVersionsAndDeleteInactiveF6Format() {
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true);
+
+        final var pid = "obj2";
+        final var dsId1 = "ds3";
+        final var dsId2 = "ds4";
+
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>",
+                DS_INACTIVE, null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", DS_DELETED, null);
+
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", DS_DELETED, null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
+                objectVersionReference(pid, false, List.of(ds2V2))
+        ));
+
+        final var session = sessionFactory.newSession(resourceId(pid));
+
+        verifyObjectRdf(contentToString(session, pid));
+        verifyObjectHeaders(session, pid);
+
+        verifyBinary(contentVersionToString(session, pid, dsId1, "v1"), ds1V1);
+        verifyHeaders(session, pid, dsId1, ds1V1, "v1");
+        verifyDescRdf(session, pid, dsId1, ds1V1, "v1");
+        verifyDescHeaders(session, pid, dsId1, "v1");
+
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, pid, dsId2, "v1");
+
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, pid, dsId2, "v2");
+
+        verifyResourceDeleted(session, resourceId(pid, dsId1));
+        verifyResourceDeleted(session, medadataId(pid, dsId1));
+        verifyResourceDeleted(session, resourceId(pid, dsId2));
+        verifyResourceDeleted(session, medadataId(pid, dsId2));
+    }
+
+    @Test
+    public void processObjectMultipleVersionsAndObjectDeletedF6Format() {
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+
+        final var pid = "obj2";
+        final var dsId1 = "ds3";
+        final var dsId2 = "ds4";
+
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
+
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, OBJ_DELETED, List.of(ds1V1, ds2V1)),
+                objectVersionReference(pid, false, OBJ_DELETED, List.of(ds2V2))
+        ));
+
+        final var session = sessionFactory.newSession(resourceId(pid));
+
+        verifyObjectRdf(contentVersionToString(session, pid, "v1"));
+        verifyObjectHeaders(session, pid, "v1");
+
+        verifyBinary(contentVersionToString(session, pid, dsId1, "v1"), ds1V1);
+        verifyHeaders(session, pid, dsId1, ds1V1, "v1");
+        verifyDescRdf(session, pid, dsId1, ds1V1, "v1");
+        verifyDescHeaders(session, pid, dsId1, "v1");
+
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, pid, dsId2, "v1");
+
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, pid, dsId2, "v2");
+
+        verifyResourceDeleted(session, resourceId(pid));
+        verifyResourceDeleted(session, resourceId(pid, dsId1));
+        verifyResourceDeleted(session, medadataId(pid, dsId1));
+        verifyResourceDeleted(session, resourceId(pid, dsId2));
+        verifyResourceDeleted(session, medadataId(pid, dsId2));
+    }
+
+    @Test
+    public void processObjectMultipleVersionsAndObjectInactiveDeletedF6Format() {
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true);
+
+        final var pid = "obj2";
+        final var dsId1 = "ds3";
+        final var dsId2 = "ds4";
+
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
+
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, OBJ_INACTIVE, List.of(ds1V1, ds2V1)),
+                objectVersionReference(pid, false, OBJ_INACTIVE, List.of(ds2V2))
+        ));
+
+        final var session = sessionFactory.newSession(resourceId(pid));
+
+        verifyObjectRdf(contentVersionToString(session, pid, "v1"));
+        verifyObjectHeaders(session, pid, "v1");
+
+        verifyBinary(contentVersionToString(session, pid, dsId1, "v1"), ds1V1);
+        verifyHeaders(session, pid, dsId1, ds1V1, "v1");
+        verifyDescRdf(session, pid, dsId1, ds1V1, "v1");
+        verifyDescHeaders(session, pid, dsId1, "v1");
+
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, pid, dsId2, "v1");
+
+        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, pid, dsId2, "v2");
+
+        verifyResourceDeleted(session, resourceId(pid));
+        verifyResourceDeleted(session, resourceId(pid, dsId1));
+        verifyResourceDeleted(session, medadataId(pid, dsId1));
+        verifyResourceDeleted(session, resourceId(pid, dsId2));
+        verifyResourceDeleted(session, medadataId(pid, dsId2));
+    }
+
+    @Test
     public void processObjectMultipleVersionsPlainFormat() {
-        final var handler = createHandler(MigrationType.PLAIN_OCFL, false);
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -230,8 +414,120 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
+    public void processObjectMultipleVersionsWithDeletedDsPlainFormat() {
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false);
+
+        final var pid = "obj2";
+        final var dsId1 = "ds3";
+        final var dsId2 = "ds4";
+
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", DS_DELETED, null);
+
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", DS_DELETED, null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
+                objectVersionReference(pid, false, List.of(ds2V2))
+        ));
+
+        verifyFcrepoNotExists(pid);
+
+        final var rootResourceId = resourceId(pid);
+
+        verifyObjectRdf(rawContentToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+                .getContentFilePath()));
+
+        verifyBinary(rawContentVersionToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1)).getContentFilePath(),
+                "v1"), ds1V1);
+        verifyPlainDescRdf(rawContentVersionToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId1)).getContentFilePath(),
+                "v1"), ds1V1);
+
+        verifyBinary(rawContentVersionToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
+                "v1"), ds2V1);
+        verifyPlainDescRdf(rawContentVersionToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2)).getContentFilePath(),
+                "v1"), ds2V1);
+
+        verifyBinary(rawContentVersionToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
+                "v2"), ds2V2);
+        verifyPlainDescRdf(rawContentVersionToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2)).getContentFilePath(),
+                "v2"), ds2V2);
+
+        rawVerifyDoesNotExist(pid, PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2))
+                .getContentFilePath());
+        rawVerifyDoesNotExist(pid, PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2))
+                .getContentFilePath());
+    }
+
+    @Test
+    public void processObjectMultipleVersionsWithInactiveDeletedObjectPlainFormat() {
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, true);
+
+        final var pid = "obj2";
+        final var dsId1 = "ds3";
+        final var dsId2 = "ds4";
+
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
+
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, OBJ_INACTIVE, List.of(ds1V1, ds2V1)),
+                objectVersionReference(pid, false, OBJ_INACTIVE, List.of(ds2V2))
+        ));
+
+        verifyFcrepoNotExists(pid);
+
+        final var rootResourceId = resourceId(pid);
+
+        verifyObjectRdf(rawContentVersionToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+                .getContentFilePath(), "v1"));
+
+        verifyBinary(rawContentVersionToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1)).getContentFilePath(),
+                "v1"), ds1V1);
+        verifyPlainDescRdf(rawContentVersionToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId1)).getContentFilePath(),
+                "v1"), ds1V1);
+
+        verifyBinary(rawContentVersionToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
+                "v1"), ds2V1);
+        verifyPlainDescRdf(rawContentVersionToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2)).getContentFilePath(),
+                "v1"), ds2V1);
+
+        verifyBinary(rawContentVersionToString(pid,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
+                "v2"), ds2V2);
+        verifyPlainDescRdf(rawContentVersionToString(pid,
+                PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2)).getContentFilePath(),
+                "v2"), ds2V2);
+
+        rawVerifyDoesNotExist(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+                .getContentFilePath());
+
+        rawVerifyDoesNotExist(pid, PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1))
+                .getContentFilePath());
+        rawVerifyDoesNotExist(pid, PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId1))
+                .getContentFilePath());
+
+        rawVerifyDoesNotExist(pid, PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2))
+                .getContentFilePath());
+        rawVerifyDoesNotExist(pid, PersistencePaths.rdfResource(rootResourceId, medadataId(pid, dsId2))
+                .getContentFilePath());
+    }
+
+    @Test
     public void processObjectSingleVersionF6FormatWithExtensions() {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, true);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, true, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -272,7 +568,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionPlainFormatWithExtensions() {
-        final var handler = createHandler(MigrationType.PLAIN_OCFL, true);
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, true, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -321,7 +617,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionF6FormatWithExternalBinary() {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -346,12 +642,12 @@ public class ArchiveGroupHandlerTest {
         verifyDescRdf(session, pid, dsId1, ds1);
         verifyDescHeaders(session, pid, dsId1);
 
-        verifyNotExists(session, pid, dsId2);
+        verifyContentNotExists(session, resourceId(pid, dsId2));
         verifyHeaders(session, pid, dsId2, ds2);
         verifyDescRdf(session, pid, dsId2, ds2);
         verifyDescHeaders(session, pid, dsId2);
 
-        verifyNotExists(session, pid, dsId3);
+        verifyContentNotExists(session, resourceId(pid, dsId3));
         verifyHeaders(session, pid, dsId3, ds3);
         verifyDescRdf(session, pid, dsId3, ds3);
         verifyDescHeaders(session, pid, dsId3);
@@ -359,7 +655,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionPlainFormatWithExternalBinary() {
-        final var handler = createHandler(MigrationType.PLAIN_OCFL, false);
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -489,7 +785,13 @@ public class ArchiveGroupHandlerTest {
 
     private void verifyObjectHeaders(final OcflObjectSession session,
                                      final String pid) {
-        try (final var content = session.readContent(resourceId(pid))) {
+        verifyObjectHeaders(session, pid, null);
+    }
+
+    private void verifyObjectHeaders(final OcflObjectSession session,
+                                     final String pid,
+                                     final String versionNumber) {
+        try (final var content = session.readContent(resourceId(pid), versionNumber)) {
             final var headers = content.getHeaders();
             assertEquals(resourceId(pid), headers.getId());
             assertEquals(FCREPO_ROOT, headers.getParent());
@@ -599,16 +901,30 @@ public class ArchiveGroupHandlerTest {
         }
     }
 
-    private ArchiveGroupHandler createHandler(final MigrationType migrationType, final boolean addExtensions) {
+    private void rawVerifyDoesNotExist(final String pid, final String path) {
+        assertFalse(String.format("object %s not contain path %s", pid, path),
+                ocflRepo.describeVersion(ObjectVersionId.head(resourceId(pid))).containsFile(path));
+    }
+
+    private ArchiveGroupHandler createHandler(final MigrationType migrationType,
+                                              final boolean addExtensions,
+                                              final boolean deleteInactive) {
         if (migrationType == MigrationType.PLAIN_OCFL) {
-            return new ArchiveGroupHandler(plainSessionFactory, migrationType, addExtensions, USER);
+            return new ArchiveGroupHandler(plainSessionFactory, migrationType, addExtensions, deleteInactive, USER);
         } else {
-            return new ArchiveGroupHandler(sessionFactory, migrationType, addExtensions, USER);
+            return new ArchiveGroupHandler(sessionFactory, migrationType, addExtensions, deleteInactive, USER);
         }
     }
 
     private ObjectVersionReference objectVersionReference(final String pid,
                                                           final boolean isFirst,
+                                                          final List<DatastreamVersion> datastreamVersions) {
+        return objectVersionReference(pid, isFirst, OBJ_ACTIVE, datastreamVersions);
+    }
+
+    private ObjectVersionReference objectVersionReference(final String pid,
+                                                          final boolean isFirst,
+                                                          final String state,
                                                           final List<DatastreamVersion> datastreamVersions) {
         final var mock = Mockito.mock(ObjectVersionReference.class);
         when(mock.getObjectInfo()).thenReturn(new DefaultObjectInfo(pid, pid));
@@ -617,7 +933,7 @@ public class ArchiveGroupHandlerTest {
             final var properties = objectProperties(List.of(
                     objectProperty("info:fedora/fedora-system:def/view#lastModifiedDate", Instant.now().toString()),
                     objectProperty("info:fedora/fedora-system:def/model#createdDate", Instant.now().toString()),
-                    objectProperty("info:fedora/fedora-system:def/model#state", "Active")
+                    objectProperty("info:fedora/fedora-system:def/model#state", state)
             ));
             when(mock.getObjectProperties()).thenReturn(properties);
         }
@@ -646,8 +962,18 @@ public class ArchiveGroupHandlerTest {
                                                 final String mimeType,
                                                 final String content,
                                                 final String externalUrl) {
+        return datastreamVersion(datastreamId, isFirst, controlGroup, mimeType, content, DS_ACTIVE, externalUrl);
+    }
+
+    private DatastreamVersion datastreamVersion(final String datastreamId,
+                                                final boolean isFirst,
+                                                final String controlGroup,
+                                                final String mimeType,
+                                                final String content,
+                                                final String state,
+                                                final String externalUrl) {
         final var mock = Mockito.mock(DatastreamVersion.class);
-        final var info = datastreamInfo(datastreamId, controlGroup);
+        final var info = datastreamInfo(datastreamId, controlGroup, state);
         when(mock.getDatastreamInfo()).thenReturn(info);
         when(mock.getMimeType()).thenReturn(mimeType);
         try {
@@ -668,11 +994,11 @@ public class ArchiveGroupHandlerTest {
         return mock;
     }
 
-    private DatastreamInfo datastreamInfo(final String datastreamId, final String controlGroup) {
+    private DatastreamInfo datastreamInfo(final String datastreamId, final String controlGroup, final String state) {
         final var mock = Mockito.mock(DatastreamInfo.class);
         when(mock.getDatastreamId()).thenReturn(datastreamId);
         when(mock.getControlGroup()).thenReturn(controlGroup);
-        when(mock.getState()).thenReturn("A");
+        when(mock.getState()).thenReturn(state);
         return mock;
     }
 
@@ -703,12 +1029,18 @@ public class ArchiveGroupHandlerTest {
         assertEquals(0, count);
     }
 
-    private void verifyNotExists(final OcflObjectSession session, final String pid, final String dsId) {
-        try (final var content = session.readContent(resourceId(pid, dsId))) {
+    private void verifyContentNotExists(final OcflObjectSession session, final String resourceId) {
+        try (final var content = session.readContent(resourceId)) {
             assertTrue("Content should not exist", content.getContentStream().isEmpty());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private void verifyResourceDeleted(final OcflObjectSession session, final String resourceId) {
+        final var headers = session.readHeaders(resourceId);
+        assertTrue("resource " + resourceId + " should be deleted", headers.isDeleted());
+        verifyContentNotExists(session, resourceId);
     }
 
 }

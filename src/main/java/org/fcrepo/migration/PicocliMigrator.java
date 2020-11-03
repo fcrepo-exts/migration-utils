@@ -89,6 +89,10 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Directory where OCFL storage root and supporting state will be written")
     private File targetDir;
 
+    @Option(names = {"--delete-inactive", "-I"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 18,
+            description = "Migrate objects and datastreams in the Inactive state as deleted. Default: false.")
+    private boolean deleteInactive;
+
     @Option(names = {"--migration-type", "-m"}, defaultValue = "FEDORA_OCFL", showDefaultValue = ALWAYS, order = 19,
             description = "Type of OCFL objects to migrate to. Choices: FEDORA_OCFL | PLAIN_OCFL")
     private MigrationType migrationType;
@@ -240,7 +244,7 @@ public class PicocliMigrator implements Callable<Integer> {
                 ocflStagingDir.toPath(), migrationType, user, userUri).getObject();
 
         final FedoraObjectVersionHandler archiveGroupHandler =
-                new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, user);
+                new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, user);
         final FedoraObjectHandler versionHandler = new VersionAbstractionFedoraObjectHandler(archiveGroupHandler);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 versionHandler);

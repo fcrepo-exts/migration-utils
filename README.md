@@ -14,12 +14,11 @@ The utility will perform various mapping operations in order to fit the fedora 2
 * TODO: is there more?
 
 Migrations to Fedora 6 may take a different approach, writing migrated objects directly to the filesystem as [OCFL](https://ocfl.io/draft/spec/)
-objects.  Additionally, a "minimal" migration mode is available that performs fewer transformations to migrated content.
-In particular:
+objects.
 
-* There is a 1:1 correspondence between fedora 3 objects and OCFL objects.  Fedora 3 datastreams appear as files within the resulting OCFL objects.
+* There is a 1:1 correspondence between Fedora 3 objects and OCFL objects.  Fedora 3 datastreams appear as files within the resulting OCFL objects.
 * RDF is not re-mapped, `info:fedora/` subjects and objects are kept intact as-is
-* FOXML object and datastream properties are represented as triples in additional sidecar files as per the mapping defined in `${migration.mapping.file}`. See example [custom-mapping.properties](https://github.com/fcrepo-exts/migration-utils/blob/master/src/main/resources/custom-mapping.properties).
+* FOXML object and datastream properties are represented as triples in additional sidecar files
 
 ## Status
 
@@ -71,6 +70,8 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
   -a, --target-dir=<targetDir>
                              Directory where OCFL storage root and supporting
                                state will be written
+  -I, --delete-inactive      Migrate objects and datastreams in the Inactive
+                               state as deleted. Default: false.
   -m, --migration-type=<migrationType>
                              Type of OCFL objects to migrate to. Choices:
                                FEDORA_OCFL | PLAIN_OCFL
