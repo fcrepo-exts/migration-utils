@@ -112,6 +112,11 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     }
 
     @Override
+    public synchronized void writeHeaders(final ResourceHeaders headers) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
     public void versionCreationTimestamp(final OffsetDateTime timestamp) {
         versionInfo.setCreated(timestamp);
     }
