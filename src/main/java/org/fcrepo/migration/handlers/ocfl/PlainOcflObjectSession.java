@@ -42,7 +42,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,6 +63,8 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     private final Path objectStaging;
 
     private final OcflOption[] ocflOptions;
+
+    private final Set<String> deletePaths;
 
     private boolean closed = false;
 
@@ -81,6 +85,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
 
         this.versionInfo = new VersionInfo();
         this.ocflOptions = new OcflOption[] {OcflOption.MOVE_SOURCE, OcflOption.OVERWRITE};
+        this.deletePaths = new HashSet<>();
     }
 
     @Override
@@ -138,6 +143,13 @@ public class PlainOcflObjectSession implements OcflObjectSession {
             });
         }
 
+        // Because the of the way ArchiveGroupHandler works, a commit will only ever contains only adds or only deletes
+        if (!deletePaths.isEmpty()) {
+            ocflRepo.updateObject(ObjectVersionId.head(ocflObjectId), versionInfo, updater -> {
+                deletePaths.forEach(updater::removeFile);
+            });
+        }
+
         cleanup();
     }
 
@@ -161,7 +173,10 @@ public class PlainOcflObjectSession implements OcflObjectSession {
 
     @Override
     public void deleteContentFile(final ResourceHeaders headers) {
-        throw new UnsupportedOperationException("Not implemented");
+        enforceOpen();
+
+        final var paths = resolvePersistencePaths(headers);
+        deletePaths.add(paths.getContentFilePath());
     }
 
     @Override
