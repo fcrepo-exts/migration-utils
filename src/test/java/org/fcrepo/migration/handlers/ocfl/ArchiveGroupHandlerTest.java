@@ -731,9 +731,9 @@ public class ArchiveGroupHandlerTest {
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
             assertThat(headers.getCreatedDate().toString(), containsString(date));
             if (INLINE.equals(datastreamVersion.getDatastreamInfo().getControlGroup())) {
-                assertNotEquals(Long.valueOf(datastreamVersion.getSize()), headers.getContentSize());
+                assertNotEquals(datastreamVersion.getSize(), headers.getContentSize());
             } else {
-                assertEquals(Long.valueOf(datastreamVersion.getSize()), headers.getContentSize());
+                assertEquals(datastreamVersion.getSize(), headers.getContentSize());
             }
             assertEquals(datastreamVersion.getMimeType(), headers.getMimeType());
             assertEquals(dsId, headers.getFilename());
