@@ -150,28 +150,35 @@ public class Migrator {
                 final String pid = o.getObjectInfo().getPid();
                 if (pid != null) {
                     // Process if limit is '-1', or we have not hit the non-negative 'limit'...
-                    //  ..and the PidListManager accepts the PID
-                    if ((limit < 0 || index++ < limit) && acceptPid(pid)) {
+                    if (!(limit < 0 || index++ < limit)) {
+                        LOGGER.info("Reached processing limit {}", limit);
+                        break;
+                    }
+
+                    if (acceptPid(pid)) {
                         LOGGER.info("Processing \"" + pid + "\"...");
                         try {
                             o.processObject(handler);
                         } catch (Exception ex) {
-                            LOGGER.error("MIGRATION_FAILURE: pid=\"{}\", message=\"{}\"", pid, ex.getMessage(), ex);
-                            if (this.continueOnError) {
-                                continue;
+                            final var message = String.format("MIGRATION_FAILURE: pid=\"%s\", message=\"%s\"",
+                                    pid, ex.getMessage());
+
+                            if (!this.continueOnError) {
+                                LOGGER.error(message, ex);
                             } else {
-                                throw new RuntimeException(ex);
+                                throw new RuntimeException(message, ex);
                             }
                         }
                     }
                 }
-
             } catch (Exception ex) {
+                final var message = String.format("MIGRATION_FAILURE: UNREADABLE_OBJECT: message=\"%s\"",
+                        ex.getMessage());
+
                 if (this.continueOnError) {
-                    LOGGER.error("MIGRATION_FAILURE: UNREADABLE_OBJECT: message=\"{}\"", ex.getMessage(), ex);
-                    continue;
+                    LOGGER.error(message, ex);
                 } else {
-                    throw new RuntimeException(ex);
+                    throw new RuntimeException(message, ex);
                 }
             }
         }
