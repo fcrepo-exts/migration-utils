@@ -1,20 +1,14 @@
 # Migration Utilities [![Build Status](https://travis-ci.com/fcrepo-exts/migration-utils.svg?branch=master)](https://travis-ci.com/fcrepo-exts/migration-utils)
 
-A framework to support migration of data from Fedora 3 to Fedora 4, 5, or 6 repositories
+A framework to support migration of data from Fedora 3 to Fedora 6 repositories
 
 ## Overview
 
-This utility iterates the foxml files of a fedora 2 or 3 repository, and populates a fedora 4, 5, or 6 repository.
+This utility iterates the foxml files of a fedora 2 or 3 repository, and creates a Fedora 6 compliant OCFL [Oxford Common File Layout](https://ocfl.io)
 
-For migrations to Fedora 4 and 5, the utility populates the repository via its APIs.  You will need a running fedora 4 or fedora 5 repository to perform the migration.
-The utility will perform various mapping operations in order to fit the fedora 2/3 model onto LDP as supported in Fedora 4 and 5.  In particular:
-
-* All RDF URIs will be re-mapped.  Fedora 2 and 3 use `info:fedora/` URIs in `RELS-EXT` and `RELS-INT`.  The migration utility will re-write these URIs into resolvable `http://` URIs that point to the corresponding resources in the fedora 4 or 5 repository
-* FOXML object properties will be expressed in terms of RDF according to the mapping defined in `${migration.mapping.file}`. See example [custom-mapping.properties](https://github.com/fcrepo-exts/migration-utils/blob/master/src/main/resources/custom-mapping.properties).
-* TODO: is there more?
-
-Migrations to Fedora 6 may take a different approach, writing migrated objects directly to the filesystem as [OCFL](https://ocfl.io/draft/spec/)
-objects.
+Migrations to Fedora 6 write migrated objects directly to the filesystem as [OCFL](https://ocfl.io/draft/spec/)
+objects.  
+In particular:
 
 * There is a 1:1 correspondence between Fedora 3 objects and OCFL objects.  Fedora 3 datastreams appear as files within the resulting OCFL objects.
 * RDF is not re-mapped, `info:fedora/` subjects and objects are kept intact as-is
@@ -23,9 +17,6 @@ objects.
 ## Status
 
 Fedora 6 support is being actively developed, and is considered unstable until Fedora 6 is released.
-
-A basic migration scenario is implemented that may serve as a starting point for
-your own migration from Fedora 3.x to Fedora 4.x.
 
 ## How to use
 
@@ -36,9 +27,6 @@ Background work
     * If so, you will need all of the export FOXML in a known directory.
   * Will you be migrating from from a native fcrepo3 filesystem?
     * If so, fcrepo3 should not be running, and you will need to determine if you're using legacy or akubra storage
-* Determine your fcrepo 4+ url (ex: http://localhost:8080/rest/, http://yourHostName.ca:8080/fcrepo/rest/)
-
-*Warning*: _The migration tool is under active development, so these instructions will change as the configuration process becomes more refined_  
 
 General usage of the migration utils CLI is as follows:
 
@@ -128,9 +116,9 @@ java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exporte
 
 ## Property Mappings
 
-### fcrepo 3 Object properties to fcrepo 4+
+### fcrepo 3 Object properties to fcrepo 6+
 
-| fcrepo 3         | fcrepo 4+                           | Example                  |
+| fcrepo 3         | fcrepo 6+                           | Example                  |
 |------------------|-------------------------------------|--------------------------|
 | PID              | fedora3model:PID†                   | yul:328697               |
 | state            | fedoraaccess:objState               | Active                   |
@@ -141,7 +129,7 @@ java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exporte
 
 ### fcrepo3 Datastream properties to fcrepo 4+
 
-| fcrepo 3      | fcrepo 4+                                                    | Example                                                    |
+| fcrepo 3      | fcrepo 6+                                                    | Example                                                    |
 |---------------|--------------------------------------------------------------|------------------------------------------------------------|
 | DSID          | dcterms:identifier                                           | OBJ                                                        |
 | Label         | dcterms:title‡                                               | ASC19109.tif                                               |
@@ -169,7 +157,7 @@ java -jar target/migration-utils-4.4.1-SNAPSHOT-driver.jar --source-type=exporte
 
 ‡ Not yet implemented
 
-**Note**: All fcrepo 3 DC (Dublin Core) datastream values are mapped as dcterms properties on the Object in fcrepo 4+. The same goes for any properties in the RELS-EXT and RELS-INT datastreams.
+**Note**: All fcrepo 3 DC (Dublin Core) datastream values are mapped as dcterms properties on the Object in fcrepo 6+. The same goes for any properties in the RELS-EXT and RELS-INT datastreams.
 
 ## Additional Documentation
 
