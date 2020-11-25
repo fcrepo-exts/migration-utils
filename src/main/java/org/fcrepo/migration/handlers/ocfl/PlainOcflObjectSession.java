@@ -172,6 +172,11 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     }
 
     @Override
+    public void rollback() {
+        throw new UnsupportedOperationException("Rollback is not supported");
+    }
+
+    @Override
     public boolean isOpen() {
         return !closed;
     }
