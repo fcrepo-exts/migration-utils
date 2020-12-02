@@ -318,6 +318,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                                     final String createDate) {
         final var lastModified = Instant.parse(dv.getCreated());
         final var headers = createHeaders(f6DsId, f6ObjectId, InteractionModel.NON_RDF);
+        headers.withArchivalGroupId(f6ObjectId);
         headers.withFilename(filename);
         headers.withCreatedDate(Instant.parse(createDate));
         headers.withLastModifiedDate(lastModified);
@@ -356,6 +357,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final var id = f6DescriptionId(f6DsId);
         final var headers = createHeaders(id, f6DsId, InteractionModel.NON_RDF_DESCRIPTION);
 
+        headers.withArchivalGroupId(datastreamHeaders.getArchivalGroupId());
         headers.withFilename(filename);
         headers.withCreatedDate(datastreamHeaders.getCreatedDate());
         headers.withLastModifiedDate(datastreamHeaders.getLastModifiedDate());

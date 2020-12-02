@@ -722,6 +722,7 @@ public class ArchiveGroupHandlerTest {
             final var headers = content.getHeaders();
             assertEquals(resourceId, headers.getId());
             assertEquals(resourceId(pid), headers.getParent());
+            assertEquals(resourceId(pid), headers.getArchivalGroupId());
             assertEquals(InteractionModel.NON_RDF.getUri(), headers.getInteractionModel());
             assertFalse("not AG", headers.isArchivalGroup());
             assertFalse("not root", headers.isObjectRoot());
@@ -770,6 +771,7 @@ public class ArchiveGroupHandlerTest {
             final var headers = content.getHeaders();
             assertEquals(medadataId(pid, dsId), headers.getId());
             assertEquals(resourceId(pid, dsId), headers.getParent());
+            assertEquals(resourceId(pid), headers.getArchivalGroupId());
             assertEquals(InteractionModel.NON_RDF_DESCRIPTION.getUri(), headers.getInteractionModel());
             assertFalse("not AG", headers.isArchivalGroup());
             assertFalse("not root", headers.isObjectRoot());
