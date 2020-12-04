@@ -191,14 +191,20 @@ public class PicocliMigrator implements Callable<Integer> {
             targetDir.mkdirs();
         }
 
+        // Fedora 6.0.0 expects a data directory at the top.
+        final File dataDir = targetDir.toPath().resolve("data").toFile();
+        if (!dataDir.exists()) {
+            dataDir.mkdirs();
+        }
+
         // Create OCFL Storage dir
-        final File ocflStorageDir = new File(targetDir, "ocfl");
+        final File ocflStorageDir = new File(dataDir, "ocfl-root");
         if (!ocflStorageDir.exists()) {
             ocflStorageDir.mkdirs();
         }
 
         // Create Staging dir
-        final File ocflStagingDir = new File(targetDir, "staging");
+        final File ocflStagingDir = new File(dataDir, "staging");
         if (!ocflStagingDir.exists()) {
             ocflStagingDir.mkdirs();
         }
@@ -210,8 +216,8 @@ public class PicocliMigrator implements Callable<Integer> {
         }
 
         // Which F3 source are we using? - verify associated options
-        ObjectSource objectSource;
-        InternalIDResolver idResolver;
+        final ObjectSource objectSource;
+        final InternalIDResolver idResolver;
         switch (f3SourceType) {
             case EXPORTED:
                 notNull(f3ExportedDir, "f3ExportDir must be used with 'exported' source!");
