@@ -22,7 +22,7 @@
     <fcrepo-build-tools.version>4.3.0</fcrepo-build-tools.version>
     <fcrepo-java-client.version>0.2.1</fcrepo-java-client.version>
     <fcrepo.storage.ocfl.version>6.0.0-SNAPSHOT</fcrepo.storage.ocfl.version>
-    <fcrepo.version>6.0.0-alpha-2</fcrepo.version>
+    <fcrepo.version>6.0.0-SNAPSHOT</fcrepo.version>
     <javaee.xml.version>2.3.1</javaee.xml.version>
     <jaxb.core.version>2.3.0.1</jaxb.core.version>
     <jaxb.impl.version>2.3.1</jaxb.impl.version>
