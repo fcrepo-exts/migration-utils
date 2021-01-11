@@ -18,7 +18,7 @@ package org.fcrepo.migration.handlers.ocfl;
 
 import edu.wisc.library.ocfl.api.MutableOcflRepository;
 import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
-import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedTruncatedNTupleConfig;
+import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
 import edu.wisc.library.ocfl.core.path.mapper.LogicalPathMappers;
 import edu.wisc.library.ocfl.core.storage.filesystem.FileSystemOcflStorage;
 import org.apache.commons.lang3.SystemUtils;
@@ -56,7 +56,7 @@ public class PlainOcflObjectSessionFactoryTest {
                 LogicalPathMappers.percentEncodingWindowsMapper() : LogicalPathMappers.percentEncodingLinuxMapper();
 
         ocflRepo = new OcflRepositoryBuilder()
-                .layoutConfig(new HashedTruncatedNTupleConfig())
+                .defaultLayoutConfig(new HashedNTupleLayoutConfig())
                 .logicalPathMapper(logicalPathMapper)
                 .storage(FileSystemOcflStorage.builder().repositoryRoot(ocflRoot).build())
                 .workDir(staging)
