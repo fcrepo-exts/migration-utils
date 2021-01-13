@@ -17,7 +17,6 @@
 package org.fcrepo.migration.pidlist;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.fcrepo.migration.Migrator;
 import org.junit.After;
 import org.junit.Assert;
@@ -27,7 +26,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 
 /**
@@ -45,8 +47,6 @@ public class ResumePidListManagerIT {
     private File storage;
     private File staging;
     private File pidDir;
-
-    private FileFilter fileFilter;
 
     @Before
     public void setup() throws Exception {
@@ -71,7 +71,6 @@ public class ResumePidListManagerIT {
 
         context = new ClassPathXmlApplicationContext("spring/ocfl-pid-it-setup.xml");
         migrator = (Migrator) context.getBean("migrator");
-        fileFilter = DirectoryFileFilter.INSTANCE;
     }
 
     @After
@@ -88,8 +87,7 @@ public class ResumePidListManagerIT {
         migrator.setPidListManagers(Collections.singletonList(manager));
         migrator.run();
 
-        final int numObjects = storage.listFiles(fileFilter).length;
-        Assert.assertEquals(3, numObjects);
+        Assert.assertEquals(3, countDirectories(storage.toPath()));
     }
 
     @Test
@@ -103,8 +101,7 @@ public class ResumePidListManagerIT {
         migrator.run();
         context.close();
 
-        int numObjects = storage.listFiles(fileFilter).length;
-        Assert.assertEquals(2, numObjects);
+        Assert.assertEquals(2, countDirectories(storage.toPath()));
 
         // Remove the previously exported objects, and resume the migration
         FileUtils.forceDelete(storage);
@@ -118,8 +115,17 @@ public class ResumePidListManagerIT {
         migrator.setLimit(-1); // migrate all
         migrator.run();
 
-        numObjects = storage.listFiles(fileFilter).length;
-        Assert.assertEquals(1, numObjects);
+        Assert.assertEquals(1, countDirectories(storage.toPath()));
+    }
+
+    private long countDirectories(final Path path) {
+        try (final var list = Files.list(path)) {
+            return list.filter(Files::isDirectory)
+                    .filter(dir -> !"extensions".equals(dir.getFileName().toString()))
+                    .count();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 }
