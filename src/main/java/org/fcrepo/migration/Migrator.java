@@ -163,7 +163,7 @@ public class Migrator {
                             final var message = String.format("MIGRATION_FAILURE: pid=\"%s\", message=\"%s\"",
                                     pid, ex.getMessage());
 
-                            if (!this.continueOnError) {
+                            if (this.continueOnError) {
                                 LOGGER.error(message, ex);
                             } else {
                                 throw new RuntimeException(message, ex);

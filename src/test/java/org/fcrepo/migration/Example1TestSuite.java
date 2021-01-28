@@ -17,6 +17,8 @@ package org.fcrepo.migration;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -102,13 +104,11 @@ public abstract class Example1TestSuite {
         Assert.assertEquals("2015-01-27T19:07:33.120Z", dc0.getCreated());
         Assert.assertEquals("text/xml", dc0.getMimeType());
         Assert.assertEquals("http://www.openarchives.org/OAI/2.0/oai_dc/", dc0.getFormatUri());
-        // Lengths are inconsistently accurate on inline XML :(
-        //Assert.assertEquals(dc0.getSize(), IOUtils.toString(dc0.getContent()).length());
-        Assert.assertEquals("<oai_dc:dc xmlns:oai_dc=\"http://www.openarchives.org/OAI/2.0/oai_dc/\"" +
-                " xmlns:dc=\"http://purl.org/dc/elements/1.1/\"" +
-                " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance" +
-                "\" xsi:schemaLocation=\"http://www.openarchives.org/OAI/2.0/oai_dc/ " +
-                "http://www.openarchives.org/OAI/2.0/oai_dc.xsd\">\n" +
+        Assert.assertEquals(dc0.getSize(), IOUtils.toByteArray(dc0.getContent()).length);
+        Assert.assertEquals("<oai_dc:dc xmlns:oai_dc=\"http://www.openarchives.org/OAI/2.0/oai_dc/\"\n" +
+                "xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n" +
+                "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "xsi:schemaLocation=\"http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd\">\n" +
                 "  <dc:title>This is an example object.</dc:title>\n" +
                 "  <dc:identifier>example:1</dc:identifier>\n" +
                 "</oai_dc:dc>", IOUtils.toString(dc0.getContent()).trim());
@@ -212,8 +212,12 @@ public abstract class Example1TestSuite {
 
         public SimpleObjectSource(final String path, final URLFetcher f,
                 final InternalIDResolver resolver) throws XMLStreamException {
-            p = new FoxmlInputStreamFedoraObjectProcessor(getClass().getClassLoader().getResourceAsStream(path),
-                    f, resolver, LOCAL_FEDORA_SERVER);
+            try {
+                p = new FoxmlInputStreamFedoraObjectProcessor(new File(path),
+                        f, resolver, LOCAL_FEDORA_SERVER);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override

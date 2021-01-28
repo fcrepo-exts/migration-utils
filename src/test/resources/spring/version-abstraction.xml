@@ -10,7 +10,7 @@
     </bean>
 
     <bean id="simpleObjectSource" class="org.fcrepo.migration.Example1TestSuite.SimpleObjectSource">
-        <constructor-arg name="path" value="akubraFS/objectStore/info%3Afedora%2Fexample%3A1" />
+        <constructor-arg name="path" value="src/test/resources/akubraFS/objectStore/info%3Afedora%2Fexample%3A1" />
         <constructor-arg name="f"><null /></constructor-arg>
         <constructor-arg name="resolver" ref="akubraIDResolver" />
     </bean>
