@@ -230,7 +230,7 @@ public class PicocliMigrator implements Callable<Integer> {
 
         // Which F3 source are we using? - verify associated options
         final ObjectSource objectSource;
-        final InternalIDResolver idResolver;
+        InternalIDResolver idResolver = null;
         switch (f3SourceType) {
             case EXPORTED:
                 notNull(f3ExportedDir, "f3ExportDir must be used with 'exported' source!");
@@ -288,6 +288,9 @@ public class PicocliMigrator implements Callable<Integer> {
             migrator.run();
         } finally {
             ocflSessionFactory.close();
+            if (idResolver != null) {
+                idResolver.close();
+            }
             FileUtils.deleteDirectory(ocflStagingDir);
         }
 

@@ -15,6 +15,8 @@
  */
 package org.fcrepo.migration.foxml;
 
+import java.io.IOException;
+
 /**
  * An interface whose implementations serve as a mechanism to
  * resolve internal (to fedora/FOXML) IDs.
@@ -28,4 +30,9 @@ public interface InternalIDResolver {
      * @return the binary content for the datastream referenced by the internal id
      */
     public CachedContent resolveInternalID(String id);
+
+    /**
+     * Closes any open resources.
+     */
+    public void close() throws IOException;
 }

@@ -120,6 +120,10 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
         searcher = new IndexSearcher(reader);
     }
 
+    public void close() throws IOException {
+        searcher.getIndexReader().close();
+    }
+
     @Override
     public CachedContent resolveInternalID(final String id) {
         try {
