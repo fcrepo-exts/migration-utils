@@ -26,7 +26,12 @@ public class PicocliIT {
 
     @After
     public void tearDown() throws IOException {
-        FileUtils.forceDelete(tmpDir.toFile());
+        try {
+            FileUtils.forceDelete(tmpDir.toFile());
+        } catch (IOException io) {
+            System.err.println(io.getMessage());
+            throw io;
+        }
     }
 
     @Test
