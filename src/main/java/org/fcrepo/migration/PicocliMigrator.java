@@ -194,6 +194,7 @@ public class PicocliMigrator implements Callable<Integer> {
             targetDir.mkdirs();
         }
 
+        notNull(workingDir, "workingDir must be provided!");
         if (!workingDir.exists()) {
             workingDir.mkdirs();
         }
