@@ -29,8 +29,8 @@ public class PicocliIT {
         try {
             FileUtils.forceDelete(tmpDir.toFile());
         } catch (IOException io) {
-            System.err.println(io.getMessage());
-            throw io;
+            System.err.println("Error cleaning up " + tmpDir.toString());
+            io.printStackTrace();
         }
     }
 
