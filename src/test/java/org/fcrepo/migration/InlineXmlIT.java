@@ -68,7 +68,7 @@ public class InlineXmlIT {
         final var storage = Paths.get(String.format("target/test/ocfl/%s/storage", name));
         final var staging = Paths.get(String.format("target/test/ocfl/%s/staging", name));
 
-        if (Files.exists(staging)) {
+        if (Files.exists(storage)) {
             FileUtils.forceDelete(storage.toFile());
         }
         if (Files.exists(staging)) {
