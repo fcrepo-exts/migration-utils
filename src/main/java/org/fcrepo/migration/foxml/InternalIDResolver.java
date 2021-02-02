@@ -33,6 +33,7 @@ public interface InternalIDResolver {
 
     /**
      * Closes any open resources.
+     * @throws IOException
      */
     public void close() throws IOException;
 }
