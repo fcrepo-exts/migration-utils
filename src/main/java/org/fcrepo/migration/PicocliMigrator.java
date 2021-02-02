@@ -86,8 +86,12 @@ public class PicocliMigrator implements Callable<Integer> {
     private File f3ExportedDir;
 
     @Option(names = {"--target-dir", "-a"}, required = true, order = 5,
-            description = "Directory where OCFL storage root and supporting state will be written")
+            description = "OCFL storage root directory (data/ocfl-root is created for migration-type FEDORA_OCFL)")
     private File targetDir;
+
+    @Option(names = {"--working-dir", "-i"}, order = 6,
+            description = "Directory where supporting state will be written (cached index of datastreams, ...)")
+    private File workingDir;
 
     @Option(names = {"--delete-inactive", "-I"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 18,
             description = "Migrate objects and datastreams in the Inactive state as deleted. Default: false.")
@@ -113,9 +117,6 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "PID file listing which Fedora 3 objects to migrate")
     private File pidFile;
 
-    @Option(names = {"--index-dir", "-i"}, order = 25,
-            description = "Directory where cached index of datastreams (will reuse index if already exists)")
-    private File indexDir;
 
     @Option(names = {"--extensions", "-x"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 26,
             description = "Add file extensions to migrated datastreams based on mimetype recorded in FOXML")
@@ -136,6 +137,8 @@ public class PicocliMigrator implements Callable<Integer> {
     @Option(names = {"--debug"}, order = 30, description = "Enables debug logging")
     private boolean debug;
 
+    private File indexDir;
+    private File ocflStorageDir;
 
     /**
      * @param args Command line arguments
@@ -191,26 +194,35 @@ public class PicocliMigrator implements Callable<Integer> {
             targetDir.mkdirs();
         }
 
-        // Fedora 6.0.0 expects a data directory at the top.
-        final File dataDir = targetDir.toPath().resolve("data").toFile();
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
+        if (!workingDir.exists()) {
+            workingDir.mkdirs();
         }
+        indexDir = new File(workingDir, "index");
 
-        // Create OCFL Storage dir
-        final File ocflStorageDir = new File(dataDir, "ocfl-root");
-        if (!ocflStorageDir.exists()) {
-            ocflStorageDir.mkdirs();
+        if (migrationType == MigrationType.FEDORA_OCFL) {
+            // Fedora 6.0.0 expects a data directory at the top.
+            final File dataDir = targetDir.toPath().resolve("data").toFile();
+            if (!dataDir.exists()) {
+                dataDir.mkdirs();
+            }
+
+            // Create OCFL Storage dir
+            ocflStorageDir = new File(dataDir, "ocfl-root");
+            if (!ocflStorageDir.exists()) {
+                ocflStorageDir.mkdirs();
+            }
+        } else {
+            ocflStorageDir = targetDir;
         }
 
         // Create Staging dir
-        final File ocflStagingDir = new File(dataDir, "staging");
+        final File ocflStagingDir = new File(workingDir, "staging");
         if (!ocflStagingDir.exists()) {
             ocflStagingDir.mkdirs();
         }
 
         // Create PID list dir
-        final File pidDir = new File(targetDir, "pid");
+        final File pidDir = new File(workingDir, "pid");
         if (!pidDir.exists()) {
             pidDir.mkdirs();
         }
