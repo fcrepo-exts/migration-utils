@@ -289,6 +289,9 @@ public abstract class Example1TestSuite {
         public CachedContent resolveInternalID(final String id) {
             return null;
         }
+
+        @Override
+        public void close() throws IOException { };
     }
 
 }

@@ -59,6 +59,8 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
      * file containing that datastream content.
      */
     private final IndexSearcher searcher;
+    private final IndexReader reader;
+    private final FSDirectory fsDirectory;
 
     /**
      * directory scanning ID resolver
@@ -116,8 +118,14 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
             }
         }
 
-        final IndexReader reader = DirectoryReader.open(FSDirectory.open(indexDir.toPath()));
+        fsDirectory = FSDirectory.open(indexDir.toPath());
+        reader = DirectoryReader.open(fsDirectory);
         searcher = new IndexSearcher(reader);
+    }
+
+    public void close() throws IOException {
+        reader.close();
+        fsDirectory.close();
     }
 
     @Override
