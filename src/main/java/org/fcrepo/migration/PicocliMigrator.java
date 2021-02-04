@@ -204,14 +204,8 @@ public class PicocliMigrator implements Callable<Integer> {
         indexDir = new File(workingDir, "index");
 
         if (migrationType == MigrationType.FEDORA_OCFL) {
-            // Fedora 6.0.0 expects a data directory at the top.
-            final File dataDir = targetDir.toPath().resolve("data").toFile();
-            if (!dataDir.exists()) {
-                dataDir.mkdirs();
-            }
-
-            // Create OCFL Storage dir
-            ocflStorageDir = new File(dataDir, "ocfl-root");
+            // Fedora 6.0.0 expects a data/ocfl-root structure
+            ocflStorageDir = targetDir.toPath().resolve("data").resolve("ocfl-root").toFile();
             if (!ocflStorageDir.exists()) {
                 ocflStorageDir.mkdirs();
             }
