@@ -52,6 +52,23 @@ public class PicocliIT {
     }
 
     @Test
+    public void testPlainOcflNoWorkingDirOption() throws Exception {
+        final Path targetDir = tmpDir.resolve("target");
+        final String[] args = {"--target-dir", targetDir.toString(),
+                "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
+                "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
+                "--objects-dir", "src/test/resources/legacyFS/objects/2015/0430/16/01"};
+        final PicocliMigrator migrator = new PicocliMigrator();
+        final CommandLine cmd = new CommandLine(migrator);
+
+        cmd.execute(args);
+        final Path workingDir = Path.of(System.getProperty("user.dir"));
+        assertTrue(Files.list(targetDir).anyMatch(element -> element.endsWith("0=ocfl_1.0")));
+        assertTrue(Files.list(workingDir).anyMatch(element -> element.endsWith("index")));
+        assertTrue(Files.list(workingDir).anyMatch(element -> element.endsWith("pid")));
+    }
+
+    @Test
     public void testFedoraOcfl() throws Exception {
         final Path targetDir = tmpDir.resolve("target");
         final Path workingDir = tmpDir.resolve("working");

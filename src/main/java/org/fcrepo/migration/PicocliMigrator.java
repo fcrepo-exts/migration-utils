@@ -194,7 +194,10 @@ public class PicocliMigrator implements Callable<Integer> {
             targetDir.mkdirs();
         }
 
-        notNull(workingDir, "workingDir must be provided!");
+        if (workingDir == null) {
+            LOGGER.info("No working-dir option passed in - using current directory.");
+            workingDir = new File(System.getProperty("user.dir"));
+        }
         if (!workingDir.exists()) {
             workingDir.mkdirs();
         }
