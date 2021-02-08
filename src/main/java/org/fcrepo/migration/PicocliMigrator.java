@@ -15,9 +15,16 @@
  */
 package org.fcrepo.migration;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import org.apache.commons.io.FileUtils;
+import static edu.wisc.library.ocfl.api.util.Enforce.expressionTrue;
+import static edu.wisc.library.ocfl.api.util.Enforce.notNull;
+import static org.slf4j.LoggerFactory.getLogger;
+import static picocli.CommandLine.Help.Visibility.ALWAYS;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Callable;
+
 import org.fcrepo.migration.foxml.AkubraFSIDResolver;
 import org.fcrepo.migration.foxml.ArchiveExportedFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.foxml.InternalIDResolver;
@@ -30,21 +37,18 @@ import org.fcrepo.migration.pidlist.PidListManager;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
+
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import edu.wisc.library.ocfl.api.DigestAlgorithmRegistry;
+import edu.wisc.library.ocfl.api.model.DigestAlgorithm;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import static edu.wisc.library.ocfl.api.util.Enforce.expressionTrue;
-import static edu.wisc.library.ocfl.api.util.Enforce.notNull;
-import static org.slf4j.LoggerFactory.getLogger;
-import static picocli.CommandLine.Help.Visibility.ALWAYS;
 
 
 /**
@@ -134,10 +138,15 @@ public class PicocliMigrator implements Callable<Integer> {
             order = 29, description = "The username to associate with all of the migrated resources.")
     private String userUri;
 
-    @Option(names = {"--debug"}, order = 30, description = "Enables debug logging")
+    @Option(names = {"--algorithm"}, defaultValue = "sha512", showDefaultValue = ALWAYS, order = 30,
+            description = "The digest algorithm to use in the OCFL objects created. Either sha256 or sha512")
+    private String digestAlgorithm;
+
+    @Option(names = {"--debug"}, order = 31, description = "Enables debug logging")
     private boolean debug;
 
     private File indexDir;
+
     private File ocflStorageDir;
 
     /**
@@ -187,6 +196,12 @@ public class PicocliMigrator implements Callable<Integer> {
         if (debug) {
             setDebugLogLevel();
         }
+
+        if (!digestAlgorithm.equals("sha512") && !digestAlgorithm.equalsIgnoreCase("sha256")) {
+            throw new IllegalArgumentException("Invalid algorithm specified, must be one of sha512 or sha256");
+        }
+        final DigestAlgorithm algorithm = DigestAlgorithmRegistry.getAlgorithm(digestAlgorithm);
+        notNull(algorithm, "Invalid algorithm specified, must be one of sha512 or sha256");
 
         // Pre-processing directory verification
         notNull(targetDir, "targetDir must be provided!");
@@ -257,7 +272,7 @@ public class PicocliMigrator implements Callable<Integer> {
         }
 
         final OcflObjectSessionFactory ocflSessionFactory = new OcflSessionFactoryFactoryBean(ocflStorageDir.toPath(),
-                ocflStagingDir.toPath(), migrationType, user, userUri).getObject();
+                ocflStagingDir.toPath(), migrationType, user, userUri, algorithm).getObject();
 
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, user);

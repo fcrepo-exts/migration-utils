@@ -19,6 +19,9 @@ package org.fcrepo.migration;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import edu.wisc.library.ocfl.api.OcflConfig;
+import edu.wisc.library.ocfl.api.model.DigestAlgorithm;
 import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
 import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
 import edu.wisc.library.ocfl.core.path.mapper.LogicalPathMappers;
@@ -47,6 +50,29 @@ public class OcflSessionFactoryFactoryBean implements FactoryBean<OcflObjectSess
     private final MigrationType migrationType;
     private final String user;
     private final String userUri;
+    private final DigestAlgorithm digestAlgorithm;
+
+    /**
+     * @param ocflRoot OCFL storage root
+     * @param stagingDir OCFL staging dir
+     * @param migrationType migration type
+     * @param user user to add to OCFL versions
+     * @param userUri user's address
+     * @param digestAlgorithm The digest algorithm to use.
+     */
+    public OcflSessionFactoryFactoryBean(final Path ocflRoot,
+                                         final Path stagingDir,
+                                         final MigrationType migrationType,
+                                         final String user,
+                                         final String userUri,
+                                         final DigestAlgorithm digestAlgorithm) {
+        this.ocflRoot = ocflRoot;
+        this.stagingDir = stagingDir;
+        this.migrationType = migrationType;
+        this.user = user;
+        this.userUri = userUri;
+        this.digestAlgorithm = digestAlgorithm;
+    }
 
     /**
      * @param ocflRoot OCFL storage root
@@ -60,11 +86,7 @@ public class OcflSessionFactoryFactoryBean implements FactoryBean<OcflObjectSess
                                          final MigrationType migrationType,
                                          final String user,
                                          final String userUri) {
-        this.ocflRoot = ocflRoot;
-        this.stagingDir = stagingDir;
-        this.migrationType = migrationType;
-        this.user = user;
-        this.userUri = userUri;
+        this(ocflRoot, stagingDir, migrationType, user, userUri, DigestAlgorithm.sha512);
     }
 
     @Override
@@ -72,11 +94,15 @@ public class OcflSessionFactoryFactoryBean implements FactoryBean<OcflObjectSess
         final var logicalPathMapper = SystemUtils.IS_OS_WINDOWS ?
                 LogicalPathMappers.percentEncodingWindowsMapper() : LogicalPathMappers.percentEncodingLinuxMapper();
 
+        final var config = new OcflConfig();
+        config.setDefaultDigestAlgorithm(this.digestAlgorithm);
+
         final var ocflRepo =  new OcflRepositoryBuilder()
                 .defaultLayoutConfig(new HashedNTupleLayoutConfig())
                 .logicalPathMapper(logicalPathMapper)
                 .storage(FileSystemOcflStorage.builder().repositoryRoot(ocflRoot).build())
                 .workDir(stagingDir)
+                .ocflConfig(config)
                 .buildMutable();
 
         if (migrationType == MigrationType.FEDORA_OCFL) {
