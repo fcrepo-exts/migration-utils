@@ -38,6 +38,7 @@ import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.fcrepo.storage.ocfl.ResourceHeaders;
+import org.fcrepo.storage.ocfl.ResourceHeadersVersion;
 import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -283,6 +284,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                                   final String parentId,
                                                   final InteractionModel model) {
         final var headers = ResourceHeaders.builder();
+        headers.withHeadersVersion(ResourceHeadersVersion.V1_0);
         headers.withId(id);
         headers.withParent(parentId);
         headers.withInteractionModel(model.getUri());
@@ -300,6 +302,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             if (p.getName().contains("lastModifiedDate")) {
                 final var lastModified = Instant.parse(p.getValue());
                 headers.withLastModifiedDate(lastModified);
+                headers.withMementoCreatedDate(lastModified);
                 headers.withStateToken(DigestUtils.md5Hex(
                         String.valueOf(lastModified.toEpochMilli())).toUpperCase());
             } else if (p.getName().contains("createdDate")) {
@@ -324,6 +327,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         headers.withLastModifiedDate(lastModified);
         headers.withLastModifiedBy(user);
         headers.withCreatedBy(user);
+        headers.withMementoCreatedDate(lastModified);
 
         if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
             headers.withExternalHandling(
@@ -363,6 +367,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         headers.withLastModifiedDate(datastreamHeaders.getLastModifiedDate());
         headers.withCreatedBy(datastreamHeaders.getCreatedBy());
         headers.withLastModifiedBy(datastreamHeaders.getLastModifiedBy());
+        headers.withMementoCreatedDate(datastreamHeaders.getMementoCreatedDate());
 
         headers.withArchivalGroup(false);
         headers.withObjectRoot(false);
@@ -407,6 +412,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         session.deleteContentFile(ResourceHeaders.builder(headers)
                 .withDeleted(true)
                 .withLastModifiedDate(lastModified)
+                .withMementoCreatedDate(lastModified)
                 .build());
     }
 
