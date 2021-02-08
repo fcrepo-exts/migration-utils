@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -15,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -200,27 +200,9 @@ public class PicocliIT {
         for (final var entry : manifests.entrySet()) {
             final File f = baseDir.resolve(entry.getKey()).toFile();
             assertTrue(f.exists());
-            final String digest = getDigest(new FileInputStream(f), md, 2048);
+            final String digest = new String(Hex.encodeHex(DigestUtils.digest(md, new FileInputStream(f))));
             assertEquals(entry.getValue(), digest);
         }
-    }
-
-    /**
-     * Utility to get a message digest for a file.
-     * @param stream the input stream of the file
-     * @param md the message digest to calculate
-     * @param byteSize size of file to read per loop.
-     * @return the hash
-     * @throws IOException problems opening the inputstream
-     */
-    private String getDigest(final InputStream stream, final MessageDigest md, final int byteSize) throws IOException {
-        md.reset();
-        final byte[] byteArray = new byte[byteSize];
-        int bytes;
-        while ((bytes = stream.read(byteArray)) != -1) {
-            md.update(byteArray, 0, bytes);
-        }
-        return new String(Hex.encodeHex(md.digest()));
     }
 
     /**
