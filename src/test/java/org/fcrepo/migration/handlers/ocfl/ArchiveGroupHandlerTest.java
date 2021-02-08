@@ -27,6 +27,7 @@ import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.fcrepo.storage.ocfl.PersistencePaths;
+import org.fcrepo.storage.ocfl.ResourceHeadersVersion;
 import org.fcrepo.storage.ocfl.cache.NoOpCache;
 import org.junit.Before;
 import org.junit.Rule;
@@ -720,6 +721,7 @@ public class ArchiveGroupHandlerTest {
         final var resourceId = resourceId(pid, dsId);
         try (final var content = session.readContent(resourceId, versionNumber)) {
             final var headers = content.getHeaders();
+            assertEquals(ResourceHeadersVersion.V1_0, headers.getHeadersVersion());
             assertEquals(resourceId, headers.getId());
             assertEquals(resourceId(pid), headers.getParent());
             assertEquals(resourceId(pid), headers.getArchivalGroupId());
@@ -730,6 +732,7 @@ public class ArchiveGroupHandlerTest {
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
+            assertThat(headers.getMementoCreatedDate().toString(), containsString(date));
             assertThat(headers.getCreatedDate().toString(), containsString(date));
             if (INLINE.equals(datastreamVersion.getDatastreamInfo().getControlGroup())) {
                 assertNotEquals(datastreamVersion.getSize(), headers.getContentSize());
@@ -769,6 +772,7 @@ public class ArchiveGroupHandlerTest {
                                    final String versionNumber) {
         try (final var content = session.readContent(medadataId(pid, dsId), versionNumber)) {
             final var headers = content.getHeaders();
+            assertEquals(ResourceHeadersVersion.V1_0, headers.getHeadersVersion());
             assertEquals(medadataId(pid, dsId), headers.getId());
             assertEquals(resourceId(pid, dsId), headers.getParent());
             assertEquals(resourceId(pid), headers.getArchivalGroupId());
@@ -779,6 +783,7 @@ public class ArchiveGroupHandlerTest {
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
+            assertThat(headers.getMementoCreatedDate().toString(), containsString(date));
             assertThat(headers.getCreatedDate().toString(), containsString(date));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -795,6 +800,7 @@ public class ArchiveGroupHandlerTest {
                                      final String versionNumber) {
         try (final var content = session.readContent(resourceId(pid), versionNumber)) {
             final var headers = content.getHeaders();
+            assertEquals(ResourceHeadersVersion.V1_0, headers.getHeadersVersion());
             assertEquals(resourceId(pid), headers.getId());
             assertEquals(FCREPO_ROOT, headers.getParent());
             assertEquals(InteractionModel.BASIC_CONTAINER.getUri(), headers.getInteractionModel());
@@ -804,6 +810,7 @@ public class ArchiveGroupHandlerTest {
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
+            assertThat(headers.getMementoCreatedDate().toString(), containsString(date));
             assertThat(headers.getCreatedDate().toString(), containsString(date));
         } catch (Exception e) {
             throw new RuntimeException(e);
