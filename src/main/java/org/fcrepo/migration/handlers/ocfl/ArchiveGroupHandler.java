@@ -145,11 +145,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         for (var ov : versions) {
             if (ov.isFirstVersion()) {
                 objectId = ov.getObjectInfo().getPid();
-                if (migrationType == MigrationType.PLAIN_OCFL) {
-                    f6ObjectId = objectId;
-                } else {
-                    f6ObjectId = FCREPO_ROOT + objectId;
-                }
+                f6ObjectId = FCREPO_ROOT + objectId;
                 objectState = getObjectState(ov);
             }
 
