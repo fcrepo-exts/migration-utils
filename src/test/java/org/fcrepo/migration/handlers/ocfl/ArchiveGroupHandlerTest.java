@@ -133,20 +133,21 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, true, List.of(ds1, ds2))
         ));
 
-        final var session = sessionFactory.newSession(resourceId(pid));
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
 
-        verifyObjectRdf(contentToString(session, pid));
-        verifyObjectHeaders(session, pid);
+        verifyObjectRdf(contentToString(session, ocflObjectId));
+        verifyObjectHeaders(session, ocflObjectId);
 
-        verifyBinary(contentToString(session, pid, dsId1), ds1);
-        verifyHeaders(session, pid, dsId1, ds1);
-        verifyDescRdf(session, pid, dsId1, ds1);
-        verifyDescHeaders(session, pid, dsId1);
+        verifyBinary(contentToString(session, ocflObjectId, dsId1), ds1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1);
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1);
+        verifyDescHeaders(session, ocflObjectId, dsId1);
 
-        verifyBinary(contentToString(session, pid, dsId2), ds2);
-        verifyHeaders(session, pid, dsId2, ds2);
-        verifyDescRdf(session, pid, dsId2, ds2);
-        verifyDescHeaders(session, pid, dsId2);
+        verifyBinary(contentToString(session, ocflObjectId, dsId2), ds2);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2);
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2);
+        verifyDescHeaders(session, ocflObjectId, dsId2);
     }
 
     @Test
@@ -167,25 +168,26 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, false, List.of(ds2V2))
         ));
 
-        final var session = sessionFactory.newSession(resourceId(pid));
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
 
-        verifyObjectRdf(contentToString(session, pid));
-        verifyObjectHeaders(session, pid);
+        verifyObjectRdf(contentToString(session, ocflObjectId));
+        verifyObjectHeaders(session, ocflObjectId);
 
-        verifyBinary(contentToString(session, pid, dsId1), ds1V1);
-        verifyHeaders(session, pid, dsId1, ds1V1);
-        verifyDescRdf(session, pid, dsId1, ds1V1);
-        verifyDescHeaders(session, pid, dsId1);
+        verifyBinary(contentToString(session, ocflObjectId, dsId1), ds1V1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1);
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1V1);
+        verifyDescHeaders(session, ocflObjectId, dsId1);
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
-        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
-        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
-        verifyDescHeaders(session, pid, dsId2, "v1");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
-        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
-        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
-        verifyDescHeaders(session, pid, dsId2, "v2");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v2");
     }
 
     @Test
@@ -207,28 +209,29 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, false, List.of(ds2V2))
         ));
 
-        final var session = sessionFactory.newSession(resourceId(pid));
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
 
-        verifyObjectRdf(contentToString(session, pid));
-        verifyObjectHeaders(session, pid);
+        verifyObjectRdf(contentToString(session, ocflObjectId));
+        verifyObjectHeaders(session, ocflObjectId);
 
-        verifyBinary(contentToString(session, pid, dsId1), ds1V1);
-        verifyHeaders(session, pid, dsId1, ds1V1);
-        verifyDescRdf(session, pid, dsId1, ds1V1);
-        verifyDescHeaders(session, pid, dsId1);
+        verifyBinary(contentToString(session, ocflObjectId, dsId1), ds1V1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1);
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1V1);
+        verifyDescHeaders(session, ocflObjectId, dsId1);
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
-        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
-        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
-        verifyDescHeaders(session, pid, dsId2, "v1");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
-        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
-        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
-        verifyDescHeaders(session, pid, dsId2, "v2");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v2");
 
-        verifyResourceDeleted(session, resourceId(pid, dsId2));
-        verifyResourceDeleted(session, metadataId(pid, dsId2));
+        verifyResourceDeleted(session, resourceId(ocflObjectId, dsId2));
+        verifyResourceDeleted(session, metadataId(ocflObjectId, dsId2));
     }
 
     @Test
@@ -250,30 +253,31 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, false, List.of(ds2V2))
         ));
 
-        final var session = sessionFactory.newSession(resourceId(pid));
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
 
-        verifyObjectRdf(contentToString(session, pid));
-        verifyObjectHeaders(session, pid);
+        verifyObjectRdf(contentToString(session, ocflObjectId));
+        verifyObjectHeaders(session, ocflObjectId);
 
-        verifyBinary(contentVersionToString(session, pid, dsId1, "v1"), ds1V1);
-        verifyHeaders(session, pid, dsId1, ds1V1, "v1");
-        verifyDescRdf(session, pid, dsId1, ds1V1, "v1");
-        verifyDescHeaders(session, pid, dsId1, "v1");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId1, "v1"), ds1V1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v1");
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1V1, "v1");
+        verifyDescHeaders(session, ocflObjectId, dsId1, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
-        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
-        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
-        verifyDescHeaders(session, pid, dsId2, "v1");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
-        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
-        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
-        verifyDescHeaders(session, pid, dsId2, "v2");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v2");
 
-        verifyResourceDeleted(session, resourceId(pid, dsId1));
-        verifyResourceDeleted(session, metadataId(pid, dsId1));
-        verifyResourceDeleted(session, resourceId(pid, dsId2));
-        verifyResourceDeleted(session, metadataId(pid, dsId2));
+        verifyResourceDeleted(session, resourceId(ocflObjectId, dsId1));
+        verifyResourceDeleted(session, metadataId(ocflObjectId, dsId1));
+        verifyResourceDeleted(session, resourceId(ocflObjectId, dsId2));
+        verifyResourceDeleted(session, metadataId(ocflObjectId, dsId2));
     }
 
     @Test
@@ -294,31 +298,32 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, false, OBJ_DELETED, List.of(ds2V2))
         ));
 
-        final var session = sessionFactory.newSession(resourceId(pid));
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
 
-        verifyObjectRdf(contentVersionToString(session, pid, "v1"));
-        verifyObjectHeaders(session, pid, "v1");
+        verifyObjectRdf(contentVersionToString(session, ocflObjectId, "v1"));
+        verifyObjectHeaders(session, ocflObjectId, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId1, "v1"), ds1V1);
-        verifyHeaders(session, pid, dsId1, ds1V1, "v1");
-        verifyDescRdf(session, pid, dsId1, ds1V1, "v1");
-        verifyDescHeaders(session, pid, dsId1, "v1");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId1, "v1"), ds1V1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v1");
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1V1, "v1");
+        verifyDescHeaders(session, ocflObjectId, dsId1, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
-        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
-        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
-        verifyDescHeaders(session, pid, dsId2, "v1");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
-        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
-        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
-        verifyDescHeaders(session, pid, dsId2, "v2");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v2");
 
-        verifyResourceDeleted(session, resourceId(pid));
-        verifyResourceDeleted(session, resourceId(pid, dsId1));
-        verifyResourceDeleted(session, metadataId(pid, dsId1));
-        verifyResourceDeleted(session, resourceId(pid, dsId2));
-        verifyResourceDeleted(session, metadataId(pid, dsId2));
+        verifyResourceDeleted(session, ocflObjectId);
+        verifyResourceDeleted(session, resourceId(ocflObjectId, dsId1));
+        verifyResourceDeleted(session, metadataId(ocflObjectId, dsId1));
+        verifyResourceDeleted(session, resourceId(ocflObjectId, dsId2));
+        verifyResourceDeleted(session, metadataId(ocflObjectId, dsId2));
     }
 
     @Test
@@ -339,31 +344,32 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, false, OBJ_INACTIVE, List.of(ds2V2))
         ));
 
-        final var session = sessionFactory.newSession(resourceId(pid));
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
 
-        verifyObjectRdf(contentVersionToString(session, pid, "v1"));
-        verifyObjectHeaders(session, pid, "v1");
+        verifyObjectRdf(contentVersionToString(session, ocflObjectId, "v1"));
+        verifyObjectHeaders(session, ocflObjectId, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId1, "v1"), ds1V1);
-        verifyHeaders(session, pid, dsId1, ds1V1, "v1");
-        verifyDescRdf(session, pid, dsId1, ds1V1, "v1");
-        verifyDescHeaders(session, pid, dsId1, "v1");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId1, "v1"), ds1V1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v1");
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1V1, "v1");
+        verifyDescHeaders(session, ocflObjectId, dsId1, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v1"), ds2V1);
-        verifyHeaders(session, pid, dsId2, ds2V1, "v1");
-        verifyDescRdf(session, pid, dsId2, ds2V1, "v1");
-        verifyDescHeaders(session, pid, dsId2, "v1");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v1");
 
-        verifyBinary(contentVersionToString(session, pid, dsId2, "v2"), ds2V2);
-        verifyHeaders(session, pid, dsId2, ds2V2, "v2");
-        verifyDescRdf(session, pid, dsId2, ds2V2, "v2");
-        verifyDescHeaders(session, pid, dsId2, "v2");
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v2");
 
-        verifyResourceDeleted(session, resourceId(pid));
-        verifyResourceDeleted(session, resourceId(pid, dsId1));
-        verifyResourceDeleted(session, metadataId(pid, dsId1));
-        verifyResourceDeleted(session, resourceId(pid, dsId2));
-        verifyResourceDeleted(session, metadataId(pid, dsId2));
+        verifyResourceDeleted(session, ocflObjectId);
+        verifyResourceDeleted(session, resourceId(ocflObjectId, dsId1));
+        verifyResourceDeleted(session, metadataId(ocflObjectId, dsId1));
+        verifyResourceDeleted(session, resourceId(ocflObjectId, dsId2));
+        verifyResourceDeleted(session, metadataId(ocflObjectId, dsId2));
     }
 
     @Test
@@ -384,32 +390,32 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, false, List.of(ds2V2))
         ));
 
-        verifyFcrepoNotExists(pid);
+        final var rootResourceId = addPrefix(pid);
 
-        final var rootResourceId = pid;
+        verifyFcrepoNotExists(rootResourceId);
 
-        verifyObjectRdf(rawContentToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+        verifyObjectRdf(rawContentToString(rootResourceId, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
                 .getContentFilePath()));
 
-        verifyBinary(rawContentVersionToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId1).getContentFilePath(),
+        verifyBinary(rawContentVersionToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId1)).getContentFilePath(),
                 "v1"), ds1V1);
-        verifyPlainDescRdf(rawContentVersionToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId1)).getContentFilePath(),
+        verifyPlainDescRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId1)).getContentFilePath(),
                 "v1"), ds1V1);
 
-        verifyBinary(rawContentVersionToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId2).getContentFilePath(),
+        verifyBinary(rawContentVersionToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2)).getContentFilePath(),
                 "v1"), ds2V1);
-        verifyPlainDescRdf(rawContentVersionToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId2)).getContentFilePath(),
+        verifyPlainDescRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2)).getContentFilePath(),
                 "v1"), ds2V1);
 
-        verifyBinary(rawContentVersionToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId2).getContentFilePath(),
+        verifyBinary(rawContentVersionToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2)).getContentFilePath(),
                 "v2"), ds2V2);
-        verifyPlainDescRdf(rawContentVersionToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId2)).getContentFilePath(),
+        verifyPlainDescRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2)).getContentFilePath(),
                 "v2"), ds2V2);
     }
 
@@ -431,38 +437,39 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, false, List.of(ds2V2))
         ));
 
-        verifyFcrepoNotExists(pid);
+        final var rootResourceId = addPrefix(pid);
 
-        final var rootResourceId = resourceId(pid);
+        verifyFcrepoNotExists(rootResourceId);
 
-        verifyObjectRdf(rawContentToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+        verifyObjectRdf(rawContentToString(rootResourceId, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
                 .getContentFilePath()));
 
-        verifyBinary(rawContentVersionToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId1)).getContentFilePath(),
+        verifyBinary(rawContentVersionToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId1)).getContentFilePath(),
                 "v1"), ds1V1);
-        verifyPlainDescRdf(rawContentVersionToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataId(pid, dsId1)).getContentFilePath(),
+        verifyPlainDescRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId1)).getContentFilePath(),
                 "v1"), ds1V1);
 
-        verifyBinary(rawContentVersionToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
+        verifyBinary(rawContentVersionToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2)).getContentFilePath(),
                 "v1"), ds2V1);
-        verifyPlainDescRdf(rawContentVersionToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataId(pid, dsId2)).getContentFilePath(),
+        verifyPlainDescRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2)).getContentFilePath(),
                 "v1"), ds2V1);
 
-        verifyBinary(rawContentVersionToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2)).getContentFilePath(),
+        verifyBinary(rawContentVersionToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2)).getContentFilePath(),
                 "v2"), ds2V2);
-        verifyPlainDescRdf(rawContentVersionToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataId(pid, dsId2)).getContentFilePath(),
+        verifyPlainDescRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2)).getContentFilePath(),
                 "v2"), ds2V2);
 
-        rawVerifyDoesNotExist(pid, PersistencePaths.nonRdfResource(rootResourceId, resourceId(pid, dsId2))
-                .getContentFilePath());
-        rawVerifyDoesNotExist(pid, PersistencePaths.rdfResource(rootResourceId, metadataId(pid, dsId2))
-                .getContentFilePath());
+        rawVerifyDoesNotExist(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2))
+                        .getContentFilePath());
+        rawVerifyDoesNotExist(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2)).getContentFilePath());
     }
 
     @Test
@@ -483,46 +490,48 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, false, OBJ_INACTIVE, List.of(ds2V2))
         ));
 
-        verifyFcrepoNotExists(pid);
+        final var rootResourceId = addPrefix(pid);
 
-        final var rootResourceId = pid;
+        verifyFcrepoNotExists(rootResourceId);
 
-        verifyObjectRdf(rawContentVersionToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
-                .getContentFilePath(), "v1"));
+        verifyObjectRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, rootResourceId).getContentFilePath(), "v1"));
 
-        verifyBinary(rawContentVersionToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId1).getContentFilePath(),
+        verifyBinary(rawContentVersionToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId1)).getContentFilePath(),
                 "v1"), ds1V1);
-        verifyPlainDescRdf(rawContentVersionToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId1)).getContentFilePath(),
+        verifyPlainDescRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId1)).getContentFilePath(),
                 "v1"), ds1V1);
 
-        verifyBinary(rawContentVersionToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId2).getContentFilePath(),
+        verifyBinary(rawContentVersionToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2)).getContentFilePath(),
                 "v1"), ds2V1);
-        verifyPlainDescRdf(rawContentVersionToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId2)).getContentFilePath(),
+        verifyPlainDescRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2)).getContentFilePath(),
                 "v1"), ds2V1);
 
-        verifyBinary(rawContentVersionToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId2).getContentFilePath(),
+        verifyBinary(rawContentVersionToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2)).getContentFilePath(),
                 "v2"), ds2V2);
-        verifyPlainDescRdf(rawContentVersionToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId2)).getContentFilePath(),
+        verifyPlainDescRdf(rawContentVersionToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2)).getContentFilePath(),
                 "v2"), ds2V2);
 
-        rawVerifyDoesNotExist(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+        rawVerifyDoesNotExist(rootResourceId, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
                 .getContentFilePath());
 
-        rawVerifyDoesNotExist(pid, PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId1)
-                .getContentFilePath());
-        rawVerifyDoesNotExist(pid, PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId1))
-                .getContentFilePath());
+        rawVerifyDoesNotExist(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId1))
+                        .getContentFilePath());
+        rawVerifyDoesNotExist(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId1)).getContentFilePath());
 
-        rawVerifyDoesNotExist(pid, PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId2)
-                .getContentFilePath());
-        rawVerifyDoesNotExist(pid, PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId2))
-                .getContentFilePath());
+        rawVerifyDoesNotExist(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2))
+                        .getContentFilePath());
+        rawVerifyDoesNotExist(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2)).getContentFilePath());
     }
 
     @Test
@@ -545,25 +554,26 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
         ));
 
-        final var session = sessionFactory.newSession(resourceId(pid));
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
 
-        verifyObjectRdf(contentToString(session, pid));
-        verifyObjectHeaders(session, pid);
+        verifyObjectRdf(contentToString(session, ocflObjectId));
+        verifyObjectHeaders(session, ocflObjectId);
 
-        verifyBinary(contentToString(session, pid, dsId1Ext), ds1);
-        verifyHeaders(session, pid, dsId1Ext, ds1);
-        verifyDescRdf(session, pid, dsId1Ext, ds1);
-        verifyDescHeaders(session, pid, dsId1Ext);
+        verifyBinary(contentToString(session, ocflObjectId, dsId1Ext), ds1);
+        verifyHeaders(session, ocflObjectId, dsId1Ext, ds1);
+        verifyDescRdf(session, ocflObjectId, dsId1Ext, ds1);
+        verifyDescHeaders(session, ocflObjectId, dsId1Ext);
 
-        verifyBinary(contentToString(session, pid, dsId2Ext), ds2);
-        verifyHeaders(session, pid, dsId2Ext, ds2);
-        verifyDescRdf(session, pid, dsId2Ext, ds2);
-        verifyDescHeaders(session, pid, dsId2Ext);
+        verifyBinary(contentToString(session, ocflObjectId, dsId2Ext), ds2);
+        verifyHeaders(session, ocflObjectId, dsId2Ext, ds2);
+        verifyDescRdf(session, ocflObjectId, dsId2Ext, ds2);
+        verifyDescHeaders(session, ocflObjectId, dsId2Ext);
 
-        verifyBinary(contentToString(session, pid, dsId3Ext), ds3);
-        verifyHeaders(session, pid, dsId3Ext, ds3);
-        verifyDescRdf(session, pid, dsId3Ext, ds3);
-        verifyDescHeaders(session, pid, dsId3Ext);
+        verifyBinary(contentToString(session, ocflObjectId, dsId3Ext), ds3);
+        verifyHeaders(session, ocflObjectId, dsId3Ext, ds3);
+        verifyDescRdf(session, ocflObjectId, dsId3Ext, ds3);
+        verifyDescHeaders(session, ocflObjectId, dsId3Ext);
     }
 
     @Test
@@ -586,32 +596,38 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
         ));
 
-        verifyFcrepoNotExists(pid);
+        final var rootResourceId = addPrefix(pid);
 
-        final var rootResourceId = pid;
+        verifyFcrepoNotExists(rootResourceId);
 
-        verifyObjectRdf(rawContentToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+        verifyObjectRdf(rawContentToString(rootResourceId, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
                 .getContentFilePath()));
 
-        verifyBinary(rawContentToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId1Ext).getContentFilePath()),
+        verifyBinary(rawContentToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId1Ext))
+                        .getContentFilePath()),
                 ds1);
-        verifyPlainDescRdf(rawContentToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId1Ext)).getContentFilePath()),
+        verifyPlainDescRdf(rawContentToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId1Ext))
+                        .getContentFilePath()),
                 ds1);
 
-        verifyBinary(rawContentToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId2Ext).getContentFilePath()),
+        verifyBinary(rawContentToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2Ext))
+                        .getContentFilePath()),
                 ds2);
-        verifyPlainDescRdf(rawContentToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId2Ext)).getContentFilePath()),
+        verifyPlainDescRdf(rawContentToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2Ext))
+                        .getContentFilePath()),
                 ds2);
 
-        verifyBinary(rawContentToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId3Ext).getContentFilePath()),
+        verifyBinary(rawContentToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId3Ext))
+                        .getContentFilePath()),
                 ds3);
-        verifyPlainDescRdf(rawContentToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId3Ext)).getContentFilePath()),
+        verifyPlainDescRdf(rawContentToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId3Ext))
+                        .getContentFilePath()),
                 ds3);
     }
 
@@ -632,25 +648,26 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
         ));
 
-        final var session = sessionFactory.newSession(resourceId(pid));
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
 
-        verifyObjectRdf(contentToString(session, pid));
-        verifyObjectHeaders(session, pid);
+        verifyObjectRdf(contentToString(session, ocflObjectId));
+        verifyObjectHeaders(session, ocflObjectId);
 
-        verifyBinary(contentToString(session, pid, dsId1), ds1);
-        verifyHeaders(session, pid, dsId1, ds1);
-        verifyDescRdf(session, pid, dsId1, ds1);
-        verifyDescHeaders(session, pid, dsId1);
+        verifyBinary(contentToString(session, ocflObjectId, dsId1), ds1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1);
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1);
+        verifyDescHeaders(session, ocflObjectId, dsId1);
 
-        verifyContentNotExists(session, resourceId(pid, dsId2));
-        verifyHeaders(session, pid, dsId2, ds2);
-        verifyDescRdf(session, pid, dsId2, ds2);
-        verifyDescHeaders(session, pid, dsId2);
+        verifyContentNotExists(session, resourceId(ocflObjectId, dsId2));
+        verifyHeaders(session, ocflObjectId, dsId2, ds2);
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2);
+        verifyDescHeaders(session, ocflObjectId, dsId2);
 
-        verifyContentNotExists(session, resourceId(pid, dsId3));
-        verifyHeaders(session, pid, dsId3, ds3);
-        verifyDescRdf(session, pid, dsId3, ds3);
-        verifyDescHeaders(session, pid, dsId3);
+        verifyContentNotExists(session, resourceId(ocflObjectId, dsId3));
+        verifyHeaders(session, ocflObjectId, dsId3, ds3);
+        verifyDescRdf(session, ocflObjectId, dsId3, ds3);
+        verifyDescHeaders(session, ocflObjectId, dsId3);
     }
 
     @Test
@@ -670,26 +687,29 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
         ));
 
-        verifyFcrepoNotExists(pid);
+        final var rootResourceId = addPrefix(pid);
 
-        final var rootResourceId = pid;
+        verifyFcrepoNotExists(rootResourceId);
 
-        verifyObjectRdf(rawContentToString(pid, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
+        verifyObjectRdf(rawContentToString(rootResourceId, PersistencePaths.rdfResource(rootResourceId, rootResourceId)
                 .getContentFilePath()));
 
-        verifyBinary(rawContentToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId1).getContentFilePath()),
+        verifyBinary(rawContentToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId1))
+                        .getContentFilePath()),
                 ds1);
-        verifyPlainDescRdf(rawContentToString(pid,
-                PersistencePaths.rdfResource(rootResourceId, metadataIdPlain(pid, dsId1)).getContentFilePath()),
+        verifyPlainDescRdf(rawContentToString(rootResourceId,
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId1)).getContentFilePath()),
                 ds1);
 
-        verifyBinary(rawContentToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId2).getContentFilePath()),
+        verifyBinary(rawContentToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2))
+                        .getContentFilePath()),
                 ds2);
 
-        verifyBinary(rawContentToString(pid,
-                PersistencePaths.nonRdfResource(rootResourceId, pid + "/" + dsId3).getContentFilePath()),
+        verifyBinary(rawContentToString(rootResourceId,
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId3))
+                        .getContentFilePath()),
                 ds3);
     }
 
@@ -706,23 +726,23 @@ public class ArchiveGroupHandlerTest {
     }
 
     private void verifyHeaders(final OcflObjectSession session,
-                               final String pid,
+                               final String ocflObjectId,
                                final String dsId,
                                final DatastreamVersion datastreamVersion) {
-        verifyHeaders(session, pid, dsId, datastreamVersion, null);
+        verifyHeaders(session, ocflObjectId, dsId, datastreamVersion, null);
     }
 
     private void verifyHeaders(final OcflObjectSession session,
-                               final String pid,
+                               final String ocflObjectId,
                                final String dsId,
                                final DatastreamVersion datastreamVersion,
                                final String versionNumber) {
-        final var resourceId = resourceId(pid, dsId);
+        final var resourceId = resourceId(ocflObjectId, dsId);
         try (final var content = session.readContent(resourceId, versionNumber)) {
             final var headers = content.getHeaders();
             assertEquals(resourceId, headers.getId());
-            assertEquals(resourceId(pid), headers.getParent());
-            assertEquals(resourceId(pid), headers.getArchivalGroupId());
+            assertEquals(ocflObjectId, headers.getParent());
+            assertEquals(ocflObjectId, headers.getArchivalGroupId());
             assertEquals(InteractionModel.NON_RDF.getUri(), headers.getInteractionModel());
             assertFalse("not AG", headers.isArchivalGroup());
             assertFalse("not root", headers.isObjectRoot());
@@ -758,20 +778,20 @@ public class ArchiveGroupHandlerTest {
     }
 
     private void verifyDescHeaders(final OcflObjectSession session,
-                                   final String pid,
+                                   final String ocflObjectId,
                                    final String dsId) {
-        verifyDescHeaders(session, pid, dsId, null);
+        verifyDescHeaders(session, ocflObjectId, dsId, null);
     }
 
     private void verifyDescHeaders(final OcflObjectSession session,
-                                   final String pid,
+                                   final String ocflObjectId,
                                    final String dsId,
                                    final String versionNumber) {
-        try (final var content = session.readContent(metadataId(pid, dsId), versionNumber)) {
+        try (final var content = session.readContent(metadataId(ocflObjectId, dsId), versionNumber)) {
             final var headers = content.getHeaders();
-            assertEquals(metadataId(pid, dsId), headers.getId());
-            assertEquals(resourceId(pid, dsId), headers.getParent());
-            assertEquals(resourceId(pid), headers.getArchivalGroupId());
+            assertEquals(metadataId(ocflObjectId, dsId), headers.getId());
+            assertEquals(resourceId(ocflObjectId, dsId), headers.getParent());
+            assertEquals(ocflObjectId, headers.getArchivalGroupId());
             assertEquals(InteractionModel.NON_RDF_DESCRIPTION.getUri(), headers.getInteractionModel());
             assertFalse("not AG", headers.isArchivalGroup());
             assertFalse("not root", headers.isObjectRoot());
@@ -786,16 +806,16 @@ public class ArchiveGroupHandlerTest {
     }
 
     private void verifyObjectHeaders(final OcflObjectSession session,
-                                     final String pid) {
-        verifyObjectHeaders(session, pid, null);
+                                     final String ocflObjectId) {
+        verifyObjectHeaders(session, ocflObjectId, null);
     }
 
     private void verifyObjectHeaders(final OcflObjectSession session,
-                                     final String pid,
+                                     final String ocflObjectId,
                                      final String versionNumber) {
-        try (final var content = session.readContent(resourceId(pid), versionNumber)) {
+        try (final var content = session.readContent(ocflObjectId, versionNumber)) {
             final var headers = content.getHeaders();
-            assertEquals(resourceId(pid), headers.getId());
+            assertEquals(ocflObjectId, headers.getId());
             assertEquals(FCREPO_ROOT, headers.getParent());
             assertEquals(InteractionModel.BASIC_CONTAINER.getUri(), headers.getInteractionModel());
             assertTrue("is AG", headers.isArchivalGroup());
@@ -811,18 +831,18 @@ public class ArchiveGroupHandlerTest {
     }
 
     private void verifyDescRdf(final OcflObjectSession session,
-                               final String pid,
+                               final String ocflObjectId,
                                final String dsId,
                                final DatastreamVersion datastreamVersion) {
-        verifyDescRdf(session, pid, dsId, datastreamVersion, null);
+        verifyDescRdf(session, ocflObjectId, dsId, datastreamVersion, null);
     }
 
     private void verifyDescRdf(final OcflObjectSession session,
-                               final String pid,
+                               final String ocflObjectId,
                                final String dsId,
                                final DatastreamVersion datastreamVersion,
                                final String versionNumber) {
-        try (final var content = session.readContent(metadataId(pid, dsId), versionNumber)) {
+        try (final var content = session.readContent(metadataId(ocflObjectId, dsId), versionNumber)) {
             final var value = IOUtils.toString(content.getContentStream().get());
             assertThat(value, allOf(
                     containsString(datastreamVersion.getLabel()),
@@ -856,37 +876,37 @@ public class ArchiveGroupHandlerTest {
         ));
     }
 
-    private String contentToString(final OcflObjectSession session, final String pid) {
-        return contentVersionToString(session, pid, null);
+    private String contentToString(final OcflObjectSession session, final String ocflObjectId) {
+        return contentVersionToString(session, ocflObjectId, null);
     }
 
     private String contentVersionToString(final OcflObjectSession session,
-                                          final String pid,
+                                          final String ocflObjectId,
                                           final String versionNumber) {
-        try (final var content = session.readContent(resourceId(pid), versionNumber)) {
+        try (final var content = session.readContent(ocflObjectId, versionNumber)) {
             return IOUtils.toString(content.getContentStream().get());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private String contentToString(final OcflObjectSession session, final String pid, final String dsId) {
-        return contentVersionToString(session, pid, dsId, null);
+    private String contentToString(final OcflObjectSession session, final String ocflObjectId, final String dsId) {
+        return contentVersionToString(session, ocflObjectId, dsId, null);
     }
 
     private String contentVersionToString(final OcflObjectSession session,
-                                          final String pid,
+                                          final String ocflObjectId,
                                           final String dsId,
                                           final String versionNumber) {
-        try (final var content = session.readContent(resourceId(pid, dsId), versionNumber)) {
+        try (final var content = session.readContent(resourceId(ocflObjectId, dsId), versionNumber)) {
             return IOUtils.toString(content.getContentStream().get());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private String rawContentToString(final String pid, final String path) {
-        try (final var content = ocflRepo.getObject(ObjectVersionId.head(pid))
+    private String rawContentToString(final String ocflObjectId, final String path) {
+        try (final var content = ocflRepo.getObject(ObjectVersionId.head(ocflObjectId))
                 .getFile(path).getStream()) {
             return IOUtils.toString(content);
         } catch (IOException e) {
@@ -894,27 +914,29 @@ public class ArchiveGroupHandlerTest {
         }
     }
 
-    private String rawContentVersionToString(final String pid, final String path, final String versionNumber) {
-        try (final var content = ocflRepo.getObject(ObjectVersionId.version(pid, versionNumber))
-                .getFile(path).getStream()) {
+    private String rawContentVersionToString(final String ocflObjectId, final String path, final String versionNumber) {
+        try (final var content = ocflRepo.getObject(
+                ObjectVersionId.version(ocflObjectId, versionNumber)).getFile(path).getStream()) {
             return IOUtils.toString(content);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private void rawVerifyDoesNotExist(final String pid, final String path) {
-        assertFalse(String.format("object %s not contain path %s", pid, path),
-                ocflRepo.describeVersion(ObjectVersionId.head(pid)).containsFile(path));
+    private void rawVerifyDoesNotExist(final String ocflObjectId, final String path) {
+        assertFalse(String.format("object %s not contain path %s", ocflObjectId, path),
+                ocflRepo.describeVersion(ObjectVersionId.head(ocflObjectId)).containsFile(path));
     }
 
     private ArchiveGroupHandler createHandler(final MigrationType migrationType,
                                               final boolean addExtensions,
                                               final boolean deleteInactive) {
         if (migrationType == MigrationType.PLAIN_OCFL) {
-            return new ArchiveGroupHandler(plainSessionFactory, migrationType, addExtensions, deleteInactive, USER);
+            return new ArchiveGroupHandler(plainSessionFactory, migrationType, addExtensions, deleteInactive, USER,
+                    "info:fedora/");
         } else {
-            return new ArchiveGroupHandler(sessionFactory, migrationType, addExtensions, deleteInactive, USER);
+            return new ArchiveGroupHandler(sessionFactory, migrationType, addExtensions, deleteInactive, USER,
+                    "info:fedora/");
         }
     }
 
@@ -1011,42 +1033,38 @@ public class ArchiveGroupHandlerTest {
         return mock;
     }
 
-    private String resourceId(final String pid) {
+    private String addPrefix(final String pid) {
         return FCREPO_ROOT + pid;
     }
 
-    private String resourceId(final String pid, final String dsId) {
-        return resourceId(pid) + "/" + dsId;
+    private String resourceId(final String ocflObjectId, final String dsId) {
+        return ocflObjectId + "/" + dsId;
     }
 
-    private String metadataId(final String pid, final String dsId) {
-        return resourceId(pid, dsId) + "/fcr:metadata";
+    private String metadataId(final String ocflObjectId, final String dsId) {
+        return resourceId(ocflObjectId, dsId) + "/fcr:metadata";
     }
 
-    private String metadataIdPlain(final String pid, final String dsId) {
-        return pid + "/" + dsId + "/fcr:metadata";
-    }
-
-    private void verifyFcrepoNotExists(final String pid) {
-        final var count = ocflRepo.describeVersion(ObjectVersionId.head(pid)).getFiles().stream()
+    private void verifyFcrepoNotExists(final String ocflObjectId) {
+        final var count = ocflRepo.describeVersion(ObjectVersionId.head(ocflObjectId)).getFiles().stream()
                 .map(FileDetails::getPath)
                 .filter(file -> file.startsWith(".fcrepo/"))
                 .count();
         assertEquals(0, count);
     }
 
-    private void verifyContentNotExists(final OcflObjectSession session, final String resourceId) {
-        try (final var content = session.readContent(resourceId)) {
+    private void verifyContentNotExists(final OcflObjectSession session, final String ocflObjectId) {
+        try (final var content = session.readContent(ocflObjectId)) {
             assertTrue("Content should not exist", content.getContentStream().isEmpty());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private void verifyResourceDeleted(final OcflObjectSession session, final String resourceId) {
-        final var headers = session.readHeaders(resourceId);
-        assertTrue("resource " + resourceId + " should be deleted", headers.isDeleted());
-        verifyContentNotExists(session, resourceId);
+    private void verifyResourceDeleted(final OcflObjectSession session, final String ocflObjectId) {
+        final var headers = session.readHeaders(ocflObjectId);
+        assertTrue("resource " + ocflObjectId + " should be deleted", headers.isDeleted());
+        verifyContentNotExists(session, ocflObjectId);
     }
 
 }

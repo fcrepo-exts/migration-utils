@@ -105,6 +105,10 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Type of OCFL objects to migrate to. Choices: FEDORA_OCFL | PLAIN_OCFL")
     private MigrationType migrationType;
 
+    @Option(names = {"--id-prefix"}, defaultValue = "info:fedora/", showDefaultValue = ALWAYS, order = 20,
+            description = "Prefix to add to PIDs for OCFL object IDs - defaults to info:fedora/, like Fedora3")
+    private String idPrefix;
+
     @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 21,
             description = "Limit number of objects to be processed.\n  Default: no limit")
     private int objectLimit;
@@ -120,7 +124,6 @@ public class PicocliMigrator implements Callable<Integer> {
     @Option(names = {"--pid-file", "-p"}, order = 24,
             description = "PID file listing which Fedora 3 objects to migrate")
     private File pidFile;
-
 
     @Option(names = {"--extensions", "-x"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 26,
             description = "Add file extensions to migrated datastreams based on mimetype recorded in FOXML")
@@ -275,7 +278,8 @@ public class PicocliMigrator implements Callable<Integer> {
                 ocflStagingDir.toPath(), migrationType, user, userUri, algorithm).getObject();
 
         final FedoraObjectVersionHandler archiveGroupHandler =
-                new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, user);
+                new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, user,
+                        idPrefix);
         final FedoraObjectHandler versionHandler = new VersionAbstractionFedoraObjectHandler(archiveGroupHandler);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 versionHandler);

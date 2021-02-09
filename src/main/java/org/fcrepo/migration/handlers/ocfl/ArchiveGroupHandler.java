@@ -97,6 +97,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final boolean deleteInactive;
     private final MigrationType migrationType;
     private final String user;
+    private final String idPrefix;
     private final Detector mimeDetector;
 
     /**
@@ -112,17 +113,21 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *        true if inactive objects and datastreams should be migrated as deleted
      * @param user
      *        the username to associated with the migrated resources
+     * @param idPrefix
+     *        the prefix to add to the Fedora 3 pid (default "info:fedora/", like Fedora 3)
      */
     public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
                                final MigrationType migrationType,
                                final boolean addDatastreamExtensions,
                                final boolean deleteInactive,
-                               final String user) {
+                               final String user,
+                               final String idPrefix) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
         this.addDatastreamExtensions = addDatastreamExtensions;
         this.deleteInactive = deleteInactive;
         this.user = Preconditions.checkNotNull(Strings.emptyToNull(user), "user cannot be blank");
+        this.idPrefix = idPrefix;
         try {
             this.mimeDetector = new TikaConfig().getDetector();
         } catch (Exception e) {
@@ -145,11 +150,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         for (var ov : versions) {
             if (ov.isFirstVersion()) {
                 objectId = ov.getObjectInfo().getPid();
-                if (migrationType == MigrationType.PLAIN_OCFL) {
-                    f6ObjectId = objectId;
-                } else {
-                    f6ObjectId = FCREPO_ROOT + objectId;
-                }
+                f6ObjectId = idPrefix + objectId;
                 objectState = getObjectState(ov);
             }
 
