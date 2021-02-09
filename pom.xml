@@ -29,6 +29,8 @@
     <javaee.xml.version>2.3.1</javaee.xml.version>
     <jaxb.core.version>2.3.0.1</jaxb.core.version>
     <jaxb.impl.version>2.3.1</jaxb.impl.version>
+    <woodstox.version>6.2.3</woodstox.version>
+    <xerces.version>2.12.1</xerces.version>
   </properties>
 
   <scm>
@@ -137,6 +139,16 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
       <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.woodstox</groupId>
+      <artifactId>woodstox-core</artifactId>
+      <version>${woodstox.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>${xerces.version}</version>
     </dependency>
     <!--  modules needed for Java 11 support EE modules. -->
     <dependency>

@@ -17,7 +17,6 @@ package org.fcrepo.migration.foxml;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -117,7 +116,7 @@ public class FoxmlDirectoryDFSIterator implements Iterator<FedoraObjectProcessor
             final File currentFile = current.remove(0);
             try {
                 return new FoxmlInputStreamFedoraObjectProcessor(
-                        new FileInputStream(currentFile), fetcher, resolver, localFedoraServer);
+                        currentFile, fetcher, resolver, localFedoraServer);
             } catch (final XMLStreamException e) {
                 throw new RuntimeException(currentFile.getPath() + " doesn't appear to be an XML file."
                         + (e.getMessage() != null ? "  (" + e.getMessage() + ")" : ""));

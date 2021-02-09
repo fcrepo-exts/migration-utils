@@ -16,6 +16,14 @@
 package org.fcrepo.migration.foxml;
 
 import org.apache.commons.codec.binary.Base64OutputStream;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.codehaus.stax2.XMLInputFactory2;
 import org.fcrepo.migration.ContentDigest;
 import org.fcrepo.migration.DatastreamInfo;
 import org.fcrepo.migration.DatastreamVersion;
@@ -28,34 +36,50 @@ import org.fcrepo.migration.ObjectReference;
 import org.fcrepo.migration.StreamingFedoraObjectHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * A FedoraObjectProcessor implementation that uses the STaX API to process
@@ -66,6 +90,9 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
     private static final Logger LOG = LoggerFactory.getLogger(FoxmlInputStreamFedoraObjectProcessor.class);
 
+    private static final Pattern INLINE_PATTERN = Pattern.compile("<foxml:xmlContent>(.*?)</foxml:xmlContent>",
+            Pattern.DOTALL);
+
     private static final String FOXML_NS = "info:fedora/fedora-system:def/foxml#";
 
     private URLFetcher fetcher;
@@ -74,13 +101,19 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
     private InternalIDResolver idResolver;
 
+    private File file;
+
     private InputStream stream;
 
     private XMLStreamReader reader;
 
+    private DocumentBuilder documentBuilder;
+
     private List<File> tempFiles;
 
     boolean isFedora2 = false;
+
+    private LinkedList<String> inlineXml;
 
     /**
      * The basic object information read from the XML stream at construction
@@ -90,22 +123,23 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
     /**
      * foxml input stream fedora object processor.
-     * @param is the input stream
+     * @param file the FOXML file
      * @param fetcher the fetcher
      * @param resolver the resolver
      * @param localFedoraServer the host and port (formatted like "localhost:8080") of the fedora 3 server
      *                          from which the content exposed by the "is" parameter comes.
      * @throws XMLStreamException xml stream exception
      */
-    public FoxmlInputStreamFedoraObjectProcessor(final InputStream is, final URLFetcher fetcher,
+    public FoxmlInputStreamFedoraObjectProcessor(final File file, final URLFetcher fetcher,
                                                  final InternalIDResolver resolver, final String localFedoraServer)
-            throws XMLStreamException {
+            throws XMLStreamException, FileNotFoundException {
+        this.file = file;
         this.fetcher = fetcher;
         this.idResolver = resolver;
         this.localFedoraServer = localFedoraServer;
         final XMLInputFactory factory = XMLInputFactory.newFactory();
-        stream = is;
-        reader = factory.createXMLStreamReader(is);
+        stream = new BufferedInputStream(new FileInputStream(file));
+        reader = factory.createXMLStreamReader(stream);
         reader.nextTag();
         final Map<String, String> attributes = getAttributes(reader, "PID", "VERSION", "FEDORA_URI", "schemaLocation");
         if (attributes.get("VERSION") == null || !attributes.get("VERSION").equals("1.1")) {
@@ -116,6 +150,26 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         }
 
         tempFiles = new ArrayList<File>();
+
+        final var builderFactory = DocumentBuilderFactory.newInstance();
+        builderFactory.setNamespaceAware(true);
+        builderFactory.setIgnoringComments(false);
+        try {
+            documentBuilder = builderFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            inlineXml = new LinkedList<>();
+            final var content = FileUtils.readFileToString(file);
+            final var matcher = INLINE_PATTERN.matcher(content);
+            while (matcher.find()) {
+                inlineXml.add(matcher.group(1));
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
@@ -141,7 +195,8 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                             && reader.getNamespaceURI().equals(FOXML_NS)) {
                         dsInfo = new Foxml11DatastreamInfo(objectInfo, reader);
                     } else if (reader.getLocalName().equals("datastreamVersion")) {
-                        final DatastreamVersion v = new Foxml11DatastreamVersion(dsInfo, reader);
+                        final var v = new Foxml11DatastreamVersion(dsInfo, reader);
+                        v.validateInlineXml();
                         handler.processDatastreamVersion(v);
                     } else if (reader.getLocalName().equals("disseminator") && isFedora2) {
                         readUntilClosed("disseminator", FOXML_NS);
@@ -300,6 +355,7 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         private long size;
         private ContentDigest contentDigest;
         private CachedContent dsContent;
+        private boolean isInlineXml = false;
 
         /**
          * foxml datastream version.
@@ -338,25 +394,9 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                         // context, so write it out as a complete XML
                         // file...
                         reader.next();
-                        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        final XMLEventReader eventReader = XMLInputFactory.newFactory().createXMLEventReader(reader);
-                        final XMLEventWriter eventWriter = XMLOutputFactory.newFactory().createXMLEventWriter(baos);
-                        while (eventReader.hasNext()) {
-                            final XMLEvent event = eventReader.nextEvent();
-                            if (event.isEndElement()
-                                    && event.asEndElement().getName().getLocalPart().equals("xmlContent")
-                                    && event.asEndElement().getName().getNamespaceURI().equals(FOXML_NS)) {
-                                eventWriter.close();
-                                break;
-                            } else {
-                                eventWriter.add(event);
-                            }
-                        }
-                        try {
-                            dsContent = new MemoryCachedContent(new String(baos.toByteArray(), "UTF-8"));
-                        } catch (final UnsupportedEncodingException e) {
-                            throw new RuntimeException(e);
-                        }
+
+                        isInlineXml = true;
+                        dsContent = new MemoryCachedContent(extractInlineXml());
                     } else if (localName.equals("contentLocation")) {
                         final Map<String, String> attributes = getAttributes(reader, "REF", "TYPE");
                         if (attributes.get("TYPE").equals("INTERNAL_ID")) {
@@ -405,6 +445,92 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
         }
 
+        private String extractInlineXml() throws XMLStreamException {
+            final XMLEventReader eventReader = XMLInputFactory2.newFactory().createXMLEventReader(reader);
+            while (eventReader.hasNext()) {
+                final XMLEvent event = eventReader.nextEvent();
+                if (event.isEndElement()
+                        && event.asEndElement().getName().getLocalPart().equals("xmlContent")
+                        && event.asEndElement().getName().getNamespaceURI().equals(FOXML_NS)) {
+                    break;
+                }
+            }
+
+            return inlineXml.removeFirst();
+        }
+
+        private void validateInlineXml() {
+            if (isInlineXml && contentDigest != null && StringUtils.isNotBlank(contentDigest.getDigest())) {
+                final var transformedXml = transformInlineXmlForChecksum();
+                final var digest = DigestUtils.getDigest(contentDigest.getType());
+                final var digestBytes = DigestUtils.digest(digest, transformedXml);
+                final var digestHex = Hex.encodeHexString(digestBytes);
+
+                if (!digestHex.equalsIgnoreCase(contentDigest.getDigest())) {
+                    throw new RuntimeException(String.format(
+                            "Inline XML %s %s failed checksum validation. Expected %s: %s; Actual: %s",
+                            dsInfo.getObjectInfo().getPid(), dsInfo.getDatastreamId(),
+                            contentDigest.getType(), contentDigest.getDigest(), digestHex));
+                }
+            }
+        }
+
+        /**
+         * This code is based on: https://github.com/fcrepo3/fcrepo-historical/blob/
+         * e8a3be191cce6bbf8f55cd02bf1d52ac53425146/fcrepo-server/src/main/java/fedora/server/storage/types/
+         * DatastreamXMLMetadata.java#L92
+         *
+         * This code MUST use these deprecated classes in order to generate the XML attributes in the expected order.
+         *
+         * @return the xml in the format Fedora 3 used to calculate digests
+         */
+        private byte[] transformInlineXmlForChecksum() {
+            try {
+                // This MUST be done or else Windows will refuse to use the correct encoding!!! :( :( :(
+                final var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                        + IOUtils.toString(dsContent.getInputStream(), StandardCharsets.UTF_8);
+
+                final var isReader = new InputStreamReader(IOUtils.toInputStream(xml), StandardCharsets.UTF_8);
+                final var source = new InputSource(isReader);
+                source.setEncoding("UTF-8");
+
+                final Document doc = documentBuilder.parse(source);
+
+                final OutputFormat fmt = new OutputFormat("XML", "UTF-8", false);
+                // indent == 0 means add no indenting
+                fmt.setIndent(0);
+                // default line width is 72, but only applies when indenting
+                fmt.setLineWidth(0);
+                fmt.setPreserveSpace(false);
+
+                final StringWriter out = new StringWriter();
+                final XMLSerializer ser = new XMLSerializer(out, fmt);
+                ser.serialize(doc);
+                out.close();
+
+                final var baos = new ByteArrayOutputStream();
+                final var br = new BufferedReader(new StringReader(out.toString()));
+                String line;
+                final PrintWriter outStream = new PrintWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8));
+                while ((line = br.readLine()) != null) {
+                    line = line.trim();
+                    outStream.append(line);
+                }
+                outStream.close();
+
+                return baos.toByteArray();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            } catch (SAXException e) {
+                try {
+                    LOG.error("Malformed inline XML: {}", IOUtils.toString(dsContent.getInputStream()));
+                } catch (IOException e2) {
+                    // swallow
+                }
+                throw new RuntimeException(e);
+            }
+        }
+
         @Override
         public DatastreamInfo getDatastreamInfo() {
             return dsInfo;
@@ -447,6 +573,10 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
         @Override
         public ContentDigest getContentDigest() {
+            // The digests for inline xml do not match what is stored in the FOXML and should not be returned here.
+            if (isInlineXml) {
+                return null;
+            }
             return contentDigest;
         }
 

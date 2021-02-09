@@ -10,7 +10,7 @@
     </bean>
 
     <bean id="simpleObjectSource" class="org.fcrepo.migration.Example1TestSuite.SimpleObjectSource">
-        <constructor-arg name="path" value="exported/example1-foxml.xml" />
+        <constructor-arg name="path" value="src/test/resources/exported/example1-foxml.xml" />
         <constructor-arg name="f" ref="dummyFetcher" />
         <constructor-arg name="resolver" ref="dummyIDResolver" />
     </bean>
