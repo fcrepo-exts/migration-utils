@@ -124,8 +124,8 @@ public class PicocliIT {
         cmd.execute(args);
 
         //verify that the correct storage layout was used - encapsulation directory is the encoded object id
-        assertTrue(Files.list(targetDir.resolve("750").resolve("677").resolve("e9b"))
-                .anyMatch(f -> f.endsWith("example%3a1")));
+        assertTrue(Files.list(targetDir.resolve("5b5").resolve("62d").resolve("d69"))
+                .anyMatch(f -> f.endsWith("info%3afedora%2fexample%3a1")));
     }
 
     @Test
