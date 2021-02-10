@@ -10,9 +10,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.wisc.library.ocfl.api.model.ObjectVersionId;
+import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -170,6 +173,43 @@ public class PicocliIT {
         //verify that the correct storage layout was used - encapsulation directory is the encoded object id
         assertTrue(Files.list(targetDir.resolve("750").resolve("677").resolve("e9b"))
                 .anyMatch(f -> f.endsWith("example%3a1")));
+    }
+
+    @Test
+    public void testMigrateFoxmlFileInsteadOfPropertyFiles() throws Exception {
+        final Path targetDir = tmpDir.resolve("target");
+        final Path workingDir = tmpDir.resolve("working");
+        final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
+                "--source-type", "LEGACY", "--migration-type", "PLAIN_OCFL",
+                "--datastreams-dir", "src/test/resources/legacyFS/datastreams/2015/0430/16/01",
+                "--objects-dir", "src/test/resources/legacyFS/objects/2015/0430/16/01",
+                "--id-prefix", "", "--foxml-file"};
+        final PicocliMigrator migrator = new PicocliMigrator();
+        final CommandLine cmd = new CommandLine(migrator);
+        cmd.execute(args);
+
+        final Path baseDir = targetDir.resolve("750").resolve("677").resolve("e9b")
+                .resolve("750677e9b953845ba5069d27a3775fbced186987fd0f4a8c968ac457a7d415a8");
+        final File inventory = baseDir.resolve("inventory.json").toFile();
+        assertTrue(inventory.exists());
+        final var ocflRepo =  new OcflRepositoryBuilder()
+                .defaultLayoutConfig(new HashedNTupleLayoutConfig())
+                .storage(FileSystemOcflStorage.builder().repositoryRoot(targetDir).build())
+                .workDir(workingDir)
+                .build();
+        final var object = ocflRepo.getObject(ObjectVersionId.head("example:1"));
+        final ArrayList<String> files = new ArrayList<String>();
+        for (final var file: object.getFiles()) {
+            files.add(file.getPath());
+        }
+        final var expectedFiles = new ArrayList<String>();
+        expectedFiles.add("AUDIT");
+        expectedFiles.add("DS2");
+        expectedFiles.add("DS1");
+        expectedFiles.add("DS4");
+        expectedFiles.add("DS3");
+        expectedFiles.add("DC");
+        assertEquals(expectedFiles, files);
     }
 
     @Test

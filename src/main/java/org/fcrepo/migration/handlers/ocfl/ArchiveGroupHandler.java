@@ -96,6 +96,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final OcflObjectSessionFactory sessionFactory;
     private final boolean addDatastreamExtensions;
     private final boolean deleteInactive;
+    private final boolean foxmlFile;
     private final MigrationType migrationType;
     private final String user;
     private final String idPrefix;
@@ -112,6 +113,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *        true if datastreams should be written with file extensions
      * @param deleteInactive
      *        true if inactive objects and datastreams should be migrated as deleted
+     * @param foxmlFile
+     *        true if foxml file should be migrated as a whole file, instead of creating property files
      * @param user
      *        the username to associated with the migrated resources
      * @param idPrefix
@@ -121,12 +124,14 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final MigrationType migrationType,
                                final boolean addDatastreamExtensions,
                                final boolean deleteInactive,
+                               final boolean foxmlFile,
                                final String user,
                                final String idPrefix) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
         this.addDatastreamExtensions = addDatastreamExtensions;
         this.deleteInactive = deleteInactive;
+        this.foxmlFile = foxmlFile;
         this.user = Preconditions.checkNotNull(Strings.emptyToNull(user), "user cannot be blank");
         this.idPrefix = idPrefix;
         try {
@@ -158,7 +163,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
 
             // Object properties are written only once (as fcrepo3 object properties were unversioned).
-            if (ov.isFirstVersion()) {
+            if (ov.isFirstVersion() && !foxmlFile) {
                 writeObjectFiles(f6ObjectId, ov, session);
             }
 
@@ -193,7 +198,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     }
                 }
 
-                writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
+                if (!foxmlFile) {
+                    writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
+                }
             }
 
             LOGGER.debug("Committing object <{}>", f6ObjectId);

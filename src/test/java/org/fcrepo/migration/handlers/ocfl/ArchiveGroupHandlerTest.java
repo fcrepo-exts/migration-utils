@@ -939,10 +939,10 @@ public class ArchiveGroupHandlerTest {
                                               final boolean addExtensions,
                                               final boolean deleteInactive) {
         if (migrationType == MigrationType.PLAIN_OCFL) {
-            return new ArchiveGroupHandler(plainSessionFactory, migrationType, addExtensions, deleteInactive, USER,
-                    "info:fedora/");
+            return new ArchiveGroupHandler(plainSessionFactory, migrationType, addExtensions, deleteInactive,
+                    false, USER,"info:fedora/");
         } else {
-            return new ArchiveGroupHandler(sessionFactory, migrationType, addExtensions, deleteInactive, USER,
+            return new ArchiveGroupHandler(sessionFactory, migrationType, addExtensions, deleteInactive, false, USER,
                     "info:fedora/");
         }
     }
