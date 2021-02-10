@@ -793,7 +793,7 @@ public class ArchiveGroupHandlerTest {
         try (final var content = session.readContent(metadataId(ocflObjectId, dsId), versionNumber)) {
             final var headers = content.getHeaders();
             assertEquals(ResourceHeadersVersion.V1_0, headers.getHeadersVersion());
-            assertEquals(medadataId(ocflObjectId, dsId), headers.getId());
+            assertEquals(metadataId(ocflObjectId, dsId), headers.getId());
             assertEquals(resourceId(ocflObjectId, dsId), headers.getParent());
             assertEquals(ocflObjectId, headers.getArchivalGroupId());
             assertEquals(InteractionModel.NON_RDF_DESCRIPTION.getUri(), headers.getInteractionModel());
