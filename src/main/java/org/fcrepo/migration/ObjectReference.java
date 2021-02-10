@@ -47,10 +47,4 @@ public interface ObjectReference {
      * @return a list of datastream versions ordered from oldest to newest.
      */
     public List<DatastreamVersion> getDatastreamVersions(String datastreamId);
-
-    /**
-     * @return true if the underlying object had a Fedora2-style disseminator
-     *         that was lost in the migration.
-     */
-    public boolean hadFedora2Disseminators();
 }
