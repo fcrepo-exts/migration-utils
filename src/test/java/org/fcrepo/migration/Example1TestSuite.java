@@ -258,11 +258,6 @@ public abstract class Example1TestSuite {
         }
 
         @Override
-        public void processDisseminator() {
-            // do nothing
-        }
-
-        @Override
         public void completeObject(final ObjectInfo object) {
 
         }

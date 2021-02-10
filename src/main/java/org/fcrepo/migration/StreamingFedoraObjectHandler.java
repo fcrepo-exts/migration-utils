@@ -48,11 +48,6 @@ public interface StreamingFedoraObjectHandler {
     public void processDatastreamVersion(DatastreamVersion dsVersion);
 
     /**
-     * Invoked when a "disseminator" element is found in the object (Fedora 2 objects only).
-     */
-    public void processDisseminator();
-
-    /**
      * A hook called after the object has been completely processed.  This may be useful for any cleanup or
      * finalization routines.  Furthermore, once this method invocation is complete, any references
      * provided to prior calls will no longer be in scope.

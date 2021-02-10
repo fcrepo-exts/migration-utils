@@ -111,8 +111,6 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
     private List<File> tempFiles;
 
-    boolean isFedora2 = false;
-
     private LinkedList<String> inlineXml;
 
     /**
@@ -142,9 +140,6 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         reader = factory.createXMLStreamReader(stream);
         reader.nextTag();
         final Map<String, String> attributes = getAttributes(reader, "PID", "VERSION", "FEDORA_URI", "schemaLocation");
-        if (attributes.get("VERSION") == null || !attributes.get("VERSION").equals("1.1")) {
-            isFedora2 = true;
-        }
         objectInfo = new DefaultObjectInfo(attributes.get("PID"), attributes.get("FEDORA_URI"));
         while (reader.next() == XMLStreamConstants.CHARACTERS) {
         }
@@ -198,9 +193,6 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                         final var v = new Foxml11DatastreamVersion(dsInfo, reader);
                         v.validateInlineXml();
                         handler.processDatastreamVersion(v);
-                    } else if (reader.getLocalName().equals("disseminator") && isFedora2) {
-                        readUntilClosed("disseminator", FOXML_NS);
-                        handler.processDisseminator();
                     } else {
                         throw new RuntimeException("Unexpected element! \"" + reader.getLocalName() + "\"!");
                     }
@@ -260,17 +252,6 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         final Unmarshaller unmarshaller = jc.createUnmarshaller();
         final JAXBElement<FoxmlObjectProperties> p = unmarshaller.unmarshal(reader, FoxmlObjectProperties.class);
         final FoxmlObjectProperties properties = p.getValue();
-        if (isFedora2) {
-            // Fedora 2 uses the rdf:type property with a literal value to differentiate between
-            // objects, behavior mechanism objects and behavior definition objects.  That literal
-            // cannot be retained as an rdf type in fedora4, nor can we use the generic mapping
-            // to map it, so we convert it to a dcterms:type right here.
-            for (FoxmlObjectProperty prop : properties.properties) {
-                if (prop.getName().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
-                    prop.name = "http://purl.org/dc/terms/type";
-                }
-            }
-        }
         return properties;
     }
 

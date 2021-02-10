@@ -48,8 +48,6 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
 
     private Map<String, List<DatastreamVersion>> dsIdToVersionListMap;
 
-    private int disseminatorsSkipped = 0;
-
     /**
      * the object abstraction streaming fedora object handler.
      * @param versionHandler the fedora object version handler
@@ -82,96 +80,15 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
     }
 
     @Override
-    public void processDisseminator() {
-        disseminatorsSkipped ++;
-    }
-
-    @Override
     public void completeObject(final ObjectInfo object) {
-        final var objectReference = new ObjectReference() {
-            @Override
-            public ObjectInfo getObjectInfo() {
-                return objectInfo;
-            }
-
-            @Override
-            public ObjectProperties getObjectProperties() {
-                return objectProperties;
-            }
-
-            @Override
-            public List<String> listDatastreamIds() {
-                return dsIds;
-            }
-
-            @Override
-            public List<DatastreamVersion> getDatastreamVersions(final String datastreamId) {
-                return dsIdToVersionListMap.get(datastreamId);
-            }
-
-            @Override
-            public boolean hadFedora2Disseminators() {
-                return disseminatorsSkipped > 0;
-            }
-        };
+        final var objectReference = getObjectReference();
         try {
-            final Map<String, List<DatastreamVersion>> versionMap = buildVersionMap(objectReference);
+            final Map<String, List<DatastreamVersion>> versionMap = buildVersionMap();
             final List<String> versionDates = new ArrayList<String>(versionMap.keySet());
             Collections.sort(versionDates);
             final List<ObjectVersionReference> versions = new ArrayList<ObjectVersionReference>();
             for (final String versionDate : versionDates) {
-                versions.add(new ObjectVersionReference() {
-                    @Override
-                    public ObjectReference getObject() {
-                        return objectReference;
-                    }
-
-                    @Override
-                    public ObjectInfo getObjectInfo() {
-                        return objectReference.getObjectInfo();
-                    }
-
-                    @Override
-                    public ObjectProperties getObjectProperties() {
-                        return objectReference.getObjectProperties();
-                    }
-
-                    @Override
-                    public String getVersionDate() {
-                        return versionDate;
-                    }
-
-                    @Override
-                    public List<DatastreamVersion> listChangedDatastreams() {
-                        return versionMap.get(versionDate);
-                    }
-
-                    @Override
-                    public boolean isLastVersion() {
-                        return versionDates.get(versionDates.size() - 1).equals(versionDate);
-                    }
-
-                    @Override
-                    public boolean isFirstVersion() {
-                        return versionDates.get(0).equals(versionDate);
-                    }
-
-                    @Override
-                    public int getVersionIndex() {
-                        return versionDates.indexOf(versionDate);
-                    }
-
-                    @Override
-                    public boolean wasDatastreamChanged(final String dsId) {
-                        for (final DatastreamVersion v : listChangedDatastreams()) {
-                            if (v.getDatastreamInfo().getDatastreamId().equals(dsId)) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-
-                });
+                versions.add(getObjectVersionReference(versionDate, versionDates, objectReference, versionMap));
             }
             versionHandler.processObjectVersions(versions);
         } finally {
@@ -193,10 +110,10 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
         this.dsIdToVersionListMap.clear();
     }
 
-    private Map<String, List<DatastreamVersion>> buildVersionMap(final ObjectReference object) {
+    private Map<String, List<DatastreamVersion>> buildVersionMap() {
         final Map<String, List<DatastreamVersion>> versionMap = new HashMap<String, List<DatastreamVersion>>();
-        for (final String dsId : object.listDatastreamIds()) {
-            for (final DatastreamVersion v : object.getDatastreamVersions(dsId)) {
+        for (final String dsId : dsIds) {
+            for (final DatastreamVersion v : dsIdToVersionListMap.get(dsId)) {
                 final String date = v.getCreated();
                 List<DatastreamVersion> versionsForDate = versionMap.get(date);
                 if (versionsForDate == null) {
@@ -207,5 +124,85 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
             }
         }
         return versionMap;
+    }
+
+    private ObjectReference getObjectReference() {
+        return new ObjectReference() {
+            @Override
+            public ObjectInfo getObjectInfo() {
+                return objectInfo;
+            }
+
+            @Override
+            public ObjectProperties getObjectProperties() {
+                return objectProperties;
+            }
+
+            @Override
+            public List<String> listDatastreamIds() {
+                return dsIds;
+            }
+
+            @Override
+            public List<DatastreamVersion> getDatastreamVersions(final String datastreamId) {
+                return dsIdToVersionListMap.get(datastreamId);
+            }
+        };
+    }
+
+    private ObjectVersionReference getObjectVersionReference(final String versionDate, final List<String> versionDates,
+                                                             final ObjectReference objectReference,
+                                                             final Map<String, List<DatastreamVersion>> versionMap) {
+        return new ObjectVersionReference() {
+            @Override
+            public ObjectReference getObject() {
+                return objectReference;
+            }
+
+            @Override
+            public ObjectInfo getObjectInfo() {
+                return objectInfo;
+            }
+
+            @Override
+            public ObjectProperties getObjectProperties() {
+                return objectProperties;
+            }
+
+            @Override
+            public String getVersionDate() {
+                return versionDate;
+            }
+
+            @Override
+            public List<DatastreamVersion> listChangedDatastreams() {
+                return versionMap.get(versionDate);
+            }
+
+            @Override
+            public boolean isLastVersion() {
+                return versionDates.get(versionDates.size() - 1).equals(versionDate);
+            }
+
+            @Override
+            public boolean isFirstVersion() {
+                return versionDates.get(0).equals(versionDate);
+            }
+
+            @Override
+            public int getVersionIndex() {
+                return versionDates.indexOf(versionDate);
+            }
+
+            @Override
+            public boolean wasDatastreamChanged(final String dsId) {
+                for (final DatastreamVersion v : listChangedDatastreams()) {
+                    if (v.getDatastreamInfo().getDatastreamId().equals(dsId)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
     }
 }
