@@ -85,11 +85,7 @@
     </bean>  
 
     <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">
-        <constructor-arg ref="versionAbstraction"/>
-    </bean>
-
-    <bean id="versionAbstraction" class="org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler">
-        <constructor-arg ref="${migration.strategy:ldpFull}"/>
+        <constructor-arg ref="ldpFull"/>
     </bean>
 
     <!-- Full LDP migration impl -->
