@@ -31,7 +31,6 @@ import org.fcrepo.migration.foxml.InternalIDResolver;
 import org.fcrepo.migration.foxml.LegacyFSIDResolver;
 import org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler;
-import org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler;
 import org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler;
 import org.fcrepo.migration.pidlist.PidListManager;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
@@ -287,9 +286,8 @@ public class PicocliMigrator implements Callable<Integer> {
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, user,
                         idPrefix);
-        final FedoraObjectHandler versionHandler = new VersionAbstractionFedoraObjectHandler(archiveGroupHandler);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
-                versionHandler);
+                archiveGroupHandler);
 
         // PID-list-managers
         // - Resume PID manager: the second arg is "acceptAll". If resuming, we do not "acceptAll")

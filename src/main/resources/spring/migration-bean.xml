@@ -50,20 +50,8 @@
 
     <!-- This one provdes a whole-object abstraction to the handler as its single parameter. -->
     <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">
-        <constructor-arg ref="versionAbstraction"/>
-    </bean>
-
-
-
-    <!-- Whole-Object OBJECT HANDLERS: chain one of these to objectAbstraction above. -->
-
-    <bean id="versionAbstraction" class="org.fcrepo.migration.handlers.VersionAbstractionFedoraObjectHandler">
         <constructor-arg ref="basicMigration"/>
     </bean>
-
-    <!-- ...have your own object-level custom handler??? Add it here and use it above! -->
-
-
 
     <!-- Version-level OBJECT HANDLERS: chain one of these to the versionAbstraction above. -->
 
