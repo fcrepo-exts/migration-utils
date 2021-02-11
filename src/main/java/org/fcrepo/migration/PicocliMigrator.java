@@ -73,6 +73,8 @@ public class PicocliMigrator implements Callable<Integer> {
         }
     }
 
+    private final String DEFAULT_PREFIX = "info:fedora/";
+
     @Option(names = {"--source-type", "-t"}, required = true, order = 1,
             description = "Fedora 3 source type. Choices: akubra | legacy | exported")
     private F3SourceTypes f3SourceType;
@@ -105,8 +107,9 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Type of OCFL objects to migrate to. Choices: FEDORA_OCFL | PLAIN_OCFL")
     private MigrationType migrationType;
 
-    @Option(names = {"--id-prefix"}, defaultValue = "info:fedora/", showDefaultValue = ALWAYS, order = 20,
-            description = "Prefix to add to PIDs for OCFL object IDs - defaults to info:fedora/, like Fedora3")
+    @Option(names = {"--id-prefix"}, defaultValue = DEFAULT_PREFIX, showDefaultValue = ALWAYS, order = 20,
+            description = "Only use this for PLAIN_OCFL migrations: Prefix to add to PIDs for OCFL object IDs"
+                + " - defaults to info:fedora/, like Fedora3")
     private String idPrefix;
 
     @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 21,
@@ -198,6 +201,10 @@ public class PicocliMigrator implements Callable<Integer> {
         // Set debug log level if requested
         if (debug) {
             setDebugLogLevel();
+        }
+
+        if (migrationType == MigrationType.FEDORA_OCFL && !idPrefix.equals(DEFAULT_PREFIX)) {
+            throw new IllegalArgumentException("Can't change the ID Prefix for FEDORA_OCFL migrations");
         }
 
         if (!digestAlgorithm.equals("sha512") && !digestAlgorithm.equalsIgnoreCase("sha256")) {
