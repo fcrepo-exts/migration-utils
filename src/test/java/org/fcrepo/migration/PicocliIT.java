@@ -83,28 +83,6 @@ public class PicocliIT {
         final PicocliMigrator migrator = new PicocliMigrator();
         final CommandLine cmd = new CommandLine(migrator);
 
-        cmd.execute(args);
-        assertTrue(Files.list(targetDir).anyMatch(element -> element.endsWith("0=ocfl_1.0")));
-        final Path baseDir = targetDir.resolve("750").resolve("677").resolve("e9b")
-                .resolve("750677e9b953845ba5069d27a3775fbced186987fd0f4a8c968ac457a7d415a8");
-        final File inventory = baseDir.resolve("inventory.json").toFile();
-        assertTrue(inventory.exists());
-        assertTrue(Files.list(workingDir).anyMatch(element -> element.endsWith("index")));
-        assertTrue(Files.list(workingDir).anyMatch(element -> element.endsWith("pid")));
-    }
-
-    @Test
-    public void testPlainOcflEmptyIdPrefix() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
-        final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
-                "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
-                "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
-                "--objects-dir", "src/test/resources/legacyFS/objects/2015/0430/16/01",
-                "--id-prefix", ""};
-        final PicocliMigrator migrator = new PicocliMigrator();
-        final CommandLine cmd = new CommandLine(migrator);
-
         final int result = cmd.execute(args);
         assertEquals(0, result);
         assertTrue(Files.list(targetDir).anyMatch(element -> element.endsWith("0=ocfl_1.0")));
