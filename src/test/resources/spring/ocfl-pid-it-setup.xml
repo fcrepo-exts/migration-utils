@@ -91,7 +91,7 @@
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />
 
 
-    <!-- The fedora 2 or 3 server migrated content is coming from -->
+    <!-- The fedora 3 server migrated content is coming from -->
     <bean id="localFedoraServer" class="java.lang.String">
         <constructor-arg value="localhost:8080" />
     </bean>

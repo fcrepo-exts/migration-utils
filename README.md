@@ -3,7 +3,7 @@ A framework to support migration of data from Fedora 3 to Fedora 6 repositories
 
 ## Overview
 
-This utility iterates the foxml files of a fedora 2 or 3 repository, and creates a Fedora 6 compliant OCFL [Oxford Common File Layout](https://ocfl.io)
+This utility iterates the foxml files of a fedora 3 repository, and creates a Fedora 6 compliant OCFL [Oxford Common File Layout](https://ocfl.io)
 
 Migrations to Fedora 6 write migrated objects directly to the filesystem as [OCFL](https://ocfl.io/draft/spec/)
 objects.  
@@ -92,7 +92,7 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
 
 ### PID migration selection
 
-The default migration configuration will migrate all of the Fedora 2/3 objects found in the source. Subsequent runs will simply re-migrate all of those objects.
+The default migration configuration will migrate all of the Fedora 3 objects found in the source. Subsequent runs will simply re-migrate all of those objects.
 However, there are circumstances when it is preferred that only a subset of all source objects be migrated.
 There are three means by which a subset of objects may be selected for migration (noting that these means may also be combined).
 * *Limit*: When setting the `limit` configuration (detailed above), the migration will be performed on first X-number of objects specified by the value of `limit`.

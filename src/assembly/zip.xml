@@ -42,10 +42,6 @@
       <directory>${project.basedir}/src/test/resources/legacyFS</directory>
       <outputDirectory>src/test/resources/legacyFS</outputDirectory>
     </fileSet>
-    <fileSet>
-      <directory>${project.basedir}/src/test/resources/fedora2</directory>
-      <outputDirectory>src/test/resources/fedora2</outputDirectory>
-    </fileSet>
   </fileSets>
 
 </assembly>
