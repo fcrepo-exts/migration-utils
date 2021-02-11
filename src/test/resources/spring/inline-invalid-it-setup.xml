@@ -59,6 +59,7 @@
         <constructor-arg name="addDatastreamExtensions" value="false" />
         <constructor-arg name="deleteInactive" value="false" />
         <constructor-arg name="user" value="fedoraAdmin" />
+        <constructor-arg name="idPrefix" value="info:fedora/" />
     </bean>
 
     <bean id="ocflSessionFactory" class="org.fcrepo.migration.OcflSessionFactoryFactoryBean">
