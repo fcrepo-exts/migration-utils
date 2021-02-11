@@ -143,7 +143,7 @@
         <constructor-arg value="${fedora.to.baseuri:http://localhost:${fcrepo.dynamic.test.port:8080}/rest/}" />
     </bean>
 
-    <!-- The fedora 2 or 3 server migrated content is coming from -->
+    <!-- The fedora 3 server migrated content is coming from -->
     <bean id="localFedoraServer" class="java.lang.String">
         <constructor-arg value="${fedora.from.server:localhost:8080}" />
     </bean>
