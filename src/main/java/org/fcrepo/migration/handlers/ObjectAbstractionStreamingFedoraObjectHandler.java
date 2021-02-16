@@ -139,11 +139,6 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
             }
 
             @Override
-            public List<String> listDatastreamIds() {
-                return dsIds;
-            }
-
-            @Override
             public List<DatastreamVersion> getDatastreamVersions(final String datastreamId) {
                 return dsIdToVersionListMap.get(datastreamId);
             }

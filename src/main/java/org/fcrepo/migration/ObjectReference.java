@@ -35,12 +35,6 @@ public interface ObjectReference {
     public ObjectProperties getObjectProperties();
 
     /**
-     * Lists all datastream ids.
-     * @return all datastream ids
-     */
-    public List<String> listDatastreamIds();
-
-    /**
      * Gets all versions of the datastream with the given id, from oldest to newest.
      * @param datastreamId the id (a value returned from listDatastreams()) of the
      *                     datastream whose versions are being requested.
