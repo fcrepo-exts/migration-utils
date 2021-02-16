@@ -581,13 +581,6 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                     obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
             return datastreams.indexOf(this) == 0;
         }
-
-        @Override
-        public boolean isLastVersionIn(final ObjectReference obj) {
-            final List<DatastreamVersion> datastreams =
-                    obj.getDatastreamVersions(getDatastreamInfo().getDatastreamId());
-            return datastreams.indexOf(this) == datastreams.size() - 1;
-        }
     }
 
     private static Map<String, String> getAttributes(final XMLStreamReader r,

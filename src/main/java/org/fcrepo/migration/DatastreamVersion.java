@@ -119,13 +119,4 @@ public interface DatastreamVersion {
      * @return  True if this is the first version, false otherwise.
      */
     public boolean isFirstVersionIn(ObjectReference obj);
-
-    /**
-     * Determines if this is the last version of a datastream.
-     *
-     * @param obj to be tested whether is last version
-     *
-     * @return  True if this is the last version, false otherwise.
-     */
-    public boolean isLastVersionIn(ObjectReference obj);
 }
