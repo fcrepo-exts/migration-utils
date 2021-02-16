@@ -290,7 +290,6 @@ public class PicocliMigrator implements Callable<Integer> {
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, foxmlFile,
                         user, idPrefix);
-        final FedoraObjectHandler versionHandler = new VersionAbstractionFedoraObjectHandler(archiveGroupHandler);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 archiveGroupHandler);
 
