@@ -15,6 +15,8 @@
  */
 package org.fcrepo.migration;
 
+import java.nio.file.Path;
+
 /**
  * A default implementation of ObjectInfo that accepts
  * values at construction time.
@@ -23,17 +25,19 @@ package org.fcrepo.migration;
 public class DefaultObjectInfo implements ObjectInfo {
 
     private String pid;
-
     private String uri;
+    private Path foxmlPath;
 
     /**
      * the default object info
      * @param pid the pid
      * @param uri the uri
+     * @param foxmlPath path to the foxml file
      */
-    public DefaultObjectInfo(final String pid, final String uri) {
+    public DefaultObjectInfo(final String pid, final String uri, final Path foxmlPath) {
         this.pid = pid;
         this.uri = uri;
+        this.foxmlPath = foxmlPath;
     }
 
     @Override
@@ -46,4 +50,8 @@ public class DefaultObjectInfo implements ObjectInfo {
         return uri;
     }
 
+    @Override
+    public Path getFoxmlPath() {
+        return foxmlPath;
+    }
 }

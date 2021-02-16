@@ -15,6 +15,8 @@
  */
 package org.fcrepo.migration;
 
+import java.nio.file.Path;
+
 /**
  * An interface defining access to the high level identifying information
  * about a fedora 3 object.
@@ -33,4 +35,5 @@ public interface ObjectInfo {
      */
     public String getFedoraURI();
 
+    public Path getFoxmlPath();
 }

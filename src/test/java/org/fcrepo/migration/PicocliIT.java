@@ -204,6 +204,7 @@ public class PicocliIT {
         }
         final var expectedFiles = new ArrayList<String>();
         expectedFiles.add("AUDIT");
+        expectedFiles.add("FOXML");
         expectedFiles.add("DS2");
         expectedFiles.add("DS1");
         expectedFiles.add("DS4");

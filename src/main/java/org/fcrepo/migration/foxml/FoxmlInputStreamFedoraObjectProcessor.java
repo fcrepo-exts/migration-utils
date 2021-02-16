@@ -140,7 +140,7 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         reader = factory.createXMLStreamReader(stream);
         reader.nextTag();
         final Map<String, String> attributes = getAttributes(reader, "PID", "VERSION", "FEDORA_URI", "schemaLocation");
-        objectInfo = new DefaultObjectInfo(attributes.get("PID"), attributes.get("FEDORA_URI"));
+        objectInfo = new DefaultObjectInfo(attributes.get("PID"), attributes.get("FEDORA_URI"), this.file.toPath());
         while (reader.next() == XMLStreamConstants.CHARACTERS) {
         }
 

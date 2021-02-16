@@ -34,6 +34,7 @@ import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectVersionReference;
+import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -142,10 +144,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     }
 
     @Override
-    public void processObjectVersions(final Iterable<ObjectVersionReference> versions) {
+    public void processObjectVersions(final Iterable<ObjectVersionReference> versions, final ObjectInfo objectInfo) {
         // We use the PID to identify the OCFL object
-        String objectId = null;
-        String f6ObjectId = null;
+        final String objectId = objectInfo.getPid();
+        final String f6ObjectId = idPrefix + objectId;
 
         // We need to manually keep track of the datastream creation dates
         final Map<String, String> dsCreateDates = new HashMap<>();
@@ -154,17 +156,23 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final Map<String, String> datastreamStates = new HashMap<>();
 
         for (var ov : versions) {
-            if (ov.isFirstVersion()) {
-                objectId = ov.getObjectInfo().getPid();
-                f6ObjectId = idPrefix + objectId;
-                objectState = getObjectState(ov);
-            }
-
             final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
 
-            // Object properties are written only once (as fcrepo3 object properties were unversioned).
-            if (ov.isFirstVersion() && !foxmlFile) {
-                writeObjectFiles(f6ObjectId, ov, session);
+            if (ov.isFirstVersion()) {
+                objectState = getObjectState(ov);
+                // Object properties are written only once (as fcrepo3 object properties were unversioned).
+                if (foxmlFile) {
+                    try (InputStream is = Files.newInputStream(objectInfo.getFoxmlPath())) {
+                        final var headers = createHeaders(f6ObjectId + "/FOXML", f6ObjectId,
+                                InteractionModel.NON_RDF).build();
+                        session.writeResource(headers, is);
+                    } catch (IOException io) {
+                        LOGGER.error("error writing " + objectId + " foxml file to " + f6ObjectId + ": " + io);
+                        throw new UncheckedIOException(io);
+                    }
+                } else {
+                    writeObjectFiles(f6ObjectId, ov, session);
+                }
             }
 
             // Write datastreams and their metadata

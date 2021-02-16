@@ -28,6 +28,7 @@ import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.Migrator;
 import org.fcrepo.migration.ObjectVersionReference;
+import org.fcrepo.migration.ObjectInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -85,7 +86,8 @@ public class VersionAbstractionFedoraObjectHandlerTest {
          * puts the reference on the versions list for later tests.
          */
         @Override
-        public void processObjectVersions(final Iterable<ObjectVersionReference> versions) {
+        public void processObjectVersions(final Iterable<ObjectVersionReference> versions,
+                                          final ObjectInfo objectInfo) {
             for (final ObjectVersionReference version : versions) {
                 this.versions.add(version);
                 for (final DatastreamVersion dsv : version.listChangedDatastreams()) {

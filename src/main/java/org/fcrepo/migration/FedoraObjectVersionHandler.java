@@ -32,6 +32,7 @@ public interface FedoraObjectVersionHandler {
      * represented by the current call is conventiently made available.
      * @param versions an iterable of Objects each encapsulating everything
      *               about a single version of a Fedora 3 object.
+     * @param objectInfo information about the Fedora 3 object being processed
      */
-    public void processObjectVersions(Iterable<ObjectVersionReference> versions);
+    public void processObjectVersions(Iterable<ObjectVersionReference> versions, final ObjectInfo objectInfo);
 }

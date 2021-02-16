@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
@@ -119,7 +120,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectSingleVersionF6Format() {
+    public void processObjectSingleVersionF6Format() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
 
         final var pid = "obj1";
@@ -132,7 +133,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -152,7 +153,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectMultipleVersionsF6Format() {
+    public void processObjectMultipleVersionsF6Format() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
 
         final var pid = "obj2";
@@ -167,7 +168,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -192,7 +193,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectMultipleVersionsWithDeletedDsF6Format() {
+    public void processObjectMultipleVersionsWithDeletedDsF6Format() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
 
         final var pid = "obj2";
@@ -208,7 +209,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -236,7 +237,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectMultipleVersionsAndDeleteInactiveF6Format() {
+    public void processObjectMultipleVersionsAndDeleteInactiveF6Format() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true);
 
         final var pid = "obj2";
@@ -252,7 +253,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -282,7 +283,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectMultipleVersionsAndObjectDeletedF6Format() {
+    public void processObjectMultipleVersionsAndObjectDeletedF6Format() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
 
         final var pid = "obj2";
@@ -297,7 +298,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, OBJ_DELETED, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, OBJ_DELETED, List.of(ds2V2))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -328,7 +329,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectMultipleVersionsAndObjectInactiveDeletedF6Format() {
+    public void processObjectMultipleVersionsAndObjectInactiveDeletedF6Format() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true);
 
         final var pid = "obj2";
@@ -343,7 +344,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, OBJ_INACTIVE, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, OBJ_INACTIVE, List.of(ds2V2))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -374,7 +375,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectMultipleVersionsPlainFormat() {
+    public void processObjectMultipleVersionsPlainFormat() throws IOException {
         final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false);
 
         final var pid = "obj2";
@@ -389,7 +390,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -421,7 +422,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectMultipleVersionsWithDeletedDsPlainFormat() {
+    public void processObjectMultipleVersionsWithDeletedDsPlainFormat() throws IOException {
         final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false);
 
         final var pid = "obj2";
@@ -436,7 +437,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -474,7 +475,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectMultipleVersionsWithInactiveDeletedObjectPlainFormat() {
+    public void processObjectMultipleVersionsWithInactiveDeletedObjectPlainFormat() throws IOException {
         final var handler = createHandler(MigrationType.PLAIN_OCFL, false, true);
 
         final var pid = "obj2";
@@ -489,7 +490,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, OBJ_INACTIVE, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, OBJ_INACTIVE, List.of(ds2V2))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -536,7 +537,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectSingleVersionF6FormatWithExtensions() {
+    public void processObjectSingleVersionF6FormatWithExtensions() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, true, false);
 
         final var pid = "obj1";
@@ -553,7 +554,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -578,7 +579,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectSingleVersionPlainFormatWithExtensions() {
+    public void processObjectSingleVersionPlainFormatWithExtensions() throws IOException {
         final var handler = createHandler(MigrationType.PLAIN_OCFL, true, false);
 
         final var pid = "obj1";
@@ -595,7 +596,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -633,7 +634,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectSingleVersionF6FormatWithExternalBinary() {
+    public void processObjectSingleVersionF6FormatWithExternalBinary() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
 
         final var pid = "obj1";
@@ -647,7 +648,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -672,7 +673,7 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
-    public void processObjectSingleVersionPlainFormatWithExternalBinary() {
+    public void processObjectSingleVersionPlainFormatWithExternalBinary() throws IOException {
         final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false);
 
         final var pid = "obj1";
@@ -686,7 +687,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
-        ));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -949,16 +950,19 @@ public class ArchiveGroupHandlerTest {
 
     private ObjectVersionReference objectVersionReference(final String pid,
                                                           final boolean isFirst,
-                                                          final List<DatastreamVersion> datastreamVersions) {
+                                                          final List<DatastreamVersion> datastreamVersions)
+            throws IOException {
         return objectVersionReference(pid, isFirst, OBJ_ACTIVE, datastreamVersions);
     }
 
     private ObjectVersionReference objectVersionReference(final String pid,
                                                           final boolean isFirst,
                                                           final String state,
-                                                          final List<DatastreamVersion> datastreamVersions) {
+                                                          final List<DatastreamVersion> datastreamVersions)
+            throws IOException {
         final var mock = Mockito.mock(ObjectVersionReference.class);
-        when(mock.getObjectInfo()).thenReturn(new DefaultObjectInfo(pid, pid));
+        when(mock.getObjectInfo()).thenReturn(
+                new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
         when(mock.isFirstVersion()).thenReturn(isFirst);
         if (isFirst) {
             final var properties = objectProperties(List.of(
