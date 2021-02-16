@@ -961,8 +961,6 @@ public class ArchiveGroupHandlerTest {
                                                           final List<DatastreamVersion> datastreamVersions)
             throws IOException {
         final var mock = Mockito.mock(ObjectVersionReference.class);
-        when(mock.getObjectInfo()).thenReturn(
-                new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
         when(mock.isFirstVersion()).thenReturn(isFirst);
         if (isFirst) {
             final var properties = objectProperties(List.of(

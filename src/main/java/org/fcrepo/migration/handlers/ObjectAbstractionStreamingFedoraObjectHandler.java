@@ -160,11 +160,6 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
             }
 
             @Override
-            public ObjectInfo getObjectInfo() {
-                return objectInfo;
-            }
-
-            @Override
             public ObjectProperties getObjectProperties() {
                 return objectProperties;
             }

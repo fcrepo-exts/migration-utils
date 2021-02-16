@@ -159,7 +159,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
 
             if (ov.isFirstVersion()) {
-                objectState = getObjectState(ov);
+                objectState = getObjectState(ov, objectId);
                 // Object properties are written only once (as fcrepo3 object properties were unversioned).
                 if (foxmlFile) {
                     try (InputStream is = Files.newInputStream(objectInfo.getFoxmlPath())) {
@@ -171,7 +171,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                         throw new UncheckedIOException(io);
                     }
                 } else {
-                    writeObjectFiles(f6ObjectId, ov, session);
+                    writeObjectFiles(objectId, f6ObjectId, ov, session);
                 }
             }
 
@@ -262,11 +262,12 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
     }
 
-    private void writeObjectFiles(final String f6ObjectId,
+    private void writeObjectFiles(final String pid,
+                                  final String f6ObjectId,
                                   final ObjectVersionReference ov,
                                   final OcflObjectSession session) {
         final var objectHeaders = createObjectHeaders(f6ObjectId, ov);
-        final var content = getObjTriples(ov);
+        final var content = getObjTriples(ov, pid);
         session.writeResource(objectHeaders, content);
     }
 
@@ -446,20 +447,20 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 .build());
     }
 
-    private String getObjectState(final ObjectVersionReference ov) {
+    private String getObjectState(final ObjectVersionReference ov, final String pid) {
         return ov.getObjectProperties().listProperties().stream()
                 .filter(prop -> OBJ_STATE_PROP.equals(prop.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(String.format("Object %s is missing state information",
-                        ov.getObjectInfo().getPid())))
+                        pid)))
                 .getValue();
     }
 
     // Get object-level triples
-    private static InputStream getObjTriples(final ObjectVersionReference o) {
+    private static InputStream getObjTriples(final ObjectVersionReference o, final String pid) {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Model triples = ModelFactory.createDefaultModel();
-        final String uri = "info:fedora/" + o.getObjectInfo().getPid();
+        final String uri = "info:fedora/" + pid;
 
         o.getObjectProperties().listProperties().forEach(p -> {
             if (p.getName().contains("Date")) {
