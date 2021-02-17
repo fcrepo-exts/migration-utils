@@ -35,5 +35,8 @@ public interface ObjectInfo {
      */
     public String getFedoraURI();
 
+    /**
+     * @return the path to the foxml file of this object.
+     */
     public Path getFoxmlPath();
 }
