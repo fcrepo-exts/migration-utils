@@ -34,6 +34,7 @@ import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectVersionReference;
+import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -96,6 +98,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final OcflObjectSessionFactory sessionFactory;
     private final boolean addDatastreamExtensions;
     private final boolean deleteInactive;
+    private final boolean foxmlFile;
     private final MigrationType migrationType;
     private final String user;
     private final String idPrefix;
@@ -112,6 +115,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *        true if datastreams should be written with file extensions
      * @param deleteInactive
      *        true if inactive objects and datastreams should be migrated as deleted
+     * @param foxmlFile
+     *        true if foxml file should be migrated as a whole file, instead of creating property files
      * @param user
      *        the username to associated with the migrated resources
      * @param idPrefix
@@ -121,12 +126,14 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final MigrationType migrationType,
                                final boolean addDatastreamExtensions,
                                final boolean deleteInactive,
+                               final boolean foxmlFile,
                                final String user,
                                final String idPrefix) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
         this.addDatastreamExtensions = addDatastreamExtensions;
         this.deleteInactive = deleteInactive;
+        this.foxmlFile = foxmlFile;
         this.user = Preconditions.checkNotNull(Strings.emptyToNull(user), "user cannot be blank");
         this.idPrefix = idPrefix;
         try {
@@ -137,10 +144,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     }
 
     @Override
-    public void processObjectVersions(final Iterable<ObjectVersionReference> versions) {
+    public void processObjectVersions(final Iterable<ObjectVersionReference> versions, final ObjectInfo objectInfo) {
         // We use the PID to identify the OCFL object
-        String objectId = null;
-        String f6ObjectId = null;
+        final String objectId = objectInfo.getPid();
+        final String f6ObjectId = idPrefix + objectId;
 
         // We need to manually keep track of the datastream creation dates
         final Map<String, String> dsCreateDates = new HashMap<>();
@@ -149,17 +156,23 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final Map<String, String> datastreamStates = new HashMap<>();
 
         for (var ov : versions) {
-            if (ov.isFirstVersion()) {
-                objectId = ov.getObjectInfo().getPid();
-                f6ObjectId = idPrefix + objectId;
-                objectState = getObjectState(ov);
-            }
-
             final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
 
-            // Object properties are written only once (as fcrepo3 object properties were unversioned).
             if (ov.isFirstVersion()) {
-                writeObjectFiles(f6ObjectId, ov, session);
+                objectState = getObjectState(ov, objectId);
+                // Object properties are written only once (as fcrepo3 object properties were unversioned).
+                if (foxmlFile) {
+                    try (InputStream is = Files.newInputStream(objectInfo.getFoxmlPath())) {
+                        final var headers = createHeaders(f6ObjectId + "/FOXML", f6ObjectId,
+                                InteractionModel.NON_RDF).build();
+                        session.writeResource(headers, is);
+                    } catch (IOException io) {
+                        LOGGER.error("error writing " + objectId + " foxml file to " + f6ObjectId + ": " + io);
+                        throw new UncheckedIOException(io);
+                    }
+                } else {
+                    writeObjectFiles(objectId, f6ObjectId, ov, session);
+                }
             }
 
             // Write datastreams and their metadata
@@ -193,7 +206,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     }
                 }
 
-                writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
+                if (!foxmlFile) {
+                    writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
+                }
             }
 
             LOGGER.debug("Committing object <{}>", f6ObjectId);
@@ -247,11 +262,12 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
     }
 
-    private void writeObjectFiles(final String f6ObjectId,
+    private void writeObjectFiles(final String pid,
+                                  final String f6ObjectId,
                                   final ObjectVersionReference ov,
                                   final OcflObjectSession session) {
         final var objectHeaders = createObjectHeaders(f6ObjectId, ov);
-        final var content = getObjTriples(ov);
+        final var content = getObjTriples(ov, pid);
         session.writeResource(objectHeaders, content);
     }
 
@@ -431,20 +447,20 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 .build());
     }
 
-    private String getObjectState(final ObjectVersionReference ov) {
+    private String getObjectState(final ObjectVersionReference ov, final String pid) {
         return ov.getObjectProperties().listProperties().stream()
                 .filter(prop -> OBJ_STATE_PROP.equals(prop.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(String.format("Object %s is missing state information",
-                        ov.getObjectInfo().getPid())))
+                        pid)))
                 .getValue();
     }
 
     // Get object-level triples
-    private static InputStream getObjTriples(final ObjectVersionReference o) {
+    private static InputStream getObjTriples(final ObjectVersionReference o, final String pid) {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Model triples = ModelFactory.createDefaultModel();
-        final String uri = "info:fedora/" + o.getObjectInfo().getPid();
+        final String uri = "info:fedora/" + pid;
 
         o.getObjectProperties().listProperties().forEach(p -> {
             if (p.getName().contains("Date")) {

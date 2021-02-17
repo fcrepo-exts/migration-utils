@@ -32,11 +32,6 @@ public interface ObjectVersionReference {
     public ObjectReference getObject();
 
     /**
-     * @return all the basic object information.  This is unversioned information.
-     */
-    public ObjectInfo getObjectInfo();
-
-    /**
      * @return all the object properties.  This is unversioned information.
      */
     public ObjectProperties getObjectProperties();

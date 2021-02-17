@@ -90,7 +90,7 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
             for (final String versionDate : versionDates) {
                 versions.add(getObjectVersionReference(versionDate, versionDates, objectReference, versionMap));
             }
-            versionHandler.processObjectVersions(versions);
+            versionHandler.processObjectVersions(versions, object);
         } finally {
             cleanForReuse();
         }
@@ -157,11 +157,6 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
             @Override
             public ObjectReference getObject() {
                 return objectReference;
-            }
-
-            @Override
-            public ObjectInfo getObjectInfo() {
-                return objectInfo;
             }
 
             @Override

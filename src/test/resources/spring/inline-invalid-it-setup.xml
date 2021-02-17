@@ -54,6 +54,7 @@
         <constructor-arg name="migrationType" value="FEDORA_OCFL" />
         <constructor-arg name="addDatastreamExtensions" value="false" />
         <constructor-arg name="deleteInactive" value="false" />
+        <constructor-arg name="foxmlFile" value="false" />
         <constructor-arg name="user" value="fedoraAdmin" />
         <constructor-arg name="idPrefix" value="info:fedora/" />
     </bean>

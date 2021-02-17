@@ -111,19 +111,23 @@ public class PicocliMigrator implements Callable<Integer> {
                 + " - defaults to info:fedora/, like Fedora3")
     private String idPrefix;
 
-    @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 21,
+    @Option(names = {"--foxml-file"}, defaultValue = "false", order = 21,
+            description = "Migrate foxml file as a whole file, instead of creating property files")
+    private boolean foxmlFile;
+
+    @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 22,
             description = "Limit number of objects to be processed.\n  Default: no limit")
     private int objectLimit;
 
-    @Option(names = {"--resume", "-r"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 22,
+    @Option(names = {"--resume", "-r"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 23,
             description = "Resume from last successfully migrated Fedora 3 object")
     private boolean resume;
 
-    @Option(names = {"--continue-on-error", "-c"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 23,
+    @Option(names = {"--continue-on-error", "-c"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 24,
             description = "Continue to next PID if an error occurs (instead of exiting). Disabled by default.")
     private boolean continueOnError;
 
-    @Option(names = {"--pid-file", "-p"}, order = 24,
+    @Option(names = {"--pid-file", "-p"}, order = 25,
             description = "PID file listing which Fedora 3 objects to migrate")
     private File pidFile;
 
@@ -284,8 +288,8 @@ public class PicocliMigrator implements Callable<Integer> {
                 ocflStagingDir.toPath(), migrationType, user, userUri, algorithm).getObject();
 
         final FedoraObjectVersionHandler archiveGroupHandler =
-                new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, user,
-                        idPrefix);
+                new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, foxmlFile,
+                        user, idPrefix);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 archiveGroupHandler);
 
