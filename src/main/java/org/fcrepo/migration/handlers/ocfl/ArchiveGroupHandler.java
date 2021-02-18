@@ -159,6 +159,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
 
             if (ov.isFirstVersion()) {
+                if (session.containsResource(f6ObjectId)) {
+                    throw new RuntimeException(f6ObjectId + " already exists!");
+                }
                 objectState = getObjectState(ov, objectId);
                 // Object properties are written only once (as fcrepo3 object properties were unversioned).
                 if (foxmlFile) {

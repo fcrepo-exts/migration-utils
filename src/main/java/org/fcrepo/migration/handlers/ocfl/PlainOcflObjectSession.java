@@ -231,7 +231,11 @@ public class PlainOcflObjectSession implements OcflObjectSession {
 
     @Override
     public boolean containsResource(final String resourceId) {
-        throw new UnsupportedOperationException("Not implemented");
+        if (ocflRepo.containsObject(ocflObjectId)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private Path stagingPath(final String path) {
