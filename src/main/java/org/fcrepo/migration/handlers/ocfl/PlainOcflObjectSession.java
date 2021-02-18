@@ -231,11 +231,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
 
     @Override
     public boolean containsResource(final String resourceId) {
-        if (ocflRepo.containsObject(ocflObjectId)) {
-            return true;
-        } else {
-            return false;
-        }
+        return ocflRepo.containsObject(ocflObjectId);
     }
 
     private Path stagingPath(final String path) {
