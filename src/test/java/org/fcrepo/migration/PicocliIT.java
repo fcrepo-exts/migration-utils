@@ -3,9 +3,11 @@ package org.fcrepo.migration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -15,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.wisc.library.ocfl.api.model.ObjectVersionId;
+import edu.wisc.library.ocfl.api.model.VersionInfo;
 import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -268,6 +271,53 @@ public class PicocliIT {
         final File inventory = baseDir.resolve("inventory.json").toFile();
         assertTrue(inventory.exists());
         validateManifests(inventory, "SHA-256", baseDir);
+    }
+
+    @Test
+    public void testPlainOcflObjectAlreadyExistsInOcfl() throws Exception {
+        final Path targetDir = tmpDir.resolve("target");
+        final Path workingDir = tmpDir.resolve("working");
+        final var pid = "example:1";
+        final var ocflRepo =  new OcflRepositoryBuilder()
+                .defaultLayoutConfig(new HashedNTupleIdEncapsulationLayoutConfig())
+                .storage(FileSystemOcflStorage.builder().repositoryRoot(targetDir).build())
+                .workDir(tmpDir)
+                .build();
+        ocflRepo.updateObject(ObjectVersionId.head(pid), new VersionInfo(), updater -> {
+            updater.writeFile(new ByteArrayInputStream("data".getBytes(StandardCharsets.UTF_8)),"file1");
+        });
+        final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
+                "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
+                "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
+                "--objects-dir", "src/test/resources/legacyFS/objects/2015/0430/16/01",
+                "--id-prefix", ""};
+        final PicocliMigrator migrator = new PicocliMigrator();
+        final CommandLine cmd = new CommandLine(migrator);
+        final int result = cmd.execute(args);
+        assertEquals(1, result); //should fail because object already exists
+    }
+
+    @Test
+    public void testFedoraOcflObjectAlreadyExistsInOcfl() throws Exception {
+        final Path targetDir = tmpDir.resolve("target");
+        final Path workingDir = tmpDir.resolve("working");
+        final var ocflObjectId = "info:fedora/example:1";
+        final var ocflRepo =  new OcflRepositoryBuilder()
+                .defaultLayoutConfig(new HashedNTupleIdEncapsulationLayoutConfig())
+                .storage(FileSystemOcflStorage.builder().repositoryRoot(targetDir).build())
+                .workDir(tmpDir)
+                .build();
+        ocflRepo.updateObject(ObjectVersionId.head(ocflObjectId), new VersionInfo(), updater -> {
+            updater.writeFile(new ByteArrayInputStream("data".getBytes(StandardCharsets.UTF_8)),"file1");
+        });
+        final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
+                "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
+                "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
+                "--objects-dir", "src/test/resources/legacyFS/objects/2015/0430/16/01"};
+        final PicocliMigrator migrator = new PicocliMigrator();
+        final CommandLine cmd = new CommandLine(migrator);
+        final int result = cmd.execute(args);
+        assertEquals(1, result); //should fail because object already exists
     }
 
     /**

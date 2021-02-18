@@ -231,7 +231,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
 
     @Override
     public boolean containsResource(final String resourceId) {
-        throw new UnsupportedOperationException("Not implemented");
+        return ocflRepo.containsObject(ocflObjectId);
     }
 
     private Path stagingPath(final String path) {
