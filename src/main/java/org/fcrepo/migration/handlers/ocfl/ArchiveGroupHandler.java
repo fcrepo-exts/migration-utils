@@ -205,17 +205,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
                 if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
                     InputStream content = null;
-                    // Write a file for external content only for plain OCFL migration
+                    // for plain OCFL migrations, write a file containing the external/redirect URL
                     if (migrationType == MigrationType.PLAIN_OCFL) {
                         content = IOUtils.toInputStream(dv.getExternalOrRedirectURL());
-                        try {
-                            writeDatastreamContent(dv, datastreamHeaders, content, session);
-                        } catch (final IOException io) {
-                            throw new UncheckedIOException(io);
-                        }
-                    } else {
-                        session.writeResource(datastreamHeaders, content);
                     }
+                    session.writeResource(datastreamHeaders, content);
                 } else {
                     try (var contentStream = dv.getContent()) {
                         writeDatastreamContent(dv, datastreamHeaders, contentStream, session);
