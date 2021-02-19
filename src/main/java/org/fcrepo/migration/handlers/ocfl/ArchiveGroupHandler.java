@@ -250,9 +250,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 session.writeResource(datastreamHeaders, digestStream);
                 final var expectedDigest = f3Digest.getDigest();
                 final var actualDigest = Bytes.wrap(digestStream.getMessageDigest().digest()).encodeHex();
-                if (!actualDigest.equals(expectedDigest)) {
-                    throw new RuntimeException(ocflObjectId + "/" + dv.getDatastreamInfo().getDatastreamId()
-                            + ": digest " + actualDigest + " doesn't match expected digest " + expectedDigest);
+                if (!actualDigest.equalsIgnoreCase(expectedDigest)) {
+                    final var msg = String.format("%s/%s: digest %s doesn't match expected digest %s",
+                            ocflObjectId, dv.getDatastreamInfo().getDatastreamId(), actualDigest, expectedDigest);
+                    throw new RuntimeException(msg);
                 }
             } catch (final NoSuchAlgorithmException e) {
                 LOGGER.warn(ocflObjectId + ": no algorithm " + f3Digest.getType() + ". Writing resource & continuing.");
