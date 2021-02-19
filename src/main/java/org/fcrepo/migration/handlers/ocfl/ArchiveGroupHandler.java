@@ -107,6 +107,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final String user;
     private final String idPrefix;
     private final Detector mimeDetector;
+    private final boolean disableChecksumValidation;
 
     /**
      * Create an ArchiveGroupHandler,
@@ -125,6 +126,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *        the username to associated with the migrated resources
      * @param idPrefix
      *        the prefix to add to the Fedora 3 pid (default "info:fedora/", like Fedora 3)
+     * @param disableChecksumValidation
+     *        if true, migrator should not try to verify that the datastream content matches Fedora 3 checksums
      */
     public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
                                final MigrationType migrationType,
@@ -132,7 +135,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final boolean deleteInactive,
                                final boolean foxmlFile,
                                final String user,
-                               final String idPrefix) {
+                               final String idPrefix,
+                               final boolean disableChecksumValidation) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
         this.addDatastreamExtensions = addDatastreamExtensions;
@@ -140,6 +144,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         this.foxmlFile = foxmlFile;
         this.user = Preconditions.checkNotNull(Strings.emptyToNull(user), "user cannot be blank");
         this.idPrefix = idPrefix;
+        this.disableChecksumValidation = disableChecksumValidation;
         try {
             this.mimeDetector = new TikaConfig().getDetector();
         } catch (Exception e) {
@@ -238,7 +243,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                         final InputStream contentStream,
                                         final OcflObjectSession session) throws IOException {
         final var f3Digest = dv.getContentDigest();
-        if (f3Digest != null) {
+        if (f3Digest != null && !disableChecksumValidation) {
             final var ocflObjectId = session.ocflObjectId();
             try (var digestStream = new DigestInputStream(contentStream,
                     MessageDigest.getInstance(f3Digest.getType()))) {

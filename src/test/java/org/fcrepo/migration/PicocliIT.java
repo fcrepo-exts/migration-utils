@@ -334,6 +334,21 @@ public class PicocliIT {
         assertEquals(1, result); //should fail because of invalid checksum
     }
 
+    @Test
+    public void testInvalidChecksumCanBeAllowed() throws Exception {
+        final Path targetDir = tmpDir.resolve("target");
+        final Path workingDir = tmpDir.resolve("working");
+        final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
+                "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
+                "--datastreams-dir","src/test/resources/legacyFS-invalid-checksum/datastreams/2015/0430/16/01",
+                "--objects-dir", "src/test/resources/legacyFS-invalid-checksum/objects/2015/0430/16/01",
+                "--no-checksum-validation"};
+        final PicocliMigrator migrator = new PicocliMigrator();
+        final CommandLine cmd = new CommandLine(migrator);
+        final int result = cmd.execute(args);
+        assertEquals(0, result); //should succeed because checksum validation is disabled
+    }
+
     /**
      * Validate the manifest digests in an inventory file.
      * @param inventory the inventory file
