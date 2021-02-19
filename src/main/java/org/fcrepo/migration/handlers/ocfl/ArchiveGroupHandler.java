@@ -24,6 +24,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
@@ -234,7 +235,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     }
 
     private boolean fedora3DigestValid(final ContentDigest f3Digest) {
-        return f3Digest != null && !f3Digest.getType().isBlank() && !f3Digest.getDigest().isBlank();
+        return f3Digest != null && StringUtils.isNotBlank(f3Digest.getType()) &&
+                StringUtils.isNotBlank(f3Digest.getDigest());
     }
 
     private void writeDatastreamContent(final DatastreamVersion dv,
@@ -248,6 +250,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final var f3Digest = dv.getContentDigest();
         final var ocflObjectId = session.ocflObjectId();
         final var datastreamId = dv.getDatastreamInfo().getDatastreamId();
+        final var datastreamControlGroup = dv.getDatastreamInfo().getControlGroup();
         if (fedora3DigestValid(f3Digest)) {
             try (var digestStream = new DigestInputStream(contentStream,
                     MessageDigest.getInstance(f3Digest.getType()))) {
@@ -266,9 +269,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 session.writeResource(datastreamHeaders, contentStream);
             }
         } else {
-            final var msg = String.format("%s/%s: missing/invalid digest. Writing resource & continuing.",
-                    ocflObjectId, datastreamId);
-            LOGGER.warn(msg);
+            if (datastreamControlGroup.equalsIgnoreCase("M")) {
+                final var msg = String.format("%s/%s: missing/invalid digest. Writing resource & continuing.",
+                        ocflObjectId, datastreamId);
+                LOGGER.warn(msg);
+            }
             session.writeResource(datastreamHeaders, contentStream);
         }
     }
