@@ -16,6 +16,7 @@
 
 package org.fcrepo.migration.handlers.ocfl;
 
+import at.favre.lib.bytes.Bytes;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
@@ -49,6 +50,9 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -199,11 +203,17 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     // Write a file for external content only for plain OCFL migration
                     if (migrationType == MigrationType.PLAIN_OCFL) {
                         content = IOUtils.toInputStream(dv.getExternalOrRedirectURL());
-                    }
-                    session.writeResource(datastreamHeaders, content);
-                } else {
-                    try (var content = dv.getContent()) {
+                        try {
+                            writeDatastreamContent(dv, datastreamHeaders, content, session);
+                        } catch (final IOException io) {
+                            throw new UncheckedIOException(io);
+                        }
+                    } else {
                         session.writeResource(datastreamHeaders, content);
+                    }
+                } else {
+                    try (var contentStream = dv.getContent()) {
+                        writeDatastreamContent(dv, datastreamHeaders, contentStream, session);
                     } catch (final IOException e) {
                         throw new UncheckedIOException(e);
                     }
@@ -221,6 +231,31 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
 
         handleDeletedResources(f6ObjectId, objectState, datastreamStates);
+    }
+
+    private void writeDatastreamContent(final DatastreamVersion dv,
+                                        final ResourceHeaders datastreamHeaders,
+                                        final InputStream contentStream,
+                                        final OcflObjectSession session) throws IOException {
+        final var f3Digest = dv.getContentDigest();
+        if (f3Digest != null) {
+            final var ocflObjectId = session.ocflObjectId();
+            try (var digestStream = new DigestInputStream(contentStream,
+                    MessageDigest.getInstance(f3Digest.getType()))) {
+                session.writeResource(datastreamHeaders, digestStream);
+                final var expectedDigest = f3Digest.getDigest();
+                final var actualDigest = Bytes.wrap(digestStream.getMessageDigest().digest()).encodeHex();
+                if (!actualDigest.equals(expectedDigest)) {
+                    throw new RuntimeException(ocflObjectId + "/" + dv.getDatastreamInfo().getDatastreamId()
+                            + ": digest " + actualDigest + " doesn't match expected digest " + expectedDigest);
+                }
+            } catch (final NoSuchAlgorithmException e) {
+                LOGGER.warn(ocflObjectId + ": no algorithm " + f3Digest.getType() + ". Writing resource & continuing.");
+                session.writeResource(datastreamHeaders, contentStream);
+            }
+        } else {
+            session.writeResource(datastreamHeaders, contentStream);
+        }
     }
 
     private void handleDeletedResources(final String f6ObjectId,

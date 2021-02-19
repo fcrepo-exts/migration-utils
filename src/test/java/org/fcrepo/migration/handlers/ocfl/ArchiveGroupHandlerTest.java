@@ -682,8 +682,8 @@ public class ArchiveGroupHandlerTest {
         final var dsId3 = "ds3";
 
         final var ds1 = datastreamVersion(dsId1, true, MANAGED, "text/plain", "hello", null);
-        final var ds2 = datastreamVersion(dsId2, true, PROXY, "text/plain", "", "https://external");
-        final var ds3 = datastreamVersion(dsId3, true, REDIRECT, "text/plain", "", "https://redirect");
+        final var ds2 = datastreamVersion(dsId2, true, PROXY, "text/plain", "https://external", "https://external");
+        final var ds3 = datastreamVersion(dsId3, true, REDIRECT, "text/plain", "https://redirect", "https://redirect");
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
