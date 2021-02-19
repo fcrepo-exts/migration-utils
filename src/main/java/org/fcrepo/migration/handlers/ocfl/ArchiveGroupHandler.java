@@ -36,6 +36,7 @@ import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.ObjectInfo;
+import org.fcrepo.migration.ContentDigest;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -232,13 +233,22 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         handleDeletedResources(f6ObjectId, objectState, datastreamStates);
     }
 
+    private boolean fedora3DigestValid(final ContentDigest f3Digest) {
+        return f3Digest != null && !f3Digest.getType().isBlank() && !f3Digest.getDigest().isBlank();
+    }
+
     private void writeDatastreamContent(final DatastreamVersion dv,
                                         final ResourceHeaders datastreamHeaders,
                                         final InputStream contentStream,
                                         final OcflObjectSession session) throws IOException {
+        if (disableChecksumValidation) {
+            session.writeResource(datastreamHeaders, contentStream);
+            return;
+        }
         final var f3Digest = dv.getContentDigest();
-        if (f3Digest != null && !disableChecksumValidation) {
-            final var ocflObjectId = session.ocflObjectId();
+        final var ocflObjectId = session.ocflObjectId();
+        final var datastreamId = dv.getDatastreamInfo().getDatastreamId();
+        if (fedora3DigestValid(f3Digest)) {
             try (var digestStream = new DigestInputStream(contentStream,
                     MessageDigest.getInstance(f3Digest.getType()))) {
                 session.writeResource(datastreamHeaders, digestStream);
@@ -246,14 +256,19 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 final var actualDigest = Bytes.wrap(digestStream.getMessageDigest().digest()).encodeHex();
                 if (!actualDigest.equalsIgnoreCase(expectedDigest)) {
                     final var msg = String.format("%s/%s: digest %s doesn't match expected digest %s",
-                            ocflObjectId, dv.getDatastreamInfo().getDatastreamId(), actualDigest, expectedDigest);
+                            ocflObjectId, datastreamId, actualDigest, expectedDigest);
                     throw new RuntimeException(msg);
                 }
             } catch (final NoSuchAlgorithmException e) {
-                LOGGER.warn(ocflObjectId + ": no algorithm " + f3Digest.getType() + ". Writing resource & continuing.");
+                final var msg = String.format("%s/%s: no digest algorithm %s. Writing resource & continuing.",
+                        ocflObjectId, datastreamId, f3Digest.getType());
+                LOGGER.warn(msg);
                 session.writeResource(datastreamHeaders, contentStream);
             }
         } else {
+            final var msg = String.format("%s/%s: missing/invalid digest. Writing resource & continuing.",
+                    ocflObjectId, datastreamId);
+            LOGGER.warn(msg);
             session.writeResource(datastreamHeaders, contentStream);
         }
     }
