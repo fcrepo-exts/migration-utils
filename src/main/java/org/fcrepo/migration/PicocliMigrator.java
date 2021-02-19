@@ -151,7 +151,11 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "The digest algorithm to use in the OCFL objects created. Either sha256 or sha512")
     private String digestAlgorithm;
 
-    @Option(names = {"--debug"}, order = 31, description = "Enables debug logging")
+    @Option(names = {"--no-checksum-validation"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 31,
+            description = "Disable validation that datastream content matches Fedora 3 checksum.")
+    private boolean disableChecksumValidation;
+
+    @Option(names = {"--debug"}, order = 32, description = "Enables debug logging")
     private boolean debug;
 
     private File indexDir;
@@ -289,7 +293,7 @@ public class PicocliMigrator implements Callable<Integer> {
 
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, foxmlFile,
-                        user, idPrefix);
+                        user, idPrefix, disableChecksumValidation);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 archiveGroupHandler);
 

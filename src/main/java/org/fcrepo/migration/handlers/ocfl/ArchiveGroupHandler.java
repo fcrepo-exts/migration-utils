@@ -16,6 +16,7 @@
 
 package org.fcrepo.migration.handlers.ocfl;
 
+import at.favre.lib.bytes.Bytes;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
@@ -23,6 +24,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
@@ -35,6 +37,7 @@ import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.ObjectInfo;
+import org.fcrepo.migration.ContentDigest;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -49,6 +52,9 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -103,6 +109,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final String user;
     private final String idPrefix;
     private final Detector mimeDetector;
+    private final boolean disableChecksumValidation;
 
     /**
      * Create an ArchiveGroupHandler,
@@ -121,6 +128,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *        the username to associated with the migrated resources
      * @param idPrefix
      *        the prefix to add to the Fedora 3 pid (default "info:fedora/", like Fedora 3)
+     * @param disableChecksumValidation
+     *        if true, migrator should not try to verify that the datastream content matches Fedora 3 checksums
      */
     public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
                                final MigrationType migrationType,
@@ -128,7 +137,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final boolean deleteInactive,
                                final boolean foxmlFile,
                                final String user,
-                               final String idPrefix) {
+                               final String idPrefix,
+                               final boolean disableChecksumValidation) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
         this.addDatastreamExtensions = addDatastreamExtensions;
@@ -136,6 +146,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         this.foxmlFile = foxmlFile;
         this.user = Preconditions.checkNotNull(Strings.emptyToNull(user), "user cannot be blank");
         this.idPrefix = idPrefix;
+        this.disableChecksumValidation = disableChecksumValidation;
         try {
             this.mimeDetector = new TikaConfig().getDetector();
         } catch (Exception e) {
@@ -196,14 +207,14 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
                 if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
                     InputStream content = null;
-                    // Write a file for external content only for plain OCFL migration
+                    // for plain OCFL migrations, write a file containing the external/redirect URL
                     if (migrationType == MigrationType.PLAIN_OCFL) {
                         content = IOUtils.toInputStream(dv.getExternalOrRedirectURL());
                     }
                     session.writeResource(datastreamHeaders, content);
                 } else {
-                    try (var content = dv.getContent()) {
-                        session.writeResource(datastreamHeaders, content);
+                    try (var contentStream = dv.getContent()) {
+                        writeDatastreamContent(dv, datastreamHeaders, contentStream, session);
                     } catch (final IOException e) {
                         throw new UncheckedIOException(e);
                     }
@@ -221,6 +232,50 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
 
         handleDeletedResources(f6ObjectId, objectState, datastreamStates);
+    }
+
+    private boolean fedora3DigestValid(final ContentDigest f3Digest) {
+        return f3Digest != null && StringUtils.isNotBlank(f3Digest.getType()) &&
+                StringUtils.isNotBlank(f3Digest.getDigest());
+    }
+
+    private void writeDatastreamContent(final DatastreamVersion dv,
+                                        final ResourceHeaders datastreamHeaders,
+                                        final InputStream contentStream,
+                                        final OcflObjectSession session) throws IOException {
+        if (disableChecksumValidation) {
+            session.writeResource(datastreamHeaders, contentStream);
+            return;
+        }
+        final var f3Digest = dv.getContentDigest();
+        final var ocflObjectId = session.ocflObjectId();
+        final var datastreamId = dv.getDatastreamInfo().getDatastreamId();
+        final var datastreamControlGroup = dv.getDatastreamInfo().getControlGroup();
+        if (fedora3DigestValid(f3Digest)) {
+            try (var digestStream = new DigestInputStream(contentStream,
+                    MessageDigest.getInstance(f3Digest.getType()))) {
+                session.writeResource(datastreamHeaders, digestStream);
+                final var expectedDigest = f3Digest.getDigest();
+                final var actualDigest = Bytes.wrap(digestStream.getMessageDigest().digest()).encodeHex();
+                if (!actualDigest.equalsIgnoreCase(expectedDigest)) {
+                    final var msg = String.format("%s/%s: digest %s doesn't match expected digest %s",
+                            ocflObjectId, datastreamId, actualDigest, expectedDigest);
+                    throw new RuntimeException(msg);
+                }
+            } catch (final NoSuchAlgorithmException e) {
+                final var msg = String.format("%s/%s: no digest algorithm %s. Writing resource & continuing.",
+                        ocflObjectId, datastreamId, f3Digest.getType());
+                LOGGER.warn(msg);
+                session.writeResource(datastreamHeaders, contentStream);
+            }
+        } else {
+            if (datastreamControlGroup.equalsIgnoreCase("M")) {
+                final var msg = String.format("%s/%s: missing/invalid digest. Writing resource & continuing.",
+                        ocflObjectId, datastreamId);
+                LOGGER.warn(msg);
+            }
+            session.writeResource(datastreamHeaders, contentStream);
+        }
     }
 
     private void handleDeletedResources(final String f6ObjectId,
