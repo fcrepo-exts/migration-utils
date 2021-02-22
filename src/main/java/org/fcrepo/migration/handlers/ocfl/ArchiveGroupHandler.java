@@ -287,6 +287,12 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             final var now = OffsetDateTime.now();
             final var hasDeletes = new AtomicBoolean(false);
 
+            //delete foxmlFile if we migrated it - it's not an active file in the object
+            if (foxmlFile) {
+                hasDeletes.set(true);
+                deleteDatastream(f6ObjectId + "/FOXML", now.toInstant(), session);
+            }
+
             if (OBJ_DELETED.equals(objectState) || (deleteInactive && OBJ_INACTIVE.equals(objectState))) {
                 hasDeletes.set(true);
 
