@@ -177,11 +177,14 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 // Object properties are written only once (as fcrepo3 object properties were unversioned).
                 if (foxmlFile) {
                     try (InputStream is = Files.newInputStream(objectInfo.getFoxmlPath())) {
-                        final var headers = createHeaders(f6ObjectId + "/FOXML", f6ObjectId,
+                        final var foxmlDsId = f6ObjectId + "/FOXML";
+                        final var headers = createHeaders(foxmlDsId, f6ObjectId,
                                 InteractionModel.NON_RDF).build();
                         session.writeResource(headers, is);
+                        //mark FOXML as a deleted datastream so it gets deleted in handleDeletedResources()
+                        datastreamStates.put(foxmlDsId, DS_DELETED);
                     } catch (IOException io) {
-                        LOGGER.error("error writing " + objectId + " foxml file to " + f6ObjectId + ": " + io);
+                        LOGGER.error("error writing " + objectId + " FOXML file to " + f6ObjectId + ": " + io);
                         throw new UncheckedIOException(io);
                     }
                 } else {
@@ -286,12 +289,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         try {
             final var now = OffsetDateTime.now();
             final var hasDeletes = new AtomicBoolean(false);
-
-            //delete foxmlFile if we migrated it - it's not an active file in the object
-            if (foxmlFile) {
-                hasDeletes.set(true);
-                deleteDatastream(f6ObjectId + "/FOXML", now.toInstant(), session);
-            }
 
             if (OBJ_DELETED.equals(objectState) || (deleteInactive && OBJ_INACTIVE.equals(objectState))) {
                 hasDeletes.set(true);
