@@ -112,7 +112,8 @@ public class PicocliMigrator implements Callable<Integer> {
     private String idPrefix;
 
     @Option(names = {"--foxml-file"}, defaultValue = "false", order = 21,
-            description = "Migrate foxml file as a whole file, instead of creating property files")
+            description = "Migrate FOXML file as a whole file, instead of creating property files. FOXML file will"
+                + " be migrated, then marked as deleted so it doesn't show up as an active file.")
     private boolean foxmlFile;
 
     @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 22,

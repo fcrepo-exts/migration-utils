@@ -57,12 +57,23 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
   -a, --target-dir=<targetDir>
                              Directory where OCFL storage root and supporting
                                state will be written
+  -i, --working-dir=<workingDir>
+                             Directory where supporting state will be written
+                               (cached index of datastreams, ...)
   -I, --delete-inactive      Migrate objects and datastreams in the Inactive
                                state as deleted. Default: false.
   -m, --migration-type=<migrationType>
                              Type of OCFL objects to migrate to. Choices:
                                FEDORA_OCFL | PLAIN_OCFL
                                Default: FEDORA_OCFL
+      --id-prefix=<idPrefix> Only use this for PLAIN_OCFL migrations: Prefix to
+                               add to PIDs for OCFL object IDs - defaults to
+                               info:fedora/, like Fedora3
+                               Default: info:fedora/
+      --foxml-file           Migrate FOXML file as a whole file, instead of
+                               creating property files. FOXML file will be
+                               migrated, then marked as deleted so it doesn't
+                               show up as an active file.
   -l, --limit=<objectLimit>  Limit number of objects to be processed.
                                Default: no limit
   -r, --resume               Resume from last successfully migrated Fedora 3
@@ -72,8 +83,6 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
                                of exiting). Disabled by default.
                                Default: false
   -p, --pid-file=<pidFile>   PID file listing which Fedora 3 objects to migrate
-  -i, --index-dir=<indexDir> Directory where cached index of datastreams (will
-                               reuse index if already exists)
   -x, --extensions           Add file extensions to migrated datastreams based
                                on mimetype recorded in FOXML
                                Default: false
@@ -87,6 +96,14 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
   -U, --user-uri=<userUri>   The username to associate with all of the migrated
                                resources.
                                Default: info:fedora/fedoraAdmin
+      --algorithm=<digestAlgorithm>
+                             The digest algorithm to use in the OCFL objects
+                               created. Either sha256 or sha512
+                               Default: sha512
+      --no-checksum-validation
+                             Disable validation that datastream content matches
+                               Fedora 3 checksum.
+                               Default: false
       --debug                Enables debug logging
 ```
 

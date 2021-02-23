@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.wisc.library.ocfl.api.model.FileDetails;
 import edu.wisc.library.ocfl.api.model.ObjectVersionId;
+import edu.wisc.library.ocfl.api.model.VersionDetails;
 import edu.wisc.library.ocfl.api.model.VersionInfo;
 import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
 import org.apache.commons.codec.binary.Hex;
@@ -207,13 +209,24 @@ public class PicocliIT {
         }
         final var expectedFiles = new ArrayList<String>();
         expectedFiles.add("AUDIT");
-        expectedFiles.add("FOXML");
         expectedFiles.add("DS2");
         expectedFiles.add("DS1");
         expectedFiles.add("DS4");
         expectedFiles.add("DS3");
         expectedFiles.add("DC");
         assertEquals(expectedFiles, files);
+        //now check for a FOXML, which should show up in a previous version
+        final var versions = ocflRepo.describeObject("example:1").getVersionMap().values();
+        boolean foundFoxml = false;
+        for (VersionDetails v : versions) {
+            for (FileDetails f : v.getFiles()) {
+                if (f.getPath().equals("FOXML")) {
+                    foundFoxml = true;
+                    break;
+                }
+            }
+        }
+        assertTrue(foundFoxml);
     }
 
     @Test
