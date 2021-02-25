@@ -19,10 +19,12 @@ package org.fcrepo.migration.handlers.ocfl;
 import edu.wisc.library.ocfl.api.MutableOcflRepository;
 import edu.wisc.library.ocfl.api.OcflObjectUpdater;
 import edu.wisc.library.ocfl.api.OcflOption;
+import edu.wisc.library.ocfl.api.model.DigestAlgorithm;
 import edu.wisc.library.ocfl.api.model.ObjectVersionId;
 import edu.wisc.library.ocfl.api.model.VersionInfo;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.fcrepo.migration.ContentDigest;
 import org.fcrepo.storage.ocfl.CommitType;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
@@ -43,6 +45,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,7 +66,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     private final Path objectStaging;
 
     private final OcflOption[] ocflOptions;
-
+    private final HashMap<String, ContentDigest> digests;
     private final Set<String> deletePaths;
 
     private boolean closed = false;
@@ -85,6 +88,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
 
         this.versionInfo = new VersionInfo();
         this.ocflOptions = new OcflOption[] {OcflOption.MOVE_SOURCE, OcflOption.OVERWRITE};
+        this.digests = new HashMap<>();
         this.deletePaths = new HashSet<>();
     }
 
@@ -144,6 +148,10 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                     } else {
                         updater.addPath(objectStaging, ocflOptions);
                     }
+                    digests.forEach((contentPath, contentDigest) -> {
+                        updater.addFileFixity(contentPath, DigestAlgorithm.fromOcflName(contentDigest.getType()),
+                                contentDigest.getDigest());
+                    });
                 }
             });
         }
@@ -232,6 +240,12 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     @Override
     public boolean containsResource(final String resourceId) {
         return ocflRepo.containsObject(ocflObjectId);
+    }
+
+    public void addDigest(final ResourceHeaders headers, final ContentDigest digest) {
+        final var paths = resolvePersistencePaths(headers);
+        final var contentPath = encode(paths.getContentFilePath());
+        digests.put(contentPath, digest);
     }
 
     private Path stagingPath(final String path) {
