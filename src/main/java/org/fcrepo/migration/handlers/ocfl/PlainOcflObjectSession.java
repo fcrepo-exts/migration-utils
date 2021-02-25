@@ -152,6 +152,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                         updater.addFileFixity(contentPath, DigestAlgorithm.fromOcflName(contentDigest.getType()),
                                 contentDigest.getDigest());
                     });
+                    updater.clearFixityBlock();
                 }
             });
         }
