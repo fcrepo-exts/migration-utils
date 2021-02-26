@@ -168,7 +168,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                     digests.forEach((logicalPath, digestInfo) -> {
                         digestInfo.forEach((digestType, digestValue) -> {
                             try {
-                                updater.addFileFixity(logicalPath, DigestAlgorithm.fromOcflName(digestType),
+                                updater.addFileFixity(logicalPath, DigestAlgorithm.fromOcflName(digestType, digestType),
                                         digestValue);
                             } catch (OcflInputException e) {
                                 if (!e.getMessage().contains("not newly added in this update")) {
