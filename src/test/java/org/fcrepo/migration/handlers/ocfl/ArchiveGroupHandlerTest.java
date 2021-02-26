@@ -114,7 +114,7 @@ public class ArchiveGroupHandlerTest {
                 "testing", USER, "info:fedora/fedoraAdmin");
 
         plainSessionFactory = new PlainOcflObjectSessionFactory(ocflRepo, staging,
-                "testing", USER, "info:fedora/fedoraAdmin");
+                "testing", USER, "info:fedora/fedoraAdmin", false);
 
         date = Instant.now().toString().substring(0, 10);
     }

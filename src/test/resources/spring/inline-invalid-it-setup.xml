@@ -66,6 +66,7 @@
         <constructor-arg name="migrationType" value="FEDORA_OCFL" />
         <constructor-arg name="user" value="fedoraAdmin" />
         <constructor-arg name="userUri" value="info:fedora/fedoraAdmin" />
+        <constructor-arg name="disableChecksumValidation" value="false" />
     </bean>
 
     <bean id="httpClientURLFetcher" class="org.fcrepo.migration.foxml.HttpClientURLFetcher" />

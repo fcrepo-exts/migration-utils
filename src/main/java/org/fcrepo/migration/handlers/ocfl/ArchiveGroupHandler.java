@@ -259,7 +259,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 final var messageDigest = MessageDigest.getInstance(f3Digest.getType());
                 if (session instanceof PlainOcflObjectSession) {
                     session.writeResource(datastreamHeaders, contentStream);
-                    ((PlainOcflObjectSession) session).addDigest(datastreamHeaders, f3Digest);
                 } else {
                     try (var digestStream = new DigestInputStream(contentStream, messageDigest)) {
                         session.writeResource(datastreamHeaders, digestStream);

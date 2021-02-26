@@ -290,7 +290,8 @@ public class PicocliMigrator implements Callable<Integer> {
         }
 
         final OcflObjectSessionFactory ocflSessionFactory = new OcflSessionFactoryFactoryBean(ocflStorageDir.toPath(),
-                ocflStagingDir.toPath(), migrationType, user, userUri, algorithm).getObject();
+                ocflStagingDir.toPath(), migrationType, user, userUri, algorithm, disableChecksumValidation)
+                .getObject();
 
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, foxmlFile,

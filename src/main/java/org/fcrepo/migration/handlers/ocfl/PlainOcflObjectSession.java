@@ -24,7 +24,6 @@ import edu.wisc.library.ocfl.api.model.ObjectVersionId;
 import edu.wisc.library.ocfl.api.model.VersionInfo;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.fcrepo.migration.ContentDigest;
 import org.fcrepo.storage.ocfl.CommitType;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
@@ -64,9 +63,10 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     private final String ocflObjectId;
     private final VersionInfo versionInfo;
     private final Path objectStaging;
+    private final boolean disableChecksumValidation;
 
     private final OcflOption[] ocflOptions;
-    private final HashMap<String, ContentDigest> digests;
+    private final HashMap<String, HashMap<String, String>> digests;
     private final Set<String> deletePaths;
 
     private boolean closed = false;
@@ -76,15 +76,18 @@ public class PlainOcflObjectSession implements OcflObjectSession {
      * @param ocflRepo the OCFL client
      * @param ocflObjectId the OCFL object id
      * @param objectStaging the object's staging directory
+     * @param disableChecksumValidation whether to verify fedora3 checksums or not
      */
     public PlainOcflObjectSession(final String sessionId,
                                   final MutableOcflRepository ocflRepo,
                                   final String ocflObjectId,
-                                  final Path objectStaging) {
+                                  final Path objectStaging,
+                                  final boolean disableChecksumValidation) {
         this.sessionId = sessionId;
         this.ocflRepo = ocflRepo;
         this.ocflObjectId = ocflObjectId;
         this.objectStaging = objectStaging;
+        this.disableChecksumValidation = disableChecksumValidation;
 
         this.versionInfo = new VersionInfo();
         this.ocflOptions = new OcflOption[] {OcflOption.MOVE_SOURCE, OcflOption.OVERWRITE};
@@ -109,6 +112,19 @@ public class PlainOcflObjectSession implements OcflObjectSession {
         final var paths = resolvePersistencePaths(headers);
 
         final var contentPath = encode(paths.getContentFilePath());
+
+        if (!disableChecksumValidation) {
+            final var externalUrl = headers.getExternalUrl();
+            if (externalUrl == null || externalUrl.isBlank()) {
+                final var headerDigests = headers.getDigests();
+                for (final var uri : headerDigests) {
+                    final var parts = uri.getSchemeSpecificPart().split(":");
+                    final var digestInfo = new HashMap<String, String>();
+                    digestInfo.put(parts[0], parts[1]);
+                    digests.put(contentPath, digestInfo);
+                }
+            }
+        }
 
         final var contentDst = createStagingPath(contentPath);
         write(content, contentDst);
@@ -148,9 +164,10 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                     } else {
                         updater.addPath(objectStaging, ocflOptions);
                     }
-                    digests.forEach((contentPath, contentDigest) -> {
-                        updater.addFileFixity(contentPath, DigestAlgorithm.fromOcflName(contentDigest.getType()),
-                                contentDigest.getDigest());
+                    digests.forEach((contentPath, digestInfo) -> {
+                        digestInfo.forEach((digestType, digestValue) -> {
+                            updater.addFileFixity(contentPath, DigestAlgorithm.fromOcflName(digestType), digestValue);
+                        });
                     });
                     updater.clearFixityBlock();
                 }
@@ -241,12 +258,6 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     @Override
     public boolean containsResource(final String resourceId) {
         return ocflRepo.containsObject(ocflObjectId);
-    }
-
-    public void addDigest(final ResourceHeaders headers, final ContentDigest digest) {
-        final var paths = resolvePersistencePaths(headers);
-        final var contentPath = encode(paths.getContentFilePath());
-        digests.put(contentPath, digest);
     }
 
     private Path stagingPath(final String path) {
