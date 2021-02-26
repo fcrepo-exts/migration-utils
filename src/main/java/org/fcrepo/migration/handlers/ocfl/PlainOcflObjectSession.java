@@ -110,8 +110,8 @@ public class PlainOcflObjectSession implements OcflObjectSession {
         enforceOpen();
 
         final var paths = resolvePersistencePaths(headers);
-
-        final var contentPath = encode(paths.getContentFilePath());
+        final var logicalPath = paths.getContentFilePath();
+        final var contentPath = encode(logicalPath);
 
         if (!disableChecksumValidation) {
             final var externalUrl = headers.getExternalUrl();
@@ -121,7 +121,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                     final var parts = uri.getSchemeSpecificPart().split(":");
                     final var digestInfo = new HashMap<String, String>();
                     digestInfo.put(parts[0], parts[1]);
-                    digests.put(contentPath, digestInfo);
+                    digests.put(logicalPath, digestInfo);
                 }
             }
         }
@@ -164,9 +164,9 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                     } else {
                         updater.addPath(objectStaging, ocflOptions);
                     }
-                    digests.forEach((contentPath, digestInfo) -> {
+                    digests.forEach((logicalPath, digestInfo) -> {
                         digestInfo.forEach((digestType, digestValue) -> {
-                            updater.addFileFixity(contentPath, DigestAlgorithm.fromOcflName(digestType), digestValue);
+                            updater.addFileFixity(logicalPath, DigestAlgorithm.fromOcflName(digestType), digestValue);
                         });
                     });
                     updater.clearFixityBlock();
