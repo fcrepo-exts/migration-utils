@@ -19,6 +19,7 @@ package org.fcrepo.migration.handlers.ocfl;
 import edu.wisc.library.ocfl.api.MutableOcflRepository;
 import edu.wisc.library.ocfl.api.OcflObjectUpdater;
 import edu.wisc.library.ocfl.api.OcflOption;
+import edu.wisc.library.ocfl.api.exception.OcflInputException;
 import edu.wisc.library.ocfl.api.model.DigestAlgorithm;
 import edu.wisc.library.ocfl.api.model.ObjectVersionId;
 import edu.wisc.library.ocfl.api.model.VersionInfo;
@@ -166,7 +167,14 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                     }
                     digests.forEach((logicalPath, digestInfo) -> {
                         digestInfo.forEach((digestType, digestValue) -> {
-                            updater.addFileFixity(logicalPath, DigestAlgorithm.fromOcflName(digestType), digestValue);
+                            try {
+                                updater.addFileFixity(logicalPath, DigestAlgorithm.fromOcflName(digestType),
+                                        digestValue);
+                            } catch (OcflInputException e) {
+                                if (!e.getMessage().contains("not newly added in this update")) {
+                                    throw e;
+                                }
+                            }
                         });
                     });
                     updater.clearFixityBlock();
