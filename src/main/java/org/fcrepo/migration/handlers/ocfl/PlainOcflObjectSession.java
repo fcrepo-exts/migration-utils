@@ -19,6 +19,8 @@ package org.fcrepo.migration.handlers.ocfl;
 import edu.wisc.library.ocfl.api.MutableOcflRepository;
 import edu.wisc.library.ocfl.api.OcflObjectUpdater;
 import edu.wisc.library.ocfl.api.OcflOption;
+import edu.wisc.library.ocfl.api.exception.OcflInputException;
+import edu.wisc.library.ocfl.api.model.DigestAlgorithm;
 import edu.wisc.library.ocfl.api.model.ObjectVersionId;
 import edu.wisc.library.ocfl.api.model.VersionInfo;
 import org.apache.commons.io.FileUtils;
@@ -43,6 +45,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -61,9 +64,10 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     private final String ocflObjectId;
     private final VersionInfo versionInfo;
     private final Path objectStaging;
+    private final boolean disableChecksumValidation;
 
     private final OcflOption[] ocflOptions;
-
+    private final HashMap<String, HashMap<String, String>> digests;
     private final Set<String> deletePaths;
 
     private boolean closed = false;
@@ -73,18 +77,22 @@ public class PlainOcflObjectSession implements OcflObjectSession {
      * @param ocflRepo the OCFL client
      * @param ocflObjectId the OCFL object id
      * @param objectStaging the object's staging directory
+     * @param disableChecksumValidation whether to verify fedora3 checksums or not
      */
     public PlainOcflObjectSession(final String sessionId,
                                   final MutableOcflRepository ocflRepo,
                                   final String ocflObjectId,
-                                  final Path objectStaging) {
+                                  final Path objectStaging,
+                                  final boolean disableChecksumValidation) {
         this.sessionId = sessionId;
         this.ocflRepo = ocflRepo;
         this.ocflObjectId = ocflObjectId;
         this.objectStaging = objectStaging;
+        this.disableChecksumValidation = disableChecksumValidation;
 
         this.versionInfo = new VersionInfo();
         this.ocflOptions = new OcflOption[] {OcflOption.MOVE_SOURCE, OcflOption.OVERWRITE};
+        this.digests = new HashMap<>();
         this.deletePaths = new HashSet<>();
     }
 
@@ -103,8 +111,21 @@ public class PlainOcflObjectSession implements OcflObjectSession {
         enforceOpen();
 
         final var paths = resolvePersistencePaths(headers);
+        final var logicalPath = paths.getContentFilePath();
+        final var contentPath = encode(logicalPath);
 
-        final var contentPath = encode(paths.getContentFilePath());
+        if (!disableChecksumValidation) {
+            final var externalUrl = headers.getExternalUrl();
+            if (externalUrl == null || externalUrl.isBlank()) {
+                final var headerDigests = headers.getDigests();
+                for (final var uri : headerDigests) {
+                    final var parts = uri.getSchemeSpecificPart().split(":");
+                    final var digestInfo = new HashMap<String, String>();
+                    digestInfo.put(parts[0], parts[1]);
+                    digests.put(logicalPath, digestInfo);
+                }
+            }
+        }
 
         final var contentDst = createStagingPath(contentPath);
         write(content, contentDst);
@@ -144,6 +165,19 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                     } else {
                         updater.addPath(objectStaging, ocflOptions);
                     }
+                    digests.forEach((logicalPath, digestInfo) -> {
+                        digestInfo.forEach((digestType, digestValue) -> {
+                            try {
+                                updater.addFileFixity(logicalPath, DigestAlgorithm.fromOcflName(digestType, digestType),
+                                        digestValue);
+                            } catch (OcflInputException e) {
+                                if (!e.getMessage().contains("not newly added in this update")) {
+                                    throw e;
+                                }
+                            }
+                        });
+                    });
+                    updater.clearFixityBlock();
                 }
             });
         }

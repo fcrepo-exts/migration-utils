@@ -255,15 +255,21 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final var datastreamId = dv.getDatastreamInfo().getDatastreamId();
         final var datastreamControlGroup = dv.getDatastreamInfo().getControlGroup();
         if (fedora3DigestValid(f3Digest)) {
-            try (var digestStream = new DigestInputStream(contentStream,
-                    MessageDigest.getInstance(f3Digest.getType()))) {
-                session.writeResource(datastreamHeaders, digestStream);
-                final var expectedDigest = f3Digest.getDigest();
-                final var actualDigest = Bytes.wrap(digestStream.getMessageDigest().digest()).encodeHex();
-                if (!actualDigest.equalsIgnoreCase(expectedDigest)) {
-                    final var msg = String.format("%s/%s: digest %s doesn't match expected digest %s",
-                            ocflObjectId, datastreamId, actualDigest, expectedDigest);
-                    throw new RuntimeException(msg);
+            try {
+                final var messageDigest = MessageDigest.getInstance(f3Digest.getType());
+                if (migrationType == MigrationType.PLAIN_OCFL) {
+                    session.writeResource(datastreamHeaders, contentStream);
+                } else {
+                    try (var digestStream = new DigestInputStream(contentStream, messageDigest)) {
+                        session.writeResource(datastreamHeaders, digestStream);
+                        final var expectedDigest = f3Digest.getDigest();
+                        final var actualDigest = Bytes.wrap(digestStream.getMessageDigest().digest()).encodeHex();
+                        if (!actualDigest.equalsIgnoreCase(expectedDigest)) {
+                            final var msg = String.format("%s/%s: digest %s doesn't match expected digest %s",
+                                    ocflObjectId, datastreamId, actualDigest, expectedDigest);
+                            throw new RuntimeException(msg);
+                        }
+                    }
                 }
             } catch (final NoSuchAlgorithmException e) {
                 final var msg = String.format("%s/%s: no digest algorithm %s. Writing resource & continuing.",

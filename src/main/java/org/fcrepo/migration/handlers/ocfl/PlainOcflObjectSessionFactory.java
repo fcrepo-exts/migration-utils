@@ -39,6 +39,7 @@ public class PlainOcflObjectSessionFactory implements OcflObjectSessionFactory {
     private final String defaultVersionMessage;
     private final String defaultVersionUserName;
     private final String defaultVersionUserAddress;
+    private final boolean disableChecksumValidation;
 
     private boolean closed = false;
 
@@ -48,17 +49,20 @@ public class PlainOcflObjectSessionFactory implements OcflObjectSessionFactory {
      * @param defaultVersionMessage OCFL version message
      * @param defaultVersionUserName OCFL version user
      * @param defaultVersionUserAddress OCFL version user address
+     * @param disableChecksumValidation whether to verify fedora3 checksums or not
      */
     public PlainOcflObjectSessionFactory(final MutableOcflRepository ocflRepo,
                                          final Path stagingRoot,
                                          final String defaultVersionMessage,
                                          final String defaultVersionUserName,
-                                         final String defaultVersionUserAddress) {
+                                         final String defaultVersionUserAddress,
+                                         final boolean disableChecksumValidation) {
         this.ocflRepo = ocflRepo;
         this.stagingRoot = stagingRoot;
         this.defaultVersionMessage = defaultVersionMessage;
         this.defaultVersionUserName = defaultVersionUserName;
         this.defaultVersionUserAddress = defaultVersionUserAddress;
+        this.disableChecksumValidation = disableChecksumValidation;
     }
 
     @Override
@@ -70,7 +74,8 @@ public class PlainOcflObjectSessionFactory implements OcflObjectSessionFactory {
                 sessionId,
                 ocflRepo,
                 ocflObjectId,
-                stagingRoot.resolve(sessionId)
+                stagingRoot.resolve(sessionId),
+                disableChecksumValidation
         );
 
         session.versionAuthor(defaultVersionUserName, defaultVersionUserAddress);

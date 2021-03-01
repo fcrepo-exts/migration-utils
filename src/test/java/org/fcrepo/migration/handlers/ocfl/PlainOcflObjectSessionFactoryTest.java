@@ -63,7 +63,7 @@ public class PlainOcflObjectSessionFactoryTest {
                 .buildMutable();
 
         sessionFactory = new PlainOcflObjectSessionFactory(ocflRepo, staging,
-                "testing", "fedoraAdmin", "info:fedora/fedoraAdmin");
+                "testing", "fedoraAdmin", "info:fedora/fedoraAdmin", false);
     }
 
     @Test
