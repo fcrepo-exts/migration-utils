@@ -15,8 +15,10 @@
  */
 package org.fcrepo.migration.foxml;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * An interface representing content that is accessible as an InputStream.
@@ -30,5 +32,9 @@ public interface CachedContent {
      * @throws IOException IO exception
      */
     public InputStream getInputStream() throws IOException;
+
+    default Optional<File> getFile() {
+        return Optional.empty();
+    }
 
 }

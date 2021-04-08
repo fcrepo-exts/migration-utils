@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * A CashedContent implementation that exposes content stored in a
@@ -43,5 +44,10 @@ public class FileCachedContent implements CachedContent {
             throw new IllegalStateException("Cached content is not available.");
         }
         return new FileInputStream(file);
+    }
+
+    @Override
+    public Optional<File> getFile() {
+        return Optional.ofNullable(file);
     }
 }
