@@ -21,6 +21,7 @@
     <jena.version>3.17.0</jena.version>
     <checkstyle.plugin.version>3.1.1</checkstyle.plugin.version>
     <logback.version>1.1.2</logback.version>
+    <micrometer.version>1.5.5</micrometer.version>
     <mockito.version>2.22.0</mockito.version>
     <slf4j.version>1.7.10</slf4j.version>
     <junit.version>4.13.1</junit.version>
@@ -195,6 +196,11 @@
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
       <version>4.0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-core</artifactId>
+      <version>1.5.5</version>
     </dependency>
   </dependencies>
 
