@@ -66,7 +66,9 @@ public class OcflObjectSessionWrapper implements OcflObjectSession {
 
     @Override
     public ResourceHeaders writeResource(final ResourceHeaders headers, final InputStream content) {
-        return writeTimer.record(() -> inner.writeResource(headers, content));
+        // The ocfl write further down expects content to be nullable, so if it is null just continue to pass it down
+        final var countingStream = content != null ? new CountingInputStream(content) : null;
+        return writeTimer.record(() -> inner.writeResource(headers, countingStream));
     }
 
     @Override
