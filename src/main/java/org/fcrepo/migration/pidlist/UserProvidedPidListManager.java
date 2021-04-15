@@ -22,6 +22,7 @@ public class UserProvidedPidListManager implements PidListManager {
     private static final Logger LOGGER = getLogger(UserProvidedPidListManager.class);
 
     private Set<String> pidList = new HashSet<>();
+    private Set<String> processedPids = new HashSet<>();
 
     /**
      * Constructor
@@ -51,6 +52,19 @@ public class UserProvidedPidListManager implements PidListManager {
     public boolean accept(final String pid) {
         final boolean doAccept =  pidList.isEmpty() || pidList.contains(pid);
         LOGGER.debug("PID: {}, accept? {}", pid, doAccept);
+        if (doAccept) {
+            processedPids.add(pid);
+        }
         return doAccept;
+    }
+
+    public boolean finishedProcessingAllPids(final int acceptedPids) {
+        /*if we've accepted less pids than the size of pidList, we don't need to compare the sets*/
+        if (!pidList.isEmpty() && acceptedPids >= pidList.size()) {
+            if (pidList.equals(processedPids)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
