@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 
 /**
  * A basic suite of integration tests to test certain interaction patterns (and code) against the an OCFL version of
@@ -84,7 +83,7 @@ public class ResumePidListManagerIT {
         final ResumePidListManager manager = new ResumePidListManager(pidDir, acceptAll);
 
         // There are three test OCFL objects: example%3a1, example%3a2, example%3a3
-        migrator.setPidListManagers(Collections.singletonList(manager));
+        migrator.setResumePidListManager(manager);
         migrator.run();
 
         Assert.assertEquals(3, countDirectories(storage.toPath()));
@@ -95,7 +94,7 @@ public class ResumePidListManagerIT {
         final boolean acceptAll = false;
 
         // There are three test OCFL objects: example%3a1, example%3a2, example%3a3
-        migrator.setPidListManagers(Collections.singletonList(new ResumePidListManager(pidDir, acceptAll)));
+        migrator.setResumePidListManager(new ResumePidListManager(pidDir, acceptAll));
         // Only migrate 2 of 3 objects
         migrator.setLimit(2);
         migrator.run();
@@ -111,7 +110,7 @@ public class ResumePidListManagerIT {
 
         context = new ClassPathXmlApplicationContext("spring/ocfl-pid-it-setup.xml");
         migrator = (Migrator) context.getBean("migrator");
-        migrator.setPidListManagers(Collections.singletonList(new ResumePidListManager(pidDir, acceptAll)));
+        migrator.setResumePidListManager(new ResumePidListManager(pidDir, acceptAll));
         migrator.setLimit(-1); // migrate all
         migrator.run();
 

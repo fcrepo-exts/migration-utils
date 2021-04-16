@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 
 /**
  * A basic suite of integration tests to test certain interaction patterns (and code) against the an OCFL version of
@@ -94,7 +93,7 @@ public class UserProvidedPidListManagerIT {
         final UserProvidedPidListManager manager = new UserProvidedPidListManager(pidFile);
 
         // There are three test OCFL objects: example%3a1, example%3a2, example%3a3
-        migrator.setPidListManagers(Collections.singletonList(manager));
+        migrator.setUserProvidedPidListManager(manager);
         migrator.run();
 
         Assert.assertEquals(3, countDirectories(storage.toPath())) ;
@@ -111,7 +110,7 @@ public class UserProvidedPidListManagerIT {
         writer.close();
 
         // There are three test OCFL objects: example%3a1, example%3a2, example%3a3
-        migrator.setPidListManagers(Collections.singletonList(new UserProvidedPidListManager(pidFile)));
+        migrator.setUserProvidedPidListManager(new UserProvidedPidListManager(pidFile));
         migrator.run();
         context.close();
 

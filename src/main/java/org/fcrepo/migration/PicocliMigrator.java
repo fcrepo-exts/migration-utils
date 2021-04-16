@@ -21,8 +21,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.fcrepo.migration.foxml.AkubraFSIDResolver;
@@ -32,7 +30,6 @@ import org.fcrepo.migration.foxml.LegacyFSIDResolver;
 import org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler;
 import org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler;
-import org.fcrepo.migration.pidlist.PidListManager;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -306,13 +303,12 @@ public class PicocliMigrator implements Callable<Integer> {
         // - PID-list manager
         final UserProvidedPidListManager pidListManager = new UserProvidedPidListManager(pidFile);
 
-        final List<PidListManager> pidListManagerList = Arrays.asList(pidListManager, resumeManager);
-
         final Migrator migrator = new Migrator();
         migrator.setLimit(objectLimit);
         migrator.setSource(objectSource);
         migrator.setHandler(objectHandler);
-        migrator.setPidListManagers(pidListManagerList);
+        migrator.setResumePidListManager(resumeManager);
+        migrator.setUserProvidedPidListManager(pidListManager);
         migrator.setContinueOnError(continueOnError);
 
         try {

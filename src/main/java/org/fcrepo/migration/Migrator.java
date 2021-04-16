@@ -15,7 +15,8 @@
  */
 package org.fcrepo.migration;
 
-import org.fcrepo.migration.pidlist.PidListManager;
+import org.fcrepo.migration.pidlist.ResumePidListManager;
+import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.slf4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -26,7 +27,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -72,7 +72,8 @@ public class Migrator {
 
     private int limit;
 
-    private List<PidListManager> pidListManagers;
+    private ResumePidListManager resumePidListManager;
+    private UserProvidedPidListManager userProvidedPidListManager;
 
     private boolean continueOnError;
 
@@ -109,12 +110,16 @@ public class Migrator {
     }
 
     /**
-     * set the list of PidListManagers
+     * set UserProvidedPidListManager
      *
-     * @param pidListManagers the list
+     * @param manager the list
      */
-    public void setPidListManagers(final List<PidListManager> pidListManagers) {
-        this.pidListManagers = pidListManagers;
+    public void setUserProvidedPidListManager(final UserProvidedPidListManager manager) {
+        this.userProvidedPidListManager = manager;
+    }
+
+    public void setResumePidListManager(final ResumePidListManager manager) {
+        this.resumePidListManager = manager;
     }
 
     /**
@@ -170,6 +175,11 @@ public class Migrator {
                             }
                         }
                     }
+                    if (userProvidedPidListManager != null &&
+                            userProvidedPidListManager.finishedProcessingAllPids()) {
+                        LOGGER.info("finished processing everything in pidlist - exiting.");
+                        return;
+                    }
                 }
             } catch (Exception ex) {
                 final var message = String.format("MIGRATION_FAILURE: UNREADABLE_OBJECT: message=\"%s\"",
@@ -185,18 +195,17 @@ public class Migrator {
     }
 
     private boolean acceptPid(final String pid) {
-
-        // If there is not manager, accept the PID
-        if (pidListManagers == null) {
-            return true;
-        }
-
         // If any manager DOES NOT accept the PID, return false
-        for (PidListManager m : pidListManagers) {
-            if (!m.accept(pid)) {
-                return false;
-            }
+        // check user pid list first, so it gets registered in the UserProvidedPidListManager as an accepted pid
+        //  even if the resume pid list manager rejects it. This way the UserProvidedPidListManager can still see
+        //  when all the items in the list have been processed, even if we're resuming in the middle.
+        if (userProvidedPidListManager != null && !userProvidedPidListManager.accept(pid)) {
+            return false;
         }
+        if (resumePidListManager != null && !resumePidListManager.accept(pid)) {
+            return false;
+        }
+
         return true;
     }
 
