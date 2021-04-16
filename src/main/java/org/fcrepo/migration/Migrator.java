@@ -198,10 +198,13 @@ public class Migrator {
 
     private boolean acceptPid(final String pid) {
         // If any manager DOES NOT accept the PID, return false
-        if (resumePidListManager != null && !resumePidListManager.accept(pid)) {
+        // check user pid list first, so it gets registered in the UserProvidedPidListManager as an accepted pid
+        //  even if the resume pid list manager rejects it. This way the UserProvidedPidListManager can still see
+        //  when all the items in the list have been processed, even if we're resuming in the middle.
+        if (userProvidedPidListManager != null && !userProvidedPidListManager.accept(pid)) {
             return false;
         }
-        if (userProvidedPidListManager != null && !userProvidedPidListManager.accept(pid)) {
+        if (resumePidListManager != null && !resumePidListManager.accept(pid)) {
             return false;
         }
 
