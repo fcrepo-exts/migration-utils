@@ -149,7 +149,6 @@ public class Migrator {
      */
     public void run() throws XMLStreamException {
         int index = 0;
-        int acceptedPids = 0;
 
         for (final var iterator = source.iterator(); iterator.hasNext();) {
             try (final var o = iterator.next()) {
@@ -163,7 +162,6 @@ public class Migrator {
 
                     if (acceptPid(pid)) {
                         LOGGER.info("Processing \"" + pid + "\"...");
-                        acceptedPids += 1;
                         try {
                             o.processObject(handler);
                         } catch (Exception ex) {
@@ -178,7 +176,7 @@ public class Migrator {
                         }
                     }
                     if (userProvidedPidListManager != null &&
-                            userProvidedPidListManager.finishedProcessingAllPids(acceptedPids)) {
+                            userProvidedPidListManager.finishedProcessingAllPids()) {
                         LOGGER.info("finished processing everything in pidlist - exiting.");
                         return;
                     }

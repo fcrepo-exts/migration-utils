@@ -58,9 +58,8 @@ public class UserProvidedPidListManager implements PidListManager {
         return doAccept;
     }
 
-    public boolean finishedProcessingAllPids(final int acceptedPids) {
-        /*if we've accepted less pids than the size of pidList, we don't need to compare the sets*/
-        if (!pidList.isEmpty() && acceptedPids >= pidList.size()) {
+    public boolean finishedProcessingAllPids() {
+        if (!pidList.isEmpty()) {
             if (pidList.equals(processedPids)) {
                 return true;
             }
