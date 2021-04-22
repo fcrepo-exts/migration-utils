@@ -18,7 +18,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>5.2.1.RELEASE</spring.version>
     <lucene.version>7.1.0</lucene.version>
-    <jena.version>2.12.1</jena.version>
+    <jena.version>3.17.0</jena.version>
     <checkstyle.plugin.version>3.1.1</checkstyle.plugin.version>
     <logback.version>1.1.2</logback.version>
     <mockito.version>2.22.0</mockito.version>

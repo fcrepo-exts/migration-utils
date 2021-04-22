@@ -15,12 +15,12 @@
  */
 package org.fcrepo.migration.foxml;
 
+import org.apache.jena.update.UpdateRequest;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-
-import com.hp.hpl.jena.update.UpdateRequest;
 
 /**
  * Utility bean to set namespace prefixes in a SPARQL update.

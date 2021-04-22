@@ -19,12 +19,12 @@ package org.fcrepo.migration.handlers.ocfl;
 import at.favre.lib.bytes.Bytes;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
@@ -527,18 +527,22 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private static InputStream getObjTriples(final ObjectVersionReference o, final String pid) {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Model triples = ModelFactory.createDefaultModel();
-        final String uri = "info:fedora/" + pid;
+        try {
+            final String uri = "info:fedora/" + pid;
 
-        o.getObjectProperties().listProperties().forEach(p -> {
-            if (p.getName().contains("Date")) {
-                addDateLiteral(triples, uri, p.getName(), p.getValue());
-            } else {
-                addStringLiteral(triples, uri, p.getName(), p.getValue());
-            }
-        });
+            o.getObjectProperties().listProperties().forEach(p -> {
+                if (p.getName().contains("Date")) {
+                    addDateLiteral(triples, uri, p.getName(), p.getValue());
+                } else {
+                    addStringLiteral(triples, uri, p.getName(), p.getValue());
+                }
+            });
 
-        triples.write(out, "N-TRIPLES");
-        return new ByteArrayInputStream(out.toByteArray());
+            triples.write(out, "N-TRIPLES");
+            return new ByteArrayInputStream(out.toByteArray());
+        } finally {
+            triples.close();
+        }
     }
 
     // Get datastream-level triples
@@ -548,53 +552,57 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Model triples = ModelFactory.createDefaultModel();
 
-        if (migrationType == MigrationType.PLAIN_OCFL) {
-            // These triples are server managed in F6
-            addDateLiteral(triples,
-                    f6DsId,
-                    "http://fedora.info/definitions/v4/repository#created",
-                    createDate);
-            addDateLiteral(triples,
-                    f6DsId,
-                    "http://fedora.info/definitions/v4/repository#lastModified",
-                    dv.getCreated());
-            addStringLiteral(triples,
-                    f6DsId,
-                    "http://purl.org/dc/terms/identifier",
-                    dv.getDatastreamInfo().getDatastreamId());
-            addStringLiteral(triples,
-                    f6DsId,
-                    "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType",
-                    dv.getMimeType());
-            addLongLiteral(triples,
-                    f6DsId,
-                    "http://www.loc.gov/premis/rdf/v1#size",
-                    dv.getSize());
-
-            if (dv.getContentDigest() != null) {
+        try {
+            if (migrationType == MigrationType.PLAIN_OCFL) {
+                // These triples are server managed in F6
+                addDateLiteral(triples,
+                        f6DsId,
+                        "http://fedora.info/definitions/v4/repository#created",
+                        createDate);
+                addDateLiteral(triples,
+                        f6DsId,
+                        "http://fedora.info/definitions/v4/repository#lastModified",
+                        dv.getCreated());
                 addStringLiteral(triples,
                         f6DsId,
-                        "http://www.loc.gov/premis/rdf/v1#hasMessageDigest",
-                        "urn:" + dv.getContentDigest().getType().toLowerCase() + ":" +
-                                dv.getContentDigest().getDigest().toLowerCase());
+                        "http://purl.org/dc/terms/identifier",
+                        dv.getDatastreamInfo().getDatastreamId());
+                addStringLiteral(triples,
+                        f6DsId,
+                        "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType",
+                        dv.getMimeType());
+                addLongLiteral(triples,
+                        f6DsId,
+                        "http://www.loc.gov/premis/rdf/v1#size",
+                        dv.getSize());
+
+                if (dv.getContentDigest() != null) {
+                    addStringLiteral(triples,
+                            f6DsId,
+                            "http://www.loc.gov/premis/rdf/v1#hasMessageDigest",
+                            "urn:" + dv.getContentDigest().getType().toLowerCase() + ":" +
+                                    dv.getContentDigest().getDigest().toLowerCase());
+                }
             }
+
+            addStringLiteral(triples,
+                    f6DsId,
+                    "http://purl.org/dc/terms/title",
+                    dv.getLabel());
+            addStringLiteral(triples,
+                    f6DsId,
+                    "http://fedora.info/definitions/1/0/access/objState",
+                    dv.getDatastreamInfo().getState());
+            addStringLiteral(triples,
+                    f6DsId,
+                    "http://www.loc.gov/premis/rdf/v1#formatDesignation",
+                    dv.getFormatUri());
+
+            triples.write(out, "N-TRIPLES");
+            return new ByteArrayInputStream(out.toByteArray());
+        } finally {
+            triples.close();
         }
-
-        addStringLiteral(triples,
-                         f6DsId,
-                         "http://purl.org/dc/terms/title",
-                         dv.getLabel());
-        addStringLiteral(triples,
-                         f6DsId,
-                         "http://fedora.info/definitions/1/0/access/objState",
-                         dv.getDatastreamInfo().getState());
-        addStringLiteral(triples,
-                         f6DsId,
-                         "http://www.loc.gov/premis/rdf/v1#formatDesignation",
-                         dv.getFormatUri());
-
-        triples.write(out, "N-TRIPLES");
-        return new ByteArrayInputStream(out.toByteArray());
     }
 
     private static void addStringLiteral(final Model m,
