@@ -137,10 +137,14 @@ java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=exporte
 
 #### Metrics Gathering
 
-The migration-utils offers some insight into operations using Prometheus and Grafana. To get started capturing metrics of a migration, an example setup is provided in the `metrics` directory. Included is a docker compose file for quickly setting up Prometheus and Grafana, a `promtheus.yml` for Prometheus configuration, and a `dashboard.json` for an example dashboard to use in Grafana. When running with the `--enable-metrics` flag, the migration-utils will start up a web server on port 8080 for Prometheus to scrape data from.
+The migration-utils offers some insight into operations using Prometheus and Grafana. When running, the 
+`--enable-metrics` option must be used which will start up an HTTP server on port 8080 with an endpoint on `/prometheus`
+for Prometheus to scrape data from. This can be tested by going to `http://localhost:8080/prometheus` while the 
+migration-utils is running.
 
-To get setup, follow the directions from the Fedora 6 [Metrics](https://wiki.lyrasis.org/display/FEDORA6x/Metrics) documentation and run a Fedora 6 migration with metrics enabled:
-```
+To get setup, follow the directions from the [Migration Utils Metrics](https://wiki.lyrasis.org/display/FEDORA6x/Migration+Utils+Metrics)
+documentation and run a Fedora 6 migration with metrics enabled:
+```shell
 java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=legacy --target-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams --enable-metrics
 ```
 
