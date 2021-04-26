@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
+
 /**
  * An interface defining access to information about a version of a
  * fedora datastream.
@@ -105,6 +106,16 @@ public interface DatastreamVersion {
     public InputStream getContent() throws IOException;
 
     /**
+     * Get the file backing this datastream if it exists.
+     * Used by fcrepo-migration-validator in order to get direct access to files.
+     *
+     * @return the file
+     */
+    default Optional<File> getFile() {
+        return Optional.empty();
+    }
+
+    /**
      * Returns the URL to which an External (X) or Redirect (R) datastream
      * points.  Throws IllegalStateException if this isn't an external or
      * redirect datastream.
@@ -131,7 +142,4 @@ public interface DatastreamVersion {
      */
     public boolean isLastVersionIn(ObjectReference obj);
 
-    default Optional<File> getFile() {
-        return Optional.empty();
-    }
 }
