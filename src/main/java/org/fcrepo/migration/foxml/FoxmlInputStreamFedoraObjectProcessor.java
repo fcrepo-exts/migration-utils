@@ -15,6 +15,8 @@
  */
 package org.fcrepo.migration.foxml;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -95,6 +97,11 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
     private static final String FOXML_NS = "info:fedora/fedora-system:def/foxml#";
 
+    private static final String METRIC_NAME = "fcrepo.storage.foxml.object";
+    private static final String OPERATION = "operation";
+    private static final Timer processObjectTimer = Metrics.timer(METRIC_NAME, OPERATION, "processObject");
+    private static final Timer completeObjectTimer = Metrics.timer(METRIC_NAME, OPERATION, "completeObject");
+
     private URLFetcher fetcher;
 
     private String localFedoraServer;
@@ -174,6 +181,7 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
     @Override
     public void processObject(final StreamingFedoraObjectHandler handler) {
+        final var stopwatch = Timer.start();
         handler.beginObject(objectInfo);
         Foxml11DatastreamInfo dsInfo = null;
         try {
@@ -200,8 +208,6 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                     dsInfo = null;
                 } else if (reader.isEndElement() && reader.getLocalName().equals("digitalObject")) {
                     // end of document....
-                    handler.completeObject(objectInfo);
-                    cleanUpTempFiles();
                 } else {
                     throw new RuntimeException("Unexpected xml structure! \"" + reader.getEventType() + "\" at line "
                             + reader.getLocation().getLineNumber() + ", column "
@@ -210,8 +216,26 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                 }
                 reader.next();
             }
-
         } catch (Exception e) {
+            abort(handler, e);
+        } finally {
+            stopwatch.stop(processObjectTimer);
+        }
+
+        completeObjectTimer.record(() -> complete(handler));
+    }
+
+    private void complete(final StreamingFedoraObjectHandler handler) {
+        try {
+            handler.completeObject(objectInfo);
+            cleanUpTempFiles();
+        } catch (Exception e) {
+            abort(handler, e);
+        }
+    }
+
+    private void abort(final StreamingFedoraObjectHandler handler, final Exception e) {
+        try {
             handler.abortObject(objectInfo);
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;

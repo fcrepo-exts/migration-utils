@@ -104,6 +104,11 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
                              Disable validation that datastream content matches
                                Fedora 3 checksum.
                                Default: false
+      --enable-metrics       Enable gathering of metrics for a Prometheus
+                               instance.
+                             Note: this requires port 8080 to be free in order
+                               for Prometheus to scrape metrics.
+                               Default: false
       --debug                Enables debug logging
 ```
 
@@ -128,6 +133,19 @@ Run a minimal fedora 6 migration from a fedora3 archival export
 ```shell
 java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=exported --limit=100 --target-dir=target/test/ocfl --exported-dir=src/test/resources/exported
 
+```
+
+#### Metrics Gathering
+
+The migration-utils offers some insight into operations using Prometheus and Grafana. When running, the 
+`--enable-metrics` option must be used which will start up an HTTP server on port 8080 with an endpoint on `/prometheus`
+for Prometheus to scrape data from. This can be tested by going to `http://localhost:8080/prometheus` while the 
+migration-utils is running.
+
+To get setup, follow the directions from the [Migration Utils Metrics](https://wiki.lyrasis.org/display/FEDORA6x/Migration+Utils+Metrics)
+documentation and run a Fedora 6 migration with metrics enabled:
+```shell
+java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=legacy --target-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams --enable-metrics
 ```
 
 ## Property Mappings

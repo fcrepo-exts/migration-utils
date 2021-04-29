@@ -167,7 +167,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final Map<String, String> datastreamStates = new HashMap<>();
 
         for (var ov : versions) {
-            final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
+            final OcflObjectSession session = new OcflObjectSessionWrapper(sessionFactory.newSession(f6ObjectId));
 
             if (ov.isFirstVersion()) {
                 if (session.containsResource(f6ObjectId)) {
@@ -290,7 +290,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private void handleDeletedResources(final String f6ObjectId,
                                         final String objectState,
                                         final Map<String, String> datastreamStates) {
-        final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
+        final OcflObjectSession session = new OcflObjectSessionWrapper(sessionFactory.newSession(f6ObjectId));
 
         try {
             final var now = OffsetDateTime.now();

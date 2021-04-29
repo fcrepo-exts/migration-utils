@@ -15,6 +15,8 @@
  */
 package org.fcrepo.migration;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.slf4j.Logger;
@@ -43,6 +45,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class Migrator {
 
     private static final Logger LOGGER = getLogger(Migrator.class);
+
+    private static final Timer nextTimer = Metrics.timer("fcrepo.storage.foxml.object", "operation", "findNext");
 
     /**
      * the main method.
@@ -151,7 +155,7 @@ public class Migrator {
         int index = 0;
 
         for (final var iterator = source.iterator(); iterator.hasNext();) {
-            try (final var o = iterator.next()) {
+            try (final var o = nextTimer.record(iterator::next)) {
                 final String pid = o.getObjectInfo().getPid();
                 if (pid != null) {
                     // Process if limit is '-1', or we have not hit the non-negative 'limit'...

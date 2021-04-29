@@ -30,6 +30,7 @@ import org.fcrepo.migration.foxml.LegacyFSIDResolver;
 import org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler;
 import org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler;
+import org.fcrepo.migration.metrics.PrometheusActuator;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -152,6 +153,11 @@ public class PicocliMigrator implements Callable<Integer> {
     @Option(names = {"--no-checksum-validation"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 31,
             description = "Disable validation that datastream content matches Fedora 3 checksum.")
     private boolean disableChecksumValidation;
+
+    @Option(names = {"--enable-metrics"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 32,
+            description = "Enable gathering of metrics for a Prometheus instance. " +
+                          "\nNote: this requires port 8080 to be free in order for Prometheus to scrape metrics.")
+    private boolean enableMetrics;
 
     @Option(names = {"--debug"}, order = 32, description = "Enables debug logging")
     private boolean debug;
@@ -286,6 +292,10 @@ public class PicocliMigrator implements Callable<Integer> {
                 throw new RuntimeException("Should never happen");
         }
 
+        // setup HttpServer + micrometer for publishing metrics
+        final PrometheusActuator actuator = new PrometheusActuator(enableMetrics);
+        actuator.start();
+
         final OcflObjectSessionFactory ocflSessionFactory = new OcflSessionFactoryFactoryBean(ocflStorageDir.toPath(),
                 ocflStagingDir.toPath(), migrationType, user, userUri, algorithm, disableChecksumValidation)
                 .getObject();
@@ -319,6 +329,7 @@ public class PicocliMigrator implements Callable<Integer> {
                 idResolver.close();
             }
             FileUtils.deleteDirectory(ocflStagingDir);
+            actuator.stop();
         }
 
         return 0;
