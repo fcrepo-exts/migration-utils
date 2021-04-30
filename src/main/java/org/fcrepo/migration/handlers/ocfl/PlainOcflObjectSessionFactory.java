@@ -91,6 +91,11 @@ public class PlainOcflObjectSessionFactory implements OcflObjectSessionFactory {
         }
     }
 
+    @Override
+    public void useUnsafeWrite(final boolean useUnsafeWrite) {
+        // not supported
+    }
+
     private void enforceOpen() {
         if (closed) {
             throw new IllegalStateException("The session factory is closed!");
