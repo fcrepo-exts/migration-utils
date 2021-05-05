@@ -90,6 +90,7 @@ public abstract class Example1TestSuite {
         Assert.assertEquals("2015-01-27T19:07:33.120Z", audit0.getCreated());
         Assert.assertEquals("text/xml", audit0.getMimeType());
         Assert.assertEquals("info:fedora/fedora-system:format/xml.fedora.audit", audit0.getFormatUri());
+        Assert.assertTrue(audit0.getFile().isEmpty());
     }
 
     @Test
@@ -112,6 +113,7 @@ public abstract class Example1TestSuite {
                 "  <dc:title>This is an example object.</dc:title>\n" +
                 "  <dc:identifier>example:1</dc:identifier>\n" +
                 "</oai_dc:dc>", IOUtils.toString(dc0.getContent()).trim());
+        Assert.assertTrue(dc0.getFile().isEmpty());
     }
 
     @Test
@@ -131,6 +133,7 @@ public abstract class Example1TestSuite {
         Assert.assertEquals("<test>\n" +
                 "  This is a test.\n" +
                 "</test>", IOUtils.toString(ds1.getContent()).trim());
+        Assert.assertTrue(ds1.getFile().isEmpty());
 
         final DatastreamVersion ds2 = getResult().dsVersions.get(3);
         Assert.assertEquals("DS1", ds2.getDatastreamInfo().getDatastreamId());
@@ -148,6 +151,7 @@ public abstract class Example1TestSuite {
         Assert.assertEquals("<test>\n" +
                 "  This is a test that was edited.\n" +
                 "</test>", IOUtils.toString(ds2.getContent()).trim());
+        Assert.assertTrue(ds2.getFile().isEmpty());
     }
 
     @Test
@@ -167,6 +171,7 @@ public abstract class Example1TestSuite {
         Assert.assertTrue("Managed Base64 encoded datastream must be preserved.", IOUtils.contentEquals(
                 getClass().getClassLoader().getResourceAsStream("small-mountains.jpg"),
                 new ByteArrayInputStream(getResult().cachedDsVersionBinaries.get(4))));
+        Assert.assertTrue(ds2.getFile().isPresent());
     }
 
     @Test
@@ -184,6 +189,7 @@ public abstract class Example1TestSuite {
         ds3.getContent().close();
         Assert.assertEquals("http://" + SimpleObjectSource.LOCAL_FEDORA_SERVER + "/fedora/get/example:1/DS2",
                 getFetcher().getLastUrl().toExternalForm());
+        Assert.assertTrue(ds3.getFile().isEmpty());
     }
 
     @Test
@@ -202,6 +208,7 @@ public abstract class Example1TestSuite {
         Assert.assertEquals("http://" + SimpleObjectSource.LOCAL_FEDORA_SERVER
                         + "/fedora/objects/example:1/datastreams/DS2/content",
                 getFetcher().getLastUrl().toExternalForm());
+        Assert.assertTrue(ds4.getFile().isEmpty());
     }
 
     public static class SimpleObjectSource implements ObjectSource {
