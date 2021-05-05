@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
-
 /**
  * An interface defining access to information about a version of a
  * fedora datastream.
@@ -141,5 +140,4 @@ public interface DatastreamVersion {
      * @return  True if this is the last version, false otherwise.
      */
     public boolean isLastVersionIn(ObjectReference obj);
-
 }

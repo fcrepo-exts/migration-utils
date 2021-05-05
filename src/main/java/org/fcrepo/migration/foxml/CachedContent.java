@@ -40,5 +40,4 @@ public interface CachedContent {
     default Optional<File> getFile() {
         return Optional.empty();
     }
-
 }
