@@ -80,6 +80,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -448,6 +449,11 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                 reader.next();
             }
 
+        }
+
+        @Override
+        public Optional<File> getFile() {
+            return dsContent.getFile();
         }
 
         private String extractInlineXml() throws XMLStreamException {
