@@ -57,6 +57,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -293,7 +294,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final OcflObjectSession session = new OcflObjectSessionWrapper(sessionFactory.newSession(f6ObjectId));
 
         try {
-            final var now = OffsetDateTime.now();
+            final var now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
             final var hasDeletes = new AtomicBoolean(false);
 
             if (OBJ_DELETED.equals(objectState) || (deleteInactive && OBJ_INACTIVE.equals(objectState))) {
