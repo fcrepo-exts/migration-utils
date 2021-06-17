@@ -110,7 +110,7 @@ public class ArchiveGroupHandlerTest {
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         sessionFactory = new DefaultOcflObjectSessionFactory(ocflRepo, staging, objectMapper,
-                new NoOpCache<>(), CommitType.NEW_VERSION,
+                new NoOpCache<>(), new NoOpCache<>(), CommitType.NEW_VERSION,
                 "testing", USER, "info:fedora/fedoraAdmin");
 
         plainSessionFactory = new PlainOcflObjectSessionFactory(ocflRepo, staging,
