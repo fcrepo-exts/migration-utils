@@ -15,7 +15,7 @@ In particular:
 
 ## Status
 
-Fedora 6 support is being actively developed, and is considered unstable until Fedora 6 is released.
+Fedora 6 support is production ready. Please use the latest production [release](https://github.com/fcrepo-exts/migration-utils/releases). 
 
 ## How to use
 
@@ -193,9 +193,6 @@ java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=legacy 
 
 **Note**: All fcrepo 3 DC (Dublin Core) datastream values are mapped as dcterms properties on the Object in fcrepo 6+. The same goes for any properties in the RELS-EXT and RELS-INT datastreams.
 
-## Additional Documentation
-
- * [wiki](https://wiki.duraspace.org/display/FF/Fedora+3+to+4+Data+Migration)
 
 ### Development
 
@@ -209,5 +206,5 @@ The executable utility will be found in the `target` directory.
 
 Current maintainer
 
-* [Andrew Woods](https://github.com/awoods)
+* [Daniel Bernstein](https://github.com/dbernstein)
 
