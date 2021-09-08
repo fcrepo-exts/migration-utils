@@ -17,9 +17,11 @@ package org.fcrepo.migration.foxml;
 
 import org.apache.jena.update.UpdateRequest;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -38,7 +40,7 @@ public class NamespacePrefixMapper {
      */
     public NamespacePrefixMapper(final File namespaceFile) throws IOException {
         namespacePrefixes = new Properties();
-        try (final FileInputStream namespaceInputStream = new FileInputStream(namespaceFile)) {
+        try (final InputStream namespaceInputStream = new BufferedInputStream(new FileInputStream(namespaceFile))) {
             namespacePrefixes.load(namespaceInputStream);
         }
     }

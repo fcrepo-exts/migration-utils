@@ -45,6 +45,7 @@ import org.fcrepo.storage.ocfl.ResourceHeaders;
 import org.fcrepo.storage.ocfl.ResourceHeadersVersion;
 import org.slf4j.Logger;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -177,7 +178,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 objectState = getObjectState(ov, objectId);
                 // Object properties are written only once (as fcrepo3 object properties were unversioned).
                 if (foxmlFile) {
-                    try (InputStream is = Files.newInputStream(objectInfo.getFoxmlPath())) {
+                    try (InputStream is = new BufferedInputStream(Files.newInputStream(objectInfo.getFoxmlPath()))) {
                         final var foxmlDsId = f6ObjectId + "/FOXML";
                         final var headers = createHeaders(foxmlDsId, f6ObjectId,
                                 InteractionModel.NON_RDF).build();
