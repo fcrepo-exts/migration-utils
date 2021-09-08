@@ -56,6 +56,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -422,7 +423,8 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                         try {
                             final File f = File.createTempFile("decoded", "file");
                             tempFiles.add(f);
-                            final Base64OutputStream out = new Base64OutputStream(new FileOutputStream(f), false);
+                            final Base64OutputStream out = new Base64OutputStream(
+                                    new BufferedOutputStream(new FileOutputStream(f)), false);
                             while (reader.next() == XMLStreamConstants.CHARACTERS) {
                                 out.write(reader.getText().getBytes("UTF-8"));
                             }

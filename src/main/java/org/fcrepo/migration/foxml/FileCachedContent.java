@@ -15,6 +15,7 @@
  */
 package org.fcrepo.migration.foxml;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class FileCachedContent implements CachedContent {
         if (!file.exists()) {
             throw new IllegalStateException("Cached content is not available.");
         }
-        return new FileInputStream(file);
+        return new BufferedInputStream(new FileInputStream(file));
     }
 
     @Override
