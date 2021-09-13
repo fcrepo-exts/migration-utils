@@ -47,10 +47,10 @@ xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/
 </foxml:datastreamVersion>
 </foxml:datastream>
 <foxml:datastream ID="RELS-INT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
-<foxml:datastreamVersion ID="RELS-INT.0" LABEL="RDF Statements about this object" CREATED="2016-08-30T20:12:03.771Z" MIMETYPE="application/rdf+xml" SIZE="639">
-<foxml:contentDigest TYPE="MD5" DIGEST="02a1026f240eb7946245128c6f53c7f9"/>
+<foxml:datastreamVersion ID="RELS-INT.0" LABEL="RDF Statements about this object" CREATED="2019-07-01T17:05:28.188Z" MIMETYPE="application/rdf+xml" SIZE="540">
+<foxml:contentDigest TYPE="MD5" DIGEST="17a041cb5ae7776a2f54a06a856a66d9"/>
 <foxml:xmlContent>
-<rdf:RDF xmlns:fedora-model="info:fedora/fedora-system:def/model#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:uwdc="http://digital.library.wisc.edu/1711.dl/rdf/1.0/relations#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.w3.org/1999/02/22-rdf-syntax-ns# http://www.w3.org/2000/07/rdf.xsd">
+<rdf:RDF xmlns:fedora-model="info:fedora/fedora-system:def/model#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:uwdc="http://digital.library.wisc.edu/1711.dl/rdf/1.0/relations#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <rdf:Description rdf:about="info:fedora/1711.dl:Access-policy-open-access-UW-Madison-all/XACML">
             <fedora-model:downloadFilename>Access-policy-open-access-UW-Madison-all.xml</fedora-model:downloadFilename>
           </rdf:Description>
@@ -70,6 +70,12 @@ xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.opena
   <dc:identifier>1711.dl:Access-policy-open-access-UW-Madison-all</dc:identifier>
 </oai_dc:dc>
 </foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="XACML" STATE="A" CONTROL_GROUP="M" VERSIONABLE="true">
+<foxml:datastreamVersion ID="XACML.0" LABEL="XACML Policy" CREATED="2019-07-01T17:05:28.188Z" MIMETYPE="text/xml" FORMAT_URI="http://digital.library.wisc.edu/1711.dl/XMLSchema-XACML-3.0" SIZE="1440">
+<foxml:contentDigest TYPE="MD5" DIGEST=""/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="1711.dl:Access-policy-open-access-UW-Madison-all+XACML+XACML.0"/>
 </foxml:datastreamVersion>
 </foxml:datastream>
 </foxml:digitalObject>
