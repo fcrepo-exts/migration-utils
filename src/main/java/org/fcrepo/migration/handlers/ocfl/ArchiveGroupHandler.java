@@ -106,6 +106,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private static final String DS_DELETED = "D";
 
     private static final String OBJ_STATE_PROP = "info:fedora/fedora-system:def/model#state";
+    private static final String DOWNLOAD_NAME_PROP = "info:fedora/fedora-system:def/model#downloadFilename";
     private static final String OBJ_INACTIVE = "Inactive";
     private static final String OBJ_DELETED = "Deleted";
 
@@ -265,6 +266,15 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                 metaMap.computeIfAbsent(descId, k -> new MetaHolder())
                                         .setRelsTriples(model);
                                 toWrite.add(descId);
+
+                                // Check to see if there are any file names that need updated
+                                for (final var it = model.listStatements(); it.hasNext(); ) {
+                                    final var statement = it.next();
+                                    if (DOWNLOAD_NAME_PROP.equals(statement.getPredicate().getURI())) {
+                                        filenameChanges.put(id, statement.getObject().toString());
+                                        break;
+                                    }
+                                }
                             });
                         }
                     }
@@ -283,6 +293,14 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         handleDeletedResources(f6ObjectId, objectState, datastreamStates);
     }
 
+    /**
+     * RDF resources are written after writing all other binaries in the version because they can be affected by
+     * RELS-INT or RELS-EXT updates.
+     *
+     * @param toWrite the set of resources that should be written to this version
+     * @param metaMap the map of all known rdf resources
+     * @param session the current ocfl session
+     */
     private void writeMeta(final Set<String> toWrite,
                            final Map<String, MetaHolder> metaMap,
                            final OcflObjectSession session) {
@@ -730,6 +748,12 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         return splitModels;
     }
 
+    /**
+     * Wrapper class for storing a RDF resource's "content" triples, RELS triples, and resource headers. The content
+     * triples are triples that were generated based on general Fedora metadata, and the RELS triples are extracted from
+     * one of the RELS-* files. They are maintained separately because it's possible for them to be updated independently
+     * and we need to be able to construct the correct set of triples when one changes.
+     */
     private static class MetaHolder {
         Model contentTriples;
         Model relsTriples;
@@ -750,6 +774,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             this.headers = headers;
         }
 
+        /**
+         * Constructs a complete set of triples at the current version of the resource and serializes them as n-triples.
+         *
+         * @return n-triples input stream
+         */
         public InputStream constructTriples() {
             final var output = new ByteArrayOutputStream();
             final var triples = ModelFactory.createDefaultModel();
