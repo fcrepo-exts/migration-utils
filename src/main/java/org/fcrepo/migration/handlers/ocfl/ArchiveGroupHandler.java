@@ -751,8 +751,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     /**
      * Wrapper class for storing a RDF resource's "content" triples, RELS triples, and resource headers. The content
      * triples are triples that were generated based on general Fedora metadata, and the RELS triples are extracted from
-     * one of the RELS-* files. They are maintained separately because it's possible for them to be updated independently
-     * and we need to be able to construct the correct set of triples when one changes.
+     * one of the RELS-* files. They are maintained separately because it's possible for them to be updated
+     * independently and we need to be able to construct the correct set of triples when one changes.
      */
     private static class MetaHolder {
         Model contentTriples;
