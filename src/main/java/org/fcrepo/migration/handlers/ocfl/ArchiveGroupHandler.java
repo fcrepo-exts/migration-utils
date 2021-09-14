@@ -290,8 +290,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             final var meta = metaMap.get(id);
 
             if (meta.headers == null) {
-                // If this happens it means a RELS-INT was referencing a datastream that does not exist
-                throw new RuntimeException("Headers missing for " + id);
+                // This only happens if there's a RELS-INT that references a datastream before it exists.
+                // Skip for now. The triples will be added once the datastream exists.
+                continue;
             }
 
             // Need to copy over the memento created date from the existing headers because it may have been updated
