@@ -23,6 +23,7 @@ import static picocli.CommandLine.Help.Visibility.ALWAYS;
 import java.io.File;
 import java.util.concurrent.Callable;
 
+import org.apache.jena.query.ARQ;
 import org.fcrepo.migration.foxml.AkubraFSIDResolver;
 import org.fcrepo.migration.foxml.ArchiveExportedFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.foxml.InternalIDResolver;
@@ -320,6 +321,9 @@ public class PicocliMigrator implements Callable<Integer> {
         migrator.setResumePidListManager(resumeManager);
         migrator.setUserProvidedPidListManager(pidListManager);
         migrator.setContinueOnError(continueOnError);
+
+        // for some reason ARQ does not implicitly init on some systems
+        ARQ.init();
 
         try {
             migrator.run();

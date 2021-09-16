@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy
+  xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17 http://digital.library.wisc.edu/1711.dl/XMLSchema-XACML-3.0"
+  PolicyId="hdl:1711.dl/Access-policy-open-access-UW-Madison-all"
+  RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit"
+  Version="1.0">
+<Description>
+	Open Access: any user can view, listen to, and/or download any representation of the object,
+	as long as they're associated with or present at UW-Madison.
+</Description>
+<Target />
+<Rule Effect="Permit" RuleId="permit-UWMadison">
+	<Target />
+	<Condition>
+		<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+				<AttributeDesignator
+					AttributeId="http://digital.library.wisc.edu/1711.dl/vocabulary/access/population#"
+					Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+					DataType="http://www.w3.org/2001/XMLSchema#string"
+					MustBePresent="true" />
+			</Apply>
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">http://digital.library.wisc.edu/1711.dl/vocabulary/access/population#uwmadison</AttributeValue>
+		</Apply>
+	</Condition>
+</Rule>
+<Rule Effect="Deny" RuleId="deny-rule"></Rule>
+</Policy> 

@@ -51,6 +51,7 @@ import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -75,6 +76,8 @@ public class ArchiveGroupHandlerTest {
     private static final String OBJ_ACTIVE = "Active";
     private static final String OBJ_INACTIVE = "Inactive";
     private static final String OBJ_DELETED = "Deleted";
+    private static final String RELS_INT = "RELS-INT";
+    private static final String RELS_EXT = "RELS-EXT";
 
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
@@ -190,6 +193,139 @@ public class ArchiveGroupHandlerTest {
         verifyHeaders(session, ocflObjectId, dsId2, ds2V2, "v2");
         verifyDescRdf(session, ocflObjectId, dsId2, ds2V2, "v2");
         verifyDescHeaders(session, ocflObjectId, dsId2, "v2");
+    }
+
+    @Test
+    public void updateFilenameFromRelsInt() throws IOException {
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+
+        final var pid = "obj2";
+        final var dsId1 = "ds3";
+
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var relsIntV1 = datastreamVersion(RELS_INT, true, MANAGED, "application/rdf+xml",
+                "<rdf:RDF xmlns:fedora-model=\"info:fedora/fedora-system:def/model#\"" +
+                        " xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
+                        "\t<rdf:Description rdf:about=\"info:fedora/obj2/ds3\">\n" +
+                        "\t\t<fedora-model:downloadFilename>example.xml</fedora-model:downloadFilename>\n" +
+                        "\t</rdf:Description>\n" +
+                        "</rdf:RDF>", null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, List.of(ds1V1)),
+                objectVersionReference(pid, false, List.of(relsIntV1))
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
+
+        verifyObjectRdf(contentToString(session, ocflObjectId));
+        verifyObjectHeaders(session, ocflObjectId);
+
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId1, "v1"), ds1V1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v1");
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1V1, "v1");
+        verifyDescHeaders(session, ocflObjectId, dsId1, "v1");
+
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId1, "v2"), ds1V1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v2", "example.xml");
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1V1, "v2");
+        verifyDescHeaders(session, ocflObjectId, dsId1, "v2");
+    }
+
+    @Test
+    public void addRelsTriples() throws IOException {
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+
+        final var pid = "obj2";
+        final var dsId1 = "ds3";
+        final var dsId2 = "ds4";
+
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
+        final var relsExtV1 = datastreamVersion(RELS_EXT, true, MANAGED, "application/rdf+xml",
+                "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
+                        "\t<rdf:Description rdf:about=\"info:fedora/obj2\">\n" +
+                        "\t\t<hasModel xmlns=\"info:fedora/fedora-system:def/model#\"" +
+                        " rdf:resource=\"info:fedora/TestObject\"></hasModel>\n" +
+                        "\t\t<isMemberOf xmlns=\"info:fedora/fedora-system:def/relations-external#\"" +
+                        " rdf:resource=\"info:fedora/obj1\"></isMemberOf>\n" +
+                        "\t</rdf:Description>\n" +
+                        "</rdf:RDF>", null);
+        final var relsIntV1 = datastreamVersion(RELS_INT, true, MANAGED, "application/rdf+xml",
+                "<rdf:RDF xmlns:fedora-model=\"info:fedora/fedora-system:def/model#\"" +
+                        " xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"" +
+                        " xmlns:example=\"http://example.com/#\">\n" +
+                        "\t<rdf:Description rdf:about=\"info:fedora/obj2/ds3\">\n" +
+                        "\t\t<example:animal>cat</example:animal>\n" +
+                        "\t</rdf:Description>\n" +
+                        "\t<rdf:Description rdf:about=\"info:fedora/obj2/ds4\">\n" +
+                        "\t\t<example:animal>dog</example:animal>\n" +
+                        "\t</rdf:Description>\n" +
+                        "</rdf:RDF>", null);
+
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", null);
+        final var relsExtV2 = datastreamVersion(RELS_EXT, false, MANAGED, "application/rdf+xml",
+                "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
+                        "\t<rdf:Description rdf:about=\"info:fedora/obj2\">\n" +
+                        "\t\t<hasModel xmlns=\"info:fedora/fedora-system:def/model#\"" +
+                        " rdf:resource=\"info:fedora/ExampleObject\"></hasModel>\n" +
+                        "\t\t<isMemberOf xmlns=\"info:fedora/fedora-system:def/relations-external#\"" +
+                        " rdf:resource=\"info:fedora/obj1\"></isMemberOf>\n" +
+                        "\t</rdf:Description>\n" +
+                        "</rdf:RDF>", null);
+        final var relsIntV2 = datastreamVersion(RELS_INT, false, MANAGED, "application/rdf+xml",
+                "<rdf:RDF xmlns:fedora-model=\"info:fedora/fedora-system:def/model#\"" +
+                        " xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"" +
+                        " xmlns:example=\"http://example.com/#\">\n" +
+                        "\t<rdf:Description rdf:about=\"info:fedora/obj2/ds3\">\n" +
+                        "\t\t<example:animal>cat</example:animal>\n" +
+                        "\t</rdf:Description>\n" +
+                        "\t<rdf:Description rdf:about=\"info:fedora/obj2/ds4\">\n" +
+                        "\t\t<example:animal>frog</example:animal>\n" +
+                        "\t</rdf:Description>\n" +
+                        "</rdf:RDF>", null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, List.of(ds1V1, ds2V1, relsExtV1, relsIntV1)),
+                objectVersionReference(pid, false, List.of(ds2V2, relsExtV2)),
+                objectVersionReference(pid, false, List.of(relsIntV2))
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
+
+        final var objectRdfV1 = contentVersionToString(session, ocflObjectId, "v1");
+        verifyObjectRdf(objectRdfV1);
+        assertThat(objectRdfV1, allOf(containsString("TestObject"), containsString("obj1")));
+        verifyObjectHeaders(session, ocflObjectId);
+
+        verifyBinary(contentToString(session, ocflObjectId, dsId1), ds1V1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1);
+        final var ds1V1Rdf = verifyDescRdf(session, ocflObjectId, dsId1, ds1V1);
+        assertThat(ds1V1Rdf, allOf(containsString("cat"), not(containsString("dog"))));
+        verifyDescHeaders(session, ocflObjectId, dsId1);
+
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v1"), ds2V1);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V1, "v1");
+        final var ds2V1Rdf = verifyDescRdf(session, ocflObjectId, dsId2, ds2V1, "v1");
+        assertThat(ds2V1Rdf, allOf(containsString("dog"), not(containsString("cat"))));
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v1");
+
+        final var objectRdfV2 = contentToString(session, ocflObjectId);
+        verifyObjectRdf(objectRdfV2);
+        assertThat(objectRdfV2, allOf(containsString("ExampleObject"),
+                containsString("obj1"), not(containsString("TestObject"))));
+
+        verifyBinary(contentVersionToString(session, ocflObjectId, dsId2, "v2"), ds2V2);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2V2, "v2");
+        final var ds2V2Rdf = verifyDescRdf(session, ocflObjectId, dsId2, ds2V2, "v2");
+        assertThat(ds2V2Rdf, allOf(containsString("dog"), not(containsString("cat"))));
+        verifyDescHeaders(session, ocflObjectId, dsId2, "v2");
+
+        final var ds2V3Rdf = verifyDescRdf(session, ocflObjectId, dsId2, ds2V2, "v3");
+        assertThat(ds2V3Rdf, allOf(containsString("frog"),
+                not(containsString("cat")), not(containsString("dog"))));
     }
 
     @Test
@@ -739,6 +875,15 @@ public class ArchiveGroupHandlerTest {
                                final String dsId,
                                final DatastreamVersion datastreamVersion,
                                final String versionNumber) {
+        verifyHeaders(session, ocflObjectId, dsId, datastreamVersion, versionNumber, dsId);
+    }
+
+    private void verifyHeaders(final OcflObjectSession session,
+                               final String ocflObjectId,
+                               final String dsId,
+                               final DatastreamVersion datastreamVersion,
+                               final String versionNumber,
+                               final String filename) {
         final var resourceId = resourceId(ocflObjectId, dsId);
         try (final var content = session.readContent(resourceId, versionNumber)) {
             final var headers = content.getHeaders();
@@ -761,7 +906,7 @@ public class ArchiveGroupHandlerTest {
                 assertEquals(datastreamVersion.getSize(), headers.getContentSize());
             }
             assertEquals(datastreamVersion.getMimeType(), headers.getMimeType());
-            assertEquals(dsId, headers.getFilename());
+            assertEquals(filename, headers.getFilename());
             assertEquals(DigestUtils.md5Hex(
                     String.valueOf(Instant.parse(datastreamVersion.getCreated()).toEpochMilli())).toUpperCase(),
                     headers.getStateToken());
@@ -838,14 +983,14 @@ public class ArchiveGroupHandlerTest {
         }
     }
 
-    private void verifyDescRdf(final OcflObjectSession session,
+    private String verifyDescRdf(final OcflObjectSession session,
                                final String ocflObjectId,
                                final String dsId,
                                final DatastreamVersion datastreamVersion) {
-        verifyDescRdf(session, ocflObjectId, dsId, datastreamVersion, null);
+        return verifyDescRdf(session, ocflObjectId, dsId, datastreamVersion, null);
     }
 
-    private void verifyDescRdf(final OcflObjectSession session,
+    private String verifyDescRdf(final OcflObjectSession session,
                                final String ocflObjectId,
                                final String dsId,
                                final DatastreamVersion datastreamVersion,
@@ -857,6 +1002,7 @@ public class ArchiveGroupHandlerTest {
                     containsString(datastreamVersion.getFormatUri()),
                     containsString("objState")
             ));
+            return value;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

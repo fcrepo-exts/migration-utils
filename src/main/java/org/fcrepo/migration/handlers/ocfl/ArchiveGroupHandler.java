@@ -25,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
@@ -32,17 +34,18 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
+import org.fcrepo.migration.ContentDigest;
 import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationType;
-import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.ObjectInfo;
-import org.fcrepo.migration.ContentDigest;
+import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.fcrepo.storage.ocfl.ResourceHeaders;
 import org.fcrepo.storage.ocfl.ResourceHeadersVersion;
+import org.fcrepo.storage.ocfl.exception.NotFoundException;
 import org.slf4j.Logger;
 
 import java.io.BufferedInputStream;
@@ -52,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -61,7 +65,9 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -100,8 +106,12 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private static final String DS_DELETED = "D";
 
     private static final String OBJ_STATE_PROP = "info:fedora/fedora-system:def/model#state";
+    private static final String DOWNLOAD_NAME_PROP = "info:fedora/fedora-system:def/model#downloadFilename";
     private static final String OBJ_INACTIVE = "Inactive";
     private static final String OBJ_DELETED = "Deleted";
+
+    private static final String RELS_EXT = "RELS-EXT";
+    private static final String RELS_INT = "RELS-INT";
 
     private final OcflObjectSessionFactory sessionFactory;
     private final boolean addDatastreamExtensions;
@@ -167,8 +177,12 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
         String objectState = null;
         final Map<String, String> datastreamStates = new HashMap<>();
+        final Map<String, MetaHolder> metaMap = new HashMap<>();
 
         for (var ov : versions) {
+            final Set<String> toWrite = new HashSet<>();
+            final Map<String, String> filenameChanges = new HashMap<>();
+
             final OcflObjectSession session = new OcflObjectSessionWrapper(sessionFactory.newSession(f6ObjectId));
 
             if (ov.isFirstVersion()) {
@@ -190,7 +204,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                         throw new UncheckedIOException(io);
                     }
                 } else {
-                    writeObjectFiles(objectId, f6ObjectId, ov, session);
+                    final var objectHeaders = createObjectHeaders(f6ObjectId, ov);
+                    final var content = getObjTriples(ov, objectId);
+                    final var meta = MetaHolder.fromContent(content, objectHeaders);
+                    metaMap.put(f6ObjectId, meta);
+                    session.writeResource(meta.headers.build(), meta.constructTriples());
                 }
             }
 
@@ -214,7 +232,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     InputStream content = null;
                     // for plain OCFL migrations, write a file containing the external/redirect URL
                     if (migrationType == MigrationType.PLAIN_OCFL) {
-                        content = IOUtils.toInputStream(dv.getExternalOrRedirectURL());
+                        content = IOUtils.toInputStream(dv.getExternalOrRedirectURL(), StandardCharsets.UTF_8);
                     }
                     session.writeResource(datastreamHeaders, content);
                 } else {
@@ -226,9 +244,45 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
 
                 if (!foxmlFile) {
-                    writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
+                    final var f6DescId = f6DescriptionId(f6DsId);
+                    final var descriptionHeaders = createDescriptionHeaders(f6DsId,
+                            datastreamFilename,
+                            datastreamHeaders);
+                    final var descriptionTriples = getDsTriples(dv, f6DsId, createDate);
+                    metaMap.computeIfAbsent(f6DescId, k -> new MetaHolder())
+                            .setHeaders(descriptionHeaders)
+                            .setContentTriples(descriptionTriples);
+                    toWrite.add(f6DescId);
+
+                    if (RELS_EXT.equals(dsId) || RELS_INT.equals(dsId)) {
+                        final var triples = parseRdfXml(dv);
+                        if (RELS_EXT.equals(dsId)) {
+                            metaMap.get(f6ObjectId).setRelsTriples(triples);
+                            toWrite.add(f6ObjectId);
+                        } else {
+                            final Map<String, Model> splitModels = splitRelsInt(triples);
+                            splitModels.forEach((id, model) -> {
+                                final var descId = f6DescriptionId(id);
+                                metaMap.computeIfAbsent(descId, k -> new MetaHolder())
+                                        .setRelsTriples(model);
+                                toWrite.add(descId);
+
+                                // Check to see if there are any file names that need updated
+                                for (final var it = model.listStatements(); it.hasNext(); ) {
+                                    final var statement = it.next();
+                                    if (DOWNLOAD_NAME_PROP.equals(statement.getPredicate().getURI())) {
+                                        filenameChanges.put(id, statement.getObject().toString());
+                                        break;
+                                    }
+                                }
+                            });
+                        }
+                    }
                 }
             }
+
+            writeMeta(toWrite, metaMap, session);
+            updateFilenames(filenameChanges, session);
 
             LOGGER.debug("Committing object <{}>", f6ObjectId);
 
@@ -237,6 +291,50 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
 
         handleDeletedResources(f6ObjectId, objectState, datastreamStates);
+    }
+
+    /**
+     * RDF resources are written after writing all other binaries in the version because they can be affected by
+     * RELS-INT or RELS-EXT updates.
+     *
+     * @param toWrite the set of resources that should be written to this version
+     * @param metaMap the map of all known rdf resources
+     * @param session the current ocfl session
+     */
+    private void writeMeta(final Set<String> toWrite,
+                           final Map<String, MetaHolder> metaMap,
+                           final OcflObjectSession session) {
+        for (final var id : toWrite) {
+            final var meta = metaMap.get(id);
+
+            if (meta.headers == null) {
+                // This only happens if there's a RELS-INT that references a datastream before it exists.
+                // Skip for now. The triples will be added once the datastream exists.
+                continue;
+            }
+
+            // Need to copy over the memento created date from the existing headers because it may have been updated
+            // when a description's binary was updated
+            if (migrationType == MigrationType.FEDORA_OCFL) {
+                try {
+                    final var existingHeaders = session.readHeaders(id);
+                    meta.headers.withMementoCreatedDate(existingHeaders.getMementoCreatedDate());
+                } catch (NotFoundException e) {
+                    // this just means the resource hasn't been written yet
+                }
+            }
+            session.writeResource(meta.headers.build(), meta.constructTriples());
+        }
+    }
+
+    private void updateFilenames(final Map<String, String> filenameChanges, final OcflObjectSession session) {
+        if (migrationType == MigrationType.FEDORA_OCFL) {
+            filenameChanges.forEach((id, filename) -> {
+                final var origHeaders = session.readHeaders(id);
+                final var newHeaders = ResourceHeaders.builder(origHeaders).withFilename(filename).build();
+                session.writeHeaders(newHeaders);
+            });
+        }
     }
 
     private boolean fedora3DigestValid(final ContentDigest f3Digest) {
@@ -331,27 +429,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
     }
 
-    private void writeObjectFiles(final String pid,
-                                  final String f6ObjectId,
-                                  final ObjectVersionReference ov,
-                                  final OcflObjectSession session) {
-        final var objectHeaders = createObjectHeaders(f6ObjectId, ov);
-        final var content = getObjTriples(ov, pid);
-        session.writeResource(objectHeaders, content);
-    }
-
-    private void writeDescriptionFiles(final String f6Dsid,
-                                       final String datastreamFilename,
-                                       final String createDate,
-                                       final ResourceHeaders datastreamHeaders,
-                                       final DatastreamVersion dv,
-                                       final OcflObjectSession session) {
-        final var descriptionHeaders = createDescriptionHeaders(f6Dsid,
-                datastreamFilename,
-                datastreamHeaders);
-        session.writeResource(descriptionHeaders, getDsTriples(dv, f6Dsid, createDate));
-    }
-
     private String f6DescriptionId(final String f6ResourceId) {
         return f6ResourceId + "/fcr:metadata";
     }
@@ -381,7 +458,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         return headers;
     }
 
-    private ResourceHeaders createObjectHeaders(final String f6ObjectId, final ObjectVersionReference ov) {
+    private ResourceHeaders.Builder createObjectHeaders(final String f6ObjectId, final ObjectVersionReference ov) {
         final var headers = createHeaders(f6ObjectId, FCREPO_ROOT, InteractionModel.BASIC_CONTAINER);
         headers.withArchivalGroup(true);
         headers.withObjectRoot(true);
@@ -400,7 +477,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             }
         });
 
-        return headers.build();
+        return headers;
     }
 
     private ResourceHeaders createDatastreamHeaders(final DatastreamVersion dv,
@@ -445,7 +522,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         return headers.build();
     }
 
-    private ResourceHeaders createDescriptionHeaders(final String f6DsId,
+    private ResourceHeaders.Builder createDescriptionHeaders(final String f6DsId,
                                                      final String filename,
                                                      final ResourceHeaders datastreamHeaders) {
         final var id = f6DescriptionId(f6DsId);
@@ -463,7 +540,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         headers.withObjectRoot(false);
         headers.withStateToken(datastreamHeaders.getStateToken());
 
-        return headers.build();
+        return headers;
     }
 
     private String resolveMimeType(final DatastreamVersion dv) {
@@ -526,85 +603,73 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     }
 
     // Get object-level triples
-    private static InputStream getObjTriples(final ObjectVersionReference o, final String pid) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    private static Model getObjTriples(final ObjectVersionReference o, final String pid) {
         final Model triples = ModelFactory.createDefaultModel();
-        try {
-            final String uri = "info:fedora/" + pid;
+        final String uri = "info:fedora/" + pid;
 
-            o.getObjectProperties().listProperties().forEach(p -> {
-                if (p.getName().contains("Date")) {
-                    addDateLiteral(triples, uri, p.getName(), p.getValue());
-                } else {
-                    addStringLiteral(triples, uri, p.getName(), p.getValue());
-                }
-            });
+        o.getObjectProperties().listProperties().forEach(p -> {
+            if (p.getName().contains("Date")) {
+                addDateLiteral(triples, uri, p.getName(), p.getValue());
+            } else {
+                addStringLiteral(triples, uri, p.getName(), p.getValue());
+            }
+        });
 
-            triples.write(out, "N-TRIPLES");
-            return new ByteArrayInputStream(out.toByteArray());
-        } finally {
-            triples.close();
-        }
+        return triples;
     }
 
     // Get datastream-level triples
-    private InputStream getDsTriples(final DatastreamVersion dv,
+    private Model getDsTriples(final DatastreamVersion dv,
                                             final String f6DsId,
                                             final String createDate) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Model triples = ModelFactory.createDefaultModel();
 
-        try {
-            if (migrationType == MigrationType.PLAIN_OCFL) {
-                // These triples are server managed in F6
-                addDateLiteral(triples,
-                        f6DsId,
-                        "http://fedora.info/definitions/v4/repository#created",
-                        createDate);
-                addDateLiteral(triples,
-                        f6DsId,
-                        "http://fedora.info/definitions/v4/repository#lastModified",
-                        dv.getCreated());
-                addStringLiteral(triples,
-                        f6DsId,
-                        "http://purl.org/dc/terms/identifier",
-                        dv.getDatastreamInfo().getDatastreamId());
-                addStringLiteral(triples,
-                        f6DsId,
-                        "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType",
-                        dv.getMimeType());
-                addLongLiteral(triples,
-                        f6DsId,
-                        "http://www.loc.gov/premis/rdf/v1#size",
-                        dv.getSize());
+        if (migrationType == MigrationType.PLAIN_OCFL) {
+            // These triples are server managed in F6
+            addDateLiteral(triples,
+                    f6DsId,
+                    "http://fedora.info/definitions/v4/repository#created",
+                    createDate);
+            addDateLiteral(triples,
+                    f6DsId,
+                    "http://fedora.info/definitions/v4/repository#lastModified",
+                    dv.getCreated());
+            addStringLiteral(triples,
+                    f6DsId,
+                    "http://purl.org/dc/terms/identifier",
+                    dv.getDatastreamInfo().getDatastreamId());
+            addStringLiteral(triples,
+                    f6DsId,
+                    "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType",
+                    dv.getMimeType());
+            addLongLiteral(triples,
+                    f6DsId,
+                    "http://www.loc.gov/premis/rdf/v1#size",
+                    dv.getSize());
 
-                if (dv.getContentDigest() != null) {
-                    addStringLiteral(triples,
-                            f6DsId,
-                            "http://www.loc.gov/premis/rdf/v1#hasMessageDigest",
-                            "urn:" + dv.getContentDigest().getType().toLowerCase() + ":" +
-                                    dv.getContentDigest().getDigest().toLowerCase());
-                }
+            if (dv.getContentDigest() != null) {
+                addStringLiteral(triples,
+                        f6DsId,
+                        "http://www.loc.gov/premis/rdf/v1#hasMessageDigest",
+                        "urn:" + dv.getContentDigest().getType().toLowerCase() + ":" +
+                                dv.getContentDigest().getDigest().toLowerCase());
             }
-
-            addStringLiteral(triples,
-                    f6DsId,
-                    "http://purl.org/dc/terms/title",
-                    dv.getLabel());
-            addStringLiteral(triples,
-                    f6DsId,
-                    "http://fedora.info/definitions/1/0/access/objState",
-                    dv.getDatastreamInfo().getState());
-            addStringLiteral(triples,
-                    f6DsId,
-                    "http://www.loc.gov/premis/rdf/v1#formatDesignation",
-                    dv.getFormatUri());
-
-            triples.write(out, "N-TRIPLES");
-            return new ByteArrayInputStream(out.toByteArray());
-        } finally {
-            triples.close();
         }
+
+        addStringLiteral(triples,
+                f6DsId,
+                "http://purl.org/dc/terms/title",
+                dv.getLabel());
+        addStringLiteral(triples,
+                f6DsId,
+                "http://fedora.info/definitions/1/0/access/objState",
+                dv.getDatastreamInfo().getState());
+        addStringLiteral(triples,
+                f6DsId,
+                "http://www.loc.gov/premis/rdf/v1#formatDesignation",
+                dv.getFormatUri());
+
+        return triples;
     }
 
     private static void addStringLiteral(final Model m,
@@ -658,6 +723,92 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
         LOGGER.warn("No mimetype found for '{}'", mime);
         return "";
+    }
+
+    private Model parseRdfXml(final DatastreamVersion datastreamVersion) {
+        final var model = ModelFactory.createDefaultModel();
+        try (final var is = datastreamVersion.getContent()) {
+            RDFDataMgr.read(model, is, Lang.RDFXML);
+            return model;
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Failed to parse RDF XML in %s/%s",
+                    datastreamVersion.getDatastreamInfo().getObjectInfo().getPid(),
+                    datastreamVersion.getDatastreamInfo().getDatastreamId()), e);
+        }
+    }
+
+    private Map<String, Model> splitRelsInt(final Model relsIntModel) {
+        final Map<String, Model> splitModels = new HashMap<>();
+        for (final var it = relsIntModel.listStatements(); it.hasNext();) {
+            final var statement = it.next();
+            final var id = statement.getSubject().getURI();
+            final var model = splitModels.computeIfAbsent(id, k -> ModelFactory.createDefaultModel());
+            model.add(statement);
+        }
+        return splitModels;
+    }
+
+    /**
+     * Wrapper class for storing a RDF resource's "content" triples, RELS triples, and resource headers. The content
+     * triples are triples that were generated based on general Fedora metadata, and the RELS triples are extracted from
+     * one of the RELS-* files. They are maintained separately because it's possible for them to be updated
+     * independently and we need to be able to construct the correct set of triples when one changes.
+     */
+    private static class MetaHolder {
+        Model contentTriples;
+        Model relsTriples;
+        ResourceHeaders.Builder headers;
+
+        public static MetaHolder fromContent(final Model contentTriples, final ResourceHeaders.Builder headers) {
+            return new MetaHolder(contentTriples, null, headers);
+        }
+
+        private MetaHolder() {
+        }
+
+        private MetaHolder(final Model contentTriples,
+                           final Model relsTriples,
+                           final ResourceHeaders.Builder headers) {
+            this.contentTriples = contentTriples;
+            this.relsTriples = relsTriples;
+            this.headers = headers;
+        }
+
+        /**
+         * Constructs a complete set of triples at the current version of the resource and serializes them as n-triples.
+         *
+         * @return n-triples input stream
+         */
+        public InputStream constructTriples() {
+            final var output = new ByteArrayOutputStream();
+            final var triples = ModelFactory.createDefaultModel();
+
+            if (contentTriples != null) {
+                triples.add(contentTriples.listStatements());
+            }
+
+            if (relsTriples != null) {
+                triples.add(relsTriples.listStatements());
+            }
+
+            triples.write(output, Lang.NTRIPLES.getName());
+            return new ByteArrayInputStream(output.toByteArray());
+        }
+
+        public MetaHolder setHeaders(final ResourceHeaders.Builder headers) {
+            this.headers = headers;
+            return this;
+        }
+
+        public MetaHolder setContentTriples(final Model contentTriples) {
+            this.contentTriples = contentTriples;
+            return this;
+        }
+
+        public MetaHolder setRelsTriples(final Model relsTriples) {
+            this.relsTriples = relsTriples;
+            return this;
+        }
     }
 
 }
