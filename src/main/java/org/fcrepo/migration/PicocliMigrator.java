@@ -24,7 +24,6 @@ import java.io.File;
 import java.util.concurrent.Callable;
 
 import org.apache.jena.query.ARQ;
-import org.apache.jena.sys.JenaSystem;
 import org.fcrepo.migration.foxml.AkubraFSIDResolver;
 import org.fcrepo.migration.foxml.ArchiveExportedFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.foxml.InternalIDResolver;
