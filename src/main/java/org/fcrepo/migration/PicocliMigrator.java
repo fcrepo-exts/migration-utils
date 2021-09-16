@@ -23,6 +23,7 @@ import static picocli.CommandLine.Help.Visibility.ALWAYS;
 import java.io.File;
 import java.util.concurrent.Callable;
 
+import org.apache.jena.sys.JenaSystem;
 import org.fcrepo.migration.foxml.AkubraFSIDResolver;
 import org.fcrepo.migration.foxml.ArchiveExportedFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.foxml.InternalIDResolver;
@@ -320,6 +321,9 @@ public class PicocliMigrator implements Callable<Integer> {
         migrator.setResumePidListManager(resumeManager);
         migrator.setUserProvidedPidListManager(pidListManager);
         migrator.setContinueOnError(continueOnError);
+
+        // init jena because sometimes it doesn't init cleanly by default for whatever reason
+        JenaSystem.init();
 
         try {
             migrator.run();
