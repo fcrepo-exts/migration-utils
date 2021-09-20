@@ -19,6 +19,7 @@ package org.fcrepo.migration.handlers.ocfl;
 import at.favre.lib.bytes.Bytes;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -262,7 +263,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 if (!foxmlFile) {
                     final var f6DescId = f6DescriptionId(f6DsId);
                     final var descriptionHeaders = createDescriptionHeaders(f6DsId,
-                            datastreamFilename,
                             datastreamHeaders);
                     final var descriptionTriples = getDsTriples(dv, f6DsId, createDate);
                     metaMap.computeIfAbsent(f6DescId, k -> new MetaHolder())
@@ -277,6 +277,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                             toWrite.add(f6ObjectId);
                         } else {
                             final Map<String, Model> splitModels = splitRelsInt(triples);
+                            final var oldIds = new HashSet<>(filenameMap.keySet());
+                            filenameMap.clear();
+
                             splitModels.forEach((id, model) -> {
                                 final var descId = f6DescriptionId(id);
                                 metaMap.computeIfAbsent(descId, k -> new MetaHolder())
@@ -284,25 +287,23 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                 toWrite.add(descId);
 
                                 // Check to see if there are any file names that need updated
-                                var hasFilename = false;
                                 for (final var it = model.listStatements(); it.hasNext(); ) {
                                     final var statement = it.next();
                                     if (DOWNLOAD_NAME_PROP.equals(statement.getPredicate().getURI())) {
                                         filenameMap.put(id, statement.getObject().toString());
                                         relsFilenameUpdates.add(id);
-                                        hasFilename = true;
                                         break;
                                     }
                                 }
+                            });
 
-                                // The filename was set once but is no longer
-                                if (!hasFilename && filenameMap.containsKey(id)) {
-                                    filenameMap.remove(id);
-                                    final var meta = binaryMeta.get(id);
-                                    if (meta != null) {
-                                        relsDeletedFilenames.put(id, resolveFilename(meta.name, meta.label,
-                                                null, meta.mimeType));
-                                    }
+                            // The filename was set once but is no longer
+                            final var deleted = Sets.difference(oldIds, filenameMap.keySet());
+                            deleted.forEach(id -> {
+                                final var meta = binaryMeta.get(id);
+                                if (meta != null) {
+                                    relsDeletedFilenames.put(id, resolveFilename(meta.name, meta.label,
+                                            null, meta.mimeType));
                                 }
                             });
                         }
@@ -329,6 +330,14 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      * 2. LABEL from datastream meta
      * 3. Name of the datastream
      *
+     * If extensions should be added, then an extension is picked based on the mime type. If the filename already
+     * includes a `.` then no extension is added.
+     *
+     * @param dsName the name of the datastream
+     * @param labelName the datastream's label
+     * @param downloadName the download name from RELS-INT
+     * @param mimeType the datastream's mime type
+     * @return the resolved filename
      */
     private String resolveFilename(final String dsName,
                                    final String labelName,
@@ -340,11 +349,12 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         } else if (StringUtils.isNotBlank(labelName)) {
             filename = labelName;
         } else {
-
             filename = dsName;
         }
 
-        if (addDatastreamExtensions && !Strings.isNullOrEmpty(mimeType)) {
+        if (addDatastreamExtensions
+                && StringUtils.isNotBlank(mimeType)
+                && !filename.contains(".")) {
             filename += getExtension(mimeType);
         }
 
@@ -586,13 +596,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     }
 
     private ResourceHeaders.Builder createDescriptionHeaders(final String f6DsId,
-                                                     final String filename,
-                                                     final ResourceHeaders datastreamHeaders) {
+                                                             final ResourceHeaders datastreamHeaders) {
         final var id = f6DescriptionId(f6DsId);
         final var headers = createHeaders(id, f6DsId, InteractionModel.NON_RDF_DESCRIPTION);
 
         headers.withArchivalGroupId(datastreamHeaders.getArchivalGroupId());
-        headers.withFilename(filename);
         headers.withCreatedDate(datastreamHeaders.getCreatedDate());
         headers.withLastModifiedDate(datastreamHeaders.getLastModifiedDate());
         headers.withCreatedBy(datastreamHeaders.getCreatedBy());
