@@ -699,17 +699,17 @@ public class ArchiveGroupHandlerTest {
         verifyObjectHeaders(session, ocflObjectId);
 
         verifyBinary(contentToString(session, ocflObjectId, dsId1Ext), ds1);
-        verifyHeaders(session, ocflObjectId, dsId1Ext, ds1);
+        verifyHeaders(session, ocflObjectId, dsId1Ext, ds1, "v1", "ds1-label");
         verifyDescRdf(session, ocflObjectId, dsId1Ext, ds1);
         verifyDescHeaders(session, ocflObjectId, dsId1Ext);
 
         verifyBinary(contentToString(session, ocflObjectId, dsId2Ext), ds2);
-        verifyHeaders(session, ocflObjectId, dsId2Ext, ds2);
+        verifyHeaders(session, ocflObjectId, dsId2Ext, ds2, "v1", "ds2-label");
         verifyDescRdf(session, ocflObjectId, dsId2Ext, ds2);
         verifyDescHeaders(session, ocflObjectId, dsId2Ext);
 
         verifyBinary(contentToString(session, ocflObjectId, dsId3Ext), ds3);
-        verifyHeaders(session, ocflObjectId, dsId3Ext, ds3);
+        verifyHeaders(session, ocflObjectId, dsId3Ext, ds3, "v1", "ds3-label");
         verifyDescRdf(session, ocflObjectId, dsId3Ext, ds3);
         verifyDescHeaders(session, ocflObjectId, dsId3Ext);
     }
@@ -875,7 +875,7 @@ public class ArchiveGroupHandlerTest {
                                final String dsId,
                                final DatastreamVersion datastreamVersion,
                                final String versionNumber) {
-        verifyHeaders(session, ocflObjectId, dsId, datastreamVersion, versionNumber, dsId);
+        verifyHeaders(session, ocflObjectId, dsId, datastreamVersion, versionNumber, dsId + "-label");
     }
 
     private void verifyHeaders(final OcflObjectSession session,

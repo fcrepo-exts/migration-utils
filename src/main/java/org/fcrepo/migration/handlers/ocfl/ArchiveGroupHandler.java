@@ -178,10 +178,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         String objectState = null;
         final Map<String, String> datastreamStates = new HashMap<>();
         final Map<String, MetaHolder> metaMap = new HashMap<>();
+        final Map<String, String> filenameMap = new HashMap<>();
 
         for (var ov : versions) {
             final Set<String> toWrite = new HashSet<>();
-            final Map<String, String> filenameChanges = new HashMap<>();
+            final Set<String> filenameUpdates = new HashSet<>();
 
             final OcflObjectSession session = new OcflObjectSessionWrapper(sessionFactory.newSession(f6ObjectId));
 
@@ -225,8 +226,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
                 final var createDate = dsCreateDates.get(dsId);
 
+                final var filename = resolveFilename(datastreamFilename, dv.getLabel(), filenameMap.get(f6DsId));
+
                 final var datastreamHeaders = createDatastreamHeaders(dv, f6DsId, f6ObjectId,
-                        datastreamFilename, mimeType, createDate);
+                        filename, mimeType, createDate);
 
                 if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
                     InputStream content = null;
@@ -268,12 +271,21 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                 toWrite.add(descId);
 
                                 // Check to see if there are any file names that need updated
+                                var hasFilename = false;
                                 for (final var it = model.listStatements(); it.hasNext(); ) {
                                     final var statement = it.next();
                                     if (DOWNLOAD_NAME_PROP.equals(statement.getPredicate().getURI())) {
-                                        filenameChanges.put(id, statement.getObject().toString());
+                                        filenameMap.put(id, statement.getObject().toString());
+                                        filenameUpdates.add(id);
+                                        hasFilename = true;
                                         break;
                                     }
+                                }
+
+                                // The filename was set once but is no longer
+                                if (!hasFilename && filenameMap.containsKey(id)) {
+                                    filenameMap.put(id, resolveFilename(datastreamFilename, dv.getLabel(), null));
+                                    filenameUpdates.add(id);
                                 }
                             });
                         }
@@ -282,7 +294,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             }
 
             writeMeta(toWrite, metaMap, session);
-            updateFilenames(filenameChanges, session);
+            updateFilenames(filenameUpdates, filenameMap, session);
 
             LOGGER.debug("Committing object <{}>", f6ObjectId);
 
@@ -291,6 +303,24 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
 
         handleDeletedResources(f6ObjectId, objectState, datastreamStates);
+    }
+
+    /**
+     * Resolves the filename of the datastream based on the following precedence:
+     *
+     * 1. info:fedora/fedora-system:def/model#downloadFilename from RELS-INT
+     * 2. LABEL from datastream meta
+     * 3. Name of the datastream
+     *
+     */
+    private String resolveFilename(final String dsName, final String labelName, final String downloadName) {
+        if (StringUtils.isNotBlank(downloadName)) {
+            return downloadName;
+        } else if (StringUtils.isNotBlank(labelName)) {
+            return labelName;
+        }
+
+        return dsName;
     }
 
     /**
@@ -327,12 +357,17 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
     }
 
-    private void updateFilenames(final Map<String, String> filenameChanges, final OcflObjectSession session) {
+    private void updateFilenames(final Set<String> toUpdate,
+                                 final Map<String, String> filenameMap,
+                                 final OcflObjectSession session) {
         if (migrationType == MigrationType.FEDORA_OCFL) {
-            filenameChanges.forEach((id, filename) -> {
+            toUpdate.forEach(id -> {
                 final var origHeaders = session.readHeaders(id);
-                final var newHeaders = ResourceHeaders.builder(origHeaders).withFilename(filename).build();
-                session.writeHeaders(newHeaders);
+                final var filename = filenameMap.get(id);
+                if (StringUtils.isNotBlank(filename)) {
+                    final var newHeaders = ResourceHeaders.builder(origHeaders).withFilename(filename).build();
+                    session.writeHeaders(newHeaders);
+                }
             });
         }
     }
