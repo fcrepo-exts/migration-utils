@@ -698,20 +698,20 @@ public class ArchiveGroupHandlerTest {
         verifyObjectRdf(contentToString(session, ocflObjectId));
         verifyObjectHeaders(session, ocflObjectId);
 
-        verifyBinary(contentToString(session, ocflObjectId, dsId1Ext), ds1);
-        verifyHeaders(session, ocflObjectId, dsId1Ext, ds1, "v1", "ds1-label");
-        verifyDescRdf(session, ocflObjectId, dsId1Ext, ds1);
-        verifyDescHeaders(session, ocflObjectId, dsId1Ext);
+        verifyBinary(contentToString(session, ocflObjectId, dsId1), ds1);
+        verifyHeaders(session, ocflObjectId, dsId1, ds1, "v1", "ds1-label.txt");
+        verifyDescRdf(session, ocflObjectId, dsId1, ds1);
+        verifyDescHeaders(session, ocflObjectId, dsId1);
 
-        verifyBinary(contentToString(session, ocflObjectId, dsId2Ext), ds2);
-        verifyHeaders(session, ocflObjectId, dsId2Ext, ds2, "v1", "ds2-label");
-        verifyDescRdf(session, ocflObjectId, dsId2Ext, ds2);
-        verifyDescHeaders(session, ocflObjectId, dsId2Ext);
+        verifyBinary(contentToString(session, ocflObjectId, dsId2), ds2);
+        verifyHeaders(session, ocflObjectId, dsId2, ds2, "v1", "ds2-label.rdf");
+        verifyDescRdf(session, ocflObjectId, dsId2, ds2);
+        verifyDescHeaders(session, ocflObjectId, dsId2);
 
-        verifyBinary(contentToString(session, ocflObjectId, dsId3Ext), ds3);
-        verifyHeaders(session, ocflObjectId, dsId3Ext, ds3, "v1", "ds3-label");
-        verifyDescRdf(session, ocflObjectId, dsId3Ext, ds3);
-        verifyDescHeaders(session, ocflObjectId, dsId3Ext);
+        verifyBinary(contentToString(session, ocflObjectId, dsId3), ds3);
+        verifyHeaders(session, ocflObjectId, dsId3, ds3, "v1", "ds3-label.jpg");
+        verifyDescRdf(session, ocflObjectId, dsId3, ds3);
+        verifyDescHeaders(session, ocflObjectId, dsId3);
     }
 
     @Test
@@ -742,29 +742,29 @@ public class ArchiveGroupHandlerTest {
                 .getContentFilePath()));
 
         verifyBinary(rawContentToString(rootResourceId,
-                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId1Ext))
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId1))
                         .getContentFilePath()),
                 ds1);
         verifyPlainDescRdf(rawContentToString(rootResourceId,
-                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId1Ext))
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId1))
                         .getContentFilePath()),
                 ds1);
 
         verifyBinary(rawContentToString(rootResourceId,
-                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2Ext))
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId2))
                         .getContentFilePath()),
                 ds2);
         verifyPlainDescRdf(rawContentToString(rootResourceId,
-                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2Ext))
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId2))
                         .getContentFilePath()),
                 ds2);
 
         verifyBinary(rawContentToString(rootResourceId,
-                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId3Ext))
+                PersistencePaths.nonRdfResource(rootResourceId, resourceId(rootResourceId, dsId3))
                         .getContentFilePath()),
                 ds3);
         verifyPlainDescRdf(rawContentToString(rootResourceId,
-                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId3Ext))
+                PersistencePaths.rdfResource(rootResourceId, metadataId(rootResourceId, dsId3))
                         .getContentFilePath()),
                 ds3);
     }
