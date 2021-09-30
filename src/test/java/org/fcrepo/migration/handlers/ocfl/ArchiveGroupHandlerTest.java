@@ -21,6 +21,7 @@ import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectProperties;
 import org.fcrepo.migration.ObjectProperty;
 import org.fcrepo.migration.ObjectVersionReference;
+import org.fcrepo.migration.ResourceMigrationType;
 import org.fcrepo.storage.ocfl.CommitType;
 import org.fcrepo.storage.ocfl.DefaultOcflObjectSessionFactory;
 import org.fcrepo.storage.ocfl.InteractionModel;
@@ -1184,11 +1185,14 @@ public class ArchiveGroupHandlerTest {
     private ArchiveGroupHandler createHandler(final MigrationType migrationType,
                                               final boolean addExtensions,
                                               final boolean deleteInactive) {
+        // TODO
         if (migrationType == MigrationType.PLAIN_OCFL) {
-            return new ArchiveGroupHandler(plainSessionFactory, migrationType, addExtensions, deleteInactive,
+            return new ArchiveGroupHandler(plainSessionFactory, migrationType, ResourceMigrationType.ARCHIVAL,
+                    addExtensions, deleteInactive,
                     false, USER,"info:fedora/", false);
         } else {
-            return new ArchiveGroupHandler(sessionFactory, migrationType, addExtensions, deleteInactive, false, USER,
+            return new ArchiveGroupHandler(sessionFactory, migrationType, ResourceMigrationType.ARCHIVAL,
+                    addExtensions, deleteInactive, false, USER,
                     "info:fedora/", false);
         }
     }
