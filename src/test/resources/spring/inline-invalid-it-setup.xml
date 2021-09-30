@@ -52,6 +52,7 @@
     <bean id="minimal" class="org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler">
         <constructor-arg name="sessionFactory" ref="ocflSessionFactory" />
         <constructor-arg name="migrationType" value="FEDORA_OCFL" />
+        <constructor-arg name="resourceMigrationType" value="ARCHIVAL" />
         <constructor-arg name="addDatastreamExtensions" value="false" />
         <constructor-arg name="deleteInactive" value="false" />
         <constructor-arg name="foxmlFile" value="false" />
