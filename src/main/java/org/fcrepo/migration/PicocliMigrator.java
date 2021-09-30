@@ -101,8 +101,10 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Migrate objects and datastreams in the Inactive state as deleted. Default: false.")
     private boolean deleteInactive;
 
-    @Option(names = {"--resource-migration-type", "-R"}, defaultValue = "ARCHIVAL", showDefaultValue = ALWAYS, order = 19,
-            description = "Controls if objects are migrated as archival groups or atomic resources. Choices: ARCHIVAL | ATOMIC")
+    @Option(names = {"--resource-migration-type", "-R"}, defaultValue = "ARCHIVAL", showDefaultValue = ALWAYS,
+            order = 19,
+            description = "Controls if objects are migrated as archival groups or atomic resources." +
+                    " Choices: ARCHIVAL | ATOMIC")
     private ResourceMigrationType resourceMigrationType;
 
     @Option(names = {"--migration-type", "-m"}, defaultValue = "FEDORA_OCFL", showDefaultValue = ALWAYS, order = 20,

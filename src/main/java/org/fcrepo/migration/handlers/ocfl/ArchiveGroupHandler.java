@@ -160,7 +160,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final boolean disableChecksumValidation) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
-        this.resourceMigrationType = Preconditions.checkNotNull(resourceMigrationType, "resourceMigrationType cannot be null");
+        this.resourceMigrationType = Preconditions.checkNotNull(resourceMigrationType,
+                "resourceMigrationType cannot be null");
         this.addDatastreamExtensions = addDatastreamExtensions;
         this.deleteInactive = deleteInactive;
         this.foxmlFile = foxmlFile;
