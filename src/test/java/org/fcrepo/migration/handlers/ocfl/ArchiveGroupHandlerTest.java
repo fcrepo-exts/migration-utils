@@ -56,6 +56,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
@@ -92,6 +93,7 @@ public class ArchiveGroupHandlerTest {
 
     private ObjectMapper objectMapper;
     private String date;
+    private ResourceMigrationType resourceMigrationType;
 
     @Before
     public void setup() throws IOException {
@@ -121,6 +123,7 @@ public class ArchiveGroupHandlerTest {
                 "testing", USER, "info:fedora/fedoraAdmin", false);
 
         date = Instant.now().toString().substring(0, 10);
+        resourceMigrationType = ResourceMigrationType.ARCHIVAL;
     }
 
     @Test
@@ -194,6 +197,49 @@ public class ArchiveGroupHandlerTest {
         verifyHeaders(session, ocflObjectId, dsId2, ds2V2, "v2");
         verifyDescRdf(session, ocflObjectId, dsId2, ds2V2, "v2");
         verifyDescHeaders(session, ocflObjectId, dsId2, "v2");
+    }
+
+    @Test
+    public void processObjectMultipleVersionsAtomic() throws IOException {
+        resourceMigrationType = ResourceMigrationType.ATOMIC;
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true);
+
+        final var pid = "obj2";
+        final var dsId1 = "ds3";
+        final var dsId2 = "ds4";
+
+        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
+
+        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
+                objectVersionReference(pid, false, List.of(ds2V2))
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+
+        final var ocflObjectId = addPrefix(pid);
+        final var objectSession = sessionFactory.newSession(ocflObjectId);
+        final var ds1Session = sessionFactory.newSession(resourceId(ocflObjectId, dsId1));
+        final var ds2Session = sessionFactory.newSession(resourceId(ocflObjectId, dsId2));
+
+        verifyObjectRdf(contentToString(objectSession, ocflObjectId));
+        verifyObjectHeaders(objectSession, ocflObjectId);
+
+        verifyBinary(contentToString(ds1Session, ocflObjectId, dsId1), ds1V1);
+        verifyHeaders(ds1Session, ocflObjectId, dsId1, ds1V1);
+        verifyDescRdf(ds1Session, ocflObjectId, dsId1, ds1V1);
+        verifyDescHeaders(ds1Session, ocflObjectId, dsId1);
+
+        verifyBinary(contentVersionToString(ds2Session, ocflObjectId, dsId2, "v1"), ds2V1);
+        verifyHeaders(ds2Session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescRdf(ds2Session, ocflObjectId, dsId2, ds2V1, "v1");
+        verifyDescHeaders(ds2Session, ocflObjectId, dsId2, "v1");
+
+        verifyBinary(contentVersionToString(ds2Session, ocflObjectId, dsId2, "v2"), ds2V2);
+        verifyHeaders(ds2Session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescRdf(ds2Session, ocflObjectId, dsId2, ds2V2, "v2");
+        verifyDescHeaders(ds2Session, ocflObjectId, dsId2, "v2");
     }
 
     @Test
@@ -990,10 +1036,15 @@ public class ArchiveGroupHandlerTest {
             assertEquals(ResourceHeadersVersion.V1_0, headers.getHeadersVersion());
             assertEquals(resourceId, headers.getId());
             assertEquals(ocflObjectId, headers.getParent());
-            assertEquals(ocflObjectId, headers.getArchivalGroupId());
+            if (ResourceMigrationType.ARCHIVAL == resourceMigrationType) {
+                assertEquals(ocflObjectId, headers.getArchivalGroupId());
+                assertFalse("not root", headers.isObjectRoot());
+            } else {
+                assertNull("no AG", headers.getArchivalGroupId());
+                assertTrue("is root", headers.isObjectRoot());
+            }
             assertEquals(InteractionModel.NON_RDF.getUri(), headers.getInteractionModel());
             assertFalse("not AG", headers.isArchivalGroup());
-            assertFalse("not root", headers.isObjectRoot());
             assertFalse("not deleted", headers.isDeleted());
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
@@ -1041,7 +1092,11 @@ public class ArchiveGroupHandlerTest {
             assertEquals(ResourceHeadersVersion.V1_0, headers.getHeadersVersion());
             assertEquals(metadataId(ocflObjectId, dsId), headers.getId());
             assertEquals(resourceId(ocflObjectId, dsId), headers.getParent());
-            assertEquals(ocflObjectId, headers.getArchivalGroupId());
+            if (ResourceMigrationType.ARCHIVAL == resourceMigrationType) {
+                assertEquals(ocflObjectId, headers.getArchivalGroupId());
+            } else {
+                assertNull("no AG", headers.getArchivalGroupId());
+            }
             assertEquals(InteractionModel.NON_RDF_DESCRIPTION.getUri(), headers.getInteractionModel());
             assertFalse("not AG", headers.isArchivalGroup());
             assertFalse("not root", headers.isObjectRoot());
@@ -1070,7 +1125,8 @@ public class ArchiveGroupHandlerTest {
             assertEquals(ocflObjectId, headers.getId());
             assertEquals(FCREPO_ROOT, headers.getParent());
             assertEquals(InteractionModel.BASIC_CONTAINER.getUri(), headers.getInteractionModel());
-            assertTrue("is AG", headers.isArchivalGroup());
+            assertEquals("is AG", ResourceMigrationType.ARCHIVAL == resourceMigrationType,
+                    headers.isArchivalGroup());
             assertTrue("is root", headers.isObjectRoot());
             assertFalse("not deleted", headers.isDeleted());
             assertEquals(USER, headers.getCreatedBy());
@@ -1185,13 +1241,12 @@ public class ArchiveGroupHandlerTest {
     private ArchiveGroupHandler createHandler(final MigrationType migrationType,
                                               final boolean addExtensions,
                                               final boolean deleteInactive) {
-        // TODO
         if (migrationType == MigrationType.PLAIN_OCFL) {
-            return new ArchiveGroupHandler(plainSessionFactory, migrationType, ResourceMigrationType.ARCHIVAL,
+            return new ArchiveGroupHandler(plainSessionFactory, migrationType, resourceMigrationType,
                     addExtensions, deleteInactive,
                     false, USER,"info:fedora/", false);
         } else {
-            return new ArchiveGroupHandler(sessionFactory, migrationType, ResourceMigrationType.ARCHIVAL,
+            return new ArchiveGroupHandler(sessionFactory, migrationType, resourceMigrationType,
                     addExtensions, deleteInactive, false, USER,
                     "info:fedora/", false);
         }

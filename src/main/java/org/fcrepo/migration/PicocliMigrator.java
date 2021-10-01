@@ -101,11 +101,10 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Migrate objects and datastreams in the Inactive state as deleted. Default: false.")
     private boolean deleteInactive;
 
-    @Option(names = {"--resource-migration-type", "-R"}, defaultValue = "ARCHIVAL", showDefaultValue = ALWAYS,
+    @Option(names = {"--atomic-resources", "-A"}, defaultValue = "false", showDefaultValue = ALWAYS,
             order = 19,
-            description = "Controls if objects are migrated as archival groups or atomic resources." +
-                    " Choices: ARCHIVAL | ATOMIC")
-    private ResourceMigrationType resourceMigrationType;
+            description = "Migrate objects and datastreams as atomic resources instead of archival groups")
+    private boolean atomicResources;
 
     @Option(names = {"--migration-type", "-m"}, defaultValue = "FEDORA_OCFL", showDefaultValue = ALWAYS, order = 20,
             description = "Type of OCFL objects to migrate to. Choices: FEDORA_OCFL | PLAIN_OCFL")
@@ -309,7 +308,8 @@ public class PicocliMigrator implements Callable<Integer> {
 
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(
-                        ocflSessionFactory, migrationType, resourceMigrationType,
+                        ocflSessionFactory, migrationType,
+                        atomicResources ? ResourceMigrationType.ATOMIC : ResourceMigrationType.ARCHIVAL,
                         addExtensions, deleteInactive, foxmlFile,
                         user, idPrefix, disableChecksumValidation);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
