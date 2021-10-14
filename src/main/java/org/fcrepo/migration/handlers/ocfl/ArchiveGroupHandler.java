@@ -41,6 +41,7 @@ import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.migration.ObjectVersionReference;
+import org.fcrepo.migration.ResourceMigrationType;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -95,6 +96,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private static final Logger LOGGER = getLogger(ArchiveGroupHandler.class);
 
     private static final String FCREPO_ROOT = "info:fedora/";
+    private static final String FCRMETA_SUFFIX = "/fcr:metadata";
 
     private static final Map<String, String> externalHandlingMap = Map.of(
             "E", "proxy",
@@ -119,6 +121,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final boolean deleteInactive;
     private final boolean foxmlFile;
     private final MigrationType migrationType;
+    private final ResourceMigrationType resourceMigrationType;
     private final String user;
     private final String idPrefix;
     private final Detector mimeDetector;
@@ -131,6 +134,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *        OCFL session factory
      * @param migrationType
      *        the type of migration to do
+     * @param resourceMigrationType
+     *        how resources should be migrated
      * @param addDatastreamExtensions
      *        true if datastreams should be written with file extensions
      * @param deleteInactive
@@ -146,6 +151,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      */
     public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
                                final MigrationType migrationType,
+                               final ResourceMigrationType resourceMigrationType,
                                final boolean addDatastreamExtensions,
                                final boolean deleteInactive,
                                final boolean foxmlFile,
@@ -154,6 +160,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final boolean disableChecksumValidation) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
+        this.resourceMigrationType = Preconditions.checkNotNull(resourceMigrationType,
+                "resourceMigrationType cannot be null");
         this.addDatastreamExtensions = addDatastreamExtensions;
         this.deleteInactive = deleteInactive;
         this.foxmlFile = foxmlFile;
@@ -193,10 +201,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             // tracks the binaries that need their filename updated based on a RELS-INT removal
             final Map<String, String> relsDeletedFilenames = new HashMap<>();
 
-            final OcflObjectSession session = new OcflObjectSessionWrapper(sessionFactory.newSession(f6ObjectId));
+            final var objectSession = newSession(f6ObjectId);
 
             if (ov.isFirstVersion()) {
-                if (session.containsResource(f6ObjectId)) {
+                if (objectSession.containsResource(f6ObjectId)) {
                     throw new RuntimeException(f6ObjectId + " already exists!");
                 }
                 objectState = getObjectState(ov, objectId);
@@ -206,7 +214,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                         final var foxmlDsId = f6ObjectId + "/FOXML";
                         final var headers = createHeaders(foxmlDsId, f6ObjectId,
                                 InteractionModel.NON_RDF).build();
-                        session.writeResource(headers, is);
+                        objectSession.writeResource(headers, is);
                         //mark FOXML as a deleted datastream so it gets deleted in handleDeletedResources()
                         datastreamStates.put(foxmlDsId, DS_DELETED);
                     } catch (IOException io) {
@@ -218,16 +226,21 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     final var content = getObjTriples(ov, objectId);
                     final var meta = MetaHolder.fromContent(content, objectHeaders);
                     metaMap.put(f6ObjectId, meta);
-                    session.writeResource(meta.headers.build(), meta.constructTriples());
+                    objectSession.writeResource(meta.headers.build(), meta.constructTriples());
                 }
             }
+
+            final var datastreamSessions = new HashMap<String, OcflObjectSession>();
 
             // Write datastreams and their metadata
             for (var dv : ov.listChangedDatastreams()) {
                 final var mimeType = resolveMimeType(dv);
                 final String dsId = dv.getDatastreamInfo().getDatastreamId();
-                final String f6DsId = resolveF6DatastreamId(dsId, f6ObjectId, mimeType);
+                final String f6DsId = resolveF6DatastreamId(dsId, f6ObjectId);
                 final var datastreamFilename = lastPartFromId(f6DsId);
+
+                final var datastreamSession = datastreamSessions.computeIfAbsent(f6DsId,
+                        k -> datastreamSession(f6DsId, objectSession));
 
                 if (dv.isFirstVersionIn(ov.getObject())) {
                     dsCreateDates.put(dsId, dv.getCreated());
@@ -251,10 +264,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     if (migrationType == MigrationType.PLAIN_OCFL) {
                         content = IOUtils.toInputStream(dv.getExternalOrRedirectURL(), StandardCharsets.UTF_8);
                     }
-                    session.writeResource(datastreamHeaders, content);
+                    datastreamSession.writeResource(datastreamHeaders, content);
                 } else {
                     try (var contentStream = dv.getContent()) {
-                        writeDatastreamContent(dv, datastreamHeaders, contentStream, session);
+                        writeDatastreamContent(dv, datastreamHeaders, contentStream, datastreamSession);
                     } catch (final IOException e) {
                         throw new UncheckedIOException(e);
                     }
@@ -311,13 +324,23 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
             }
 
-            writeMeta(toWrite, metaMap, session);
-            updateFilenames(relsFilenameUpdates, filenameMap, relsDeletedFilenames, session);
+            writeMeta(toWrite, metaMap, objectSession, datastreamSessions);
+            updateFilenames(relsFilenameUpdates, filenameMap, relsDeletedFilenames, objectSession, datastreamSessions);
 
             LOGGER.debug("Committing object <{}>", f6ObjectId);
 
-            session.versionCreationTimestamp(OffsetDateTime.parse(ov.getVersionDate()));
-            session.commit();
+            final var creationTimestamp = OffsetDateTime.parse(ov.getVersionDate());
+
+            objectSession.versionCreationTimestamp(creationTimestamp);
+            objectSession.commit();
+
+            if (resourceMigrationType == ResourceMigrationType.ATOMIC) {
+                datastreamSessions.forEach((id, session) -> {
+                    LOGGER.debug("Committing object <{}>", id);
+                    session.versionCreationTimestamp(creationTimestamp);
+                    session.commit();
+                });
+            }
         }
 
         handleDeletedResources(f6ObjectId, objectState, datastreamStates);
@@ -367,11 +390,13 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *
      * @param toWrite the set of resources that should be written to this version
      * @param metaMap the map of all known rdf resources
-     * @param session the current ocfl session
+     * @param objectSession the ocfl session for the object
+     * @param datastreamSessions the ocfl sessions for the datastreams
      */
     private void writeMeta(final Set<String> toWrite,
                            final Map<String, MetaHolder> metaMap,
-                           final OcflObjectSession session) {
+                           final OcflObjectSession objectSession,
+                           final Map<String, OcflObjectSession> datastreamSessions) {
         for (final var id : toWrite) {
             final var meta = metaMap.get(id);
 
@@ -380,6 +405,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 // Skip for now. The triples will be added once the datastream exists.
                 continue;
             }
+
+            final var session = datastreamSessions.computeIfAbsent(id.replace(FCRMETA_SUFFIX, ""),
+                    k -> datastreamSession(k, objectSession));
 
             // Need to copy over the memento created date from the existing headers because it may have been updated
             // when a description's binary was updated
@@ -398,9 +426,12 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private void updateFilenames(final Set<String> toUpdate,
                                  final Map<String, String> filenameMap,
                                  final Map<String, String> relsDeletedFilenames,
-                                 final OcflObjectSession session) {
+                                 final OcflObjectSession objectSession,
+                                 final Map<String, OcflObjectSession> datastreamSessions) {
         if (migrationType == MigrationType.FEDORA_OCFL) {
             toUpdate.forEach(id -> {
+                final var session = datastreamSessions.computeIfAbsent(id.replace(FCRMETA_SUFFIX, ""),
+                        k -> datastreamSession(k, objectSession));
                 final var origHeaders = session.readHeaders(id);
                 final var filename = filenameMap.get(id);
                 if (StringUtils.isNotBlank(filename)) {
@@ -409,6 +440,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
             });
             relsDeletedFilenames.forEach((id, filename) -> {
+                final var session = datastreamSessions.computeIfAbsent(id.replace(FCRMETA_SUFFIX, ""),
+                        k -> datastreamSession(k, objectSession));
                 final var origHeaders = session.readHeaders(id);
                 final var newHeaders = ResourceHeaders.builder(origHeaders).withFilename(filename).build();
                 session.writeHeaders(newHeaders);
@@ -469,7 +502,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private void handleDeletedResources(final String f6ObjectId,
                                         final String objectState,
                                         final Map<String, String> datastreamStates) {
-        final OcflObjectSession session = new OcflObjectSessionWrapper(sessionFactory.newSession(f6ObjectId));
+        final OcflObjectSession session = newSession(f6ObjectId);
+        final var datastreamSessions = new HashMap<String, OcflObjectSession>();
 
         try {
             final var now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
@@ -479,7 +513,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 hasDeletes.set(true);
 
                 datastreamStates.keySet().forEach(f6DsId -> {
-                    deleteDatastream(f6DsId, now.toInstant(), session);
+                    final var datastreamSession = datastreamSessions.computeIfAbsent(f6DsId,
+                            k -> datastreamSession(f6DsId, session));
+                    deleteDatastream(f6DsId, now.toInstant(), datastreamSession);
                 });
 
                 if (migrationType == MigrationType.PLAIN_OCFL) {
@@ -490,8 +526,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             } else {
                 datastreamStates.forEach((f6DsId, state) -> {
                     if (DS_DELETED.equals(state) || (deleteInactive && DS_INACTIVE.equals(state))) {
+                        final var datastreamSession = datastreamSessions.computeIfAbsent(f6DsId,
+                                k -> datastreamSession(f6DsId, session));
                         hasDeletes.set(true);
-                        deleteDatastream(f6DsId, now.toInstant(), session);
+                        deleteDatastream(f6DsId, now.toInstant(), datastreamSession);
                     }
                 });
             }
@@ -499,8 +537,20 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             if (hasDeletes.get()) {
                 session.versionCreationTimestamp(now);
                 session.commit();
+
+                if (resourceMigrationType == ResourceMigrationType.ATOMIC) {
+                    datastreamSessions.forEach((id, dsSession) -> {
+                        dsSession.versionCreationTimestamp(now);
+                        dsSession.commit();
+                    });
+                }
             } else {
                 session.abort();
+                if (resourceMigrationType == ResourceMigrationType.ATOMIC) {
+                    datastreamSessions.forEach((id, dsSession) -> {
+                        dsSession.abort();
+                    });
+                }
             }
         } catch (RuntimeException e) {
             session.abort();
@@ -509,14 +559,14 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     }
 
     private String f6DescriptionId(final String f6ResourceId) {
-        return f6ResourceId + "/fcr:metadata";
+        return f6ResourceId + FCRMETA_SUFFIX;
     }
 
     private String lastPartFromId(final String id) {
         return id.substring(id.lastIndexOf('/') + 1);
     }
 
-    private String resolveF6DatastreamId(final String datastreamId, final String f6ObjectId, final String mimeType) {
+    private String resolveF6DatastreamId(final String datastreamId, final String f6ObjectId) {
         return f6ObjectId + "/" + datastreamId;
     }
 
@@ -533,7 +583,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
     private ResourceHeaders.Builder createObjectHeaders(final String f6ObjectId, final ObjectVersionReference ov) {
         final var headers = createHeaders(f6ObjectId, FCREPO_ROOT, InteractionModel.BASIC_CONTAINER);
-        headers.withArchivalGroup(true);
+        headers.withArchivalGroup(resourceMigrationType == ResourceMigrationType.ARCHIVAL);
         headers.withObjectRoot(true);
         headers.withLastModifiedBy(user);
         headers.withCreatedBy(user);
@@ -561,7 +611,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                                     final String createDate) {
         final var lastModified = Instant.parse(dv.getCreated());
         final var headers = createHeaders(f6DsId, f6ObjectId, InteractionModel.NON_RDF);
-        headers.withArchivalGroupId(f6ObjectId);
+        if (resourceMigrationType == ResourceMigrationType.ARCHIVAL) {
+            headers.withArchivalGroupId(f6ObjectId);
+        }
         headers.withFilename(filename);
         headers.withCreatedDate(Instant.parse(createDate));
         headers.withLastModifiedDate(lastModified);
@@ -576,7 +628,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         }
 
         headers.withArchivalGroup(false);
-        headers.withObjectRoot(false);
+        headers.withObjectRoot(resourceMigrationType == ResourceMigrationType.ATOMIC);
         if (dv.getSize() > -1 && !INLINE_XML.equals(dv.getDatastreamInfo().getControlGroup())) {
             headers.withContentSize(dv.getSize());
         }
@@ -600,7 +652,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final var id = f6DescriptionId(f6DsId);
         final var headers = createHeaders(id, f6DsId, InteractionModel.NON_RDF_DESCRIPTION);
 
-        headers.withArchivalGroupId(datastreamHeaders.getArchivalGroupId());
+        if (resourceMigrationType == ResourceMigrationType.ARCHIVAL) {
+            headers.withArchivalGroupId(datastreamHeaders.getArchivalGroupId());
+        }
         headers.withCreatedDate(datastreamHeaders.getCreatedDate());
         headers.withLastModifiedDate(datastreamHeaders.getLastModifiedDate());
         headers.withCreatedBy(datastreamHeaders.getCreatedBy());
@@ -817,6 +871,26 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             model.add(statement);
         }
         return splitModels;
+    }
+
+    /**
+     * Creates a new session for the datastream when migrating as atomic resources, or returns the object session,
+     * when migrating as archival groups.
+     *
+     * @param id the datastream's id in fedora 6
+     * @param objectSession the datastream's object session
+     * @return either a new datastream session or the object session
+     */
+    private OcflObjectSession datastreamSession(final String id, final OcflObjectSession objectSession) {
+        if (resourceMigrationType == ResourceMigrationType.ARCHIVAL) {
+            return objectSession;
+        } else {
+            return newSession(id);
+        }
+    }
+
+    private OcflObjectSession newSession(final String id) {
+        return new OcflObjectSessionWrapper(sessionFactory.newSession(id));
     }
 
     /**

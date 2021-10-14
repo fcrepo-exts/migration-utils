@@ -101,66 +101,71 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Migrate objects and datastreams in the Inactive state as deleted. Default: false.")
     private boolean deleteInactive;
 
-    @Option(names = {"--migration-type", "-m"}, defaultValue = "FEDORA_OCFL", showDefaultValue = ALWAYS, order = 19,
+    @Option(names = {"--atomic-resources", "-A"}, defaultValue = "false", showDefaultValue = ALWAYS,
+            order = 19,
+            description = "Migrate objects and datastreams as atomic resources instead of archival groups")
+    private boolean atomicResources;
+
+    @Option(names = {"--migration-type", "-m"}, defaultValue = "FEDORA_OCFL", showDefaultValue = ALWAYS, order = 20,
             description = "Type of OCFL objects to migrate to. Choices: FEDORA_OCFL | PLAIN_OCFL")
     private MigrationType migrationType;
 
-    @Option(names = {"--id-prefix"}, defaultValue = DEFAULT_PREFIX, showDefaultValue = ALWAYS, order = 20,
+    @Option(names = {"--id-prefix"}, defaultValue = DEFAULT_PREFIX, showDefaultValue = ALWAYS, order = 21,
             description = "Only use this for PLAIN_OCFL migrations: Prefix to add to PIDs for OCFL object IDs"
                 + " - defaults to info:fedora/, like Fedora3")
     private String idPrefix;
 
-    @Option(names = {"--foxml-file"}, defaultValue = "false", order = 21,
+    @Option(names = {"--foxml-file"}, defaultValue = "false", order = 22,
             description = "Migrate FOXML file as a whole file, instead of creating property files. FOXML file will"
                 + " be migrated, then marked as deleted so it doesn't show up as an active file.")
     private boolean foxmlFile;
 
-    @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 22,
+    @Option(names = {"--limit", "-l"}, defaultValue = "-1", order = 23,
             description = "Limit number of objects to be processed.\n  Default: no limit")
     private int objectLimit;
 
-    @Option(names = {"--resume", "-r"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 23,
+    @Option(names = {"--resume", "-r"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 24,
             description = "Resume from last successfully migrated Fedora 3 object")
     private boolean resume;
 
-    @Option(names = {"--continue-on-error", "-c"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 24,
+    @Option(names = {"--continue-on-error", "-c"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 25,
             description = "Continue to next PID if an error occurs (instead of exiting). Disabled by default.")
     private boolean continueOnError;
 
-    @Option(names = {"--pid-file", "-p"}, order = 25,
+    @Option(names = {"--pid-file", "-p"}, order = 26,
             description = "PID file listing which Fedora 3 objects to migrate")
     private File pidFile;
 
-    @Option(names = {"--extensions", "-x"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 26,
+    @Option(names = {"--extensions", "-x"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 27,
             description = "Add file extensions to migrated datastreams based on mimetype recorded in FOXML")
     private boolean addExtensions;
 
-    @Option(names = {"--f3hostname", "-f"}, defaultValue = "fedora.info", showDefaultValue = ALWAYS, order = 27,
+    @Option(names = {"--f3hostname", "-f"}, defaultValue = "fedora.info", showDefaultValue = ALWAYS, order = 28,
             description = "Hostname of Fedora 3, used for replacing placeholder in 'E' and 'R' datastream URLs")
     private String f3hostname;
 
-    @Option(names = {"--username", "-u"}, defaultValue = "fedoraAdmin", showDefaultValue = ALWAYS, order = 28,
+    @Option(names = {"--username", "-u"}, defaultValue = "fedoraAdmin", showDefaultValue = ALWAYS, order = 29,
             description = "The username to associate with all of the migrated resources.")
     private String user;
 
     @Option(names = {"--user-uri", "-U"}, defaultValue = "info:fedora/fedoraAdmin", showDefaultValue = ALWAYS,
-            order = 29, description = "The username to associate with all of the migrated resources.")
+            order = 30, description = "The username to associate with all of the migrated resources.")
     private String userUri;
 
-    @Option(names = {"--algorithm"}, defaultValue = "sha512", showDefaultValue = ALWAYS, order = 30,
+    @Option(names = {"--algorithm"}, defaultValue = "sha512", showDefaultValue = ALWAYS, order = 31,
             description = "The digest algorithm to use in the OCFL objects created. Either sha256 or sha512")
     private String digestAlgorithm;
 
-    @Option(names = {"--no-checksum-validation"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 31,
+    @Option(names = {"--no-checksum-validation"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 32,
             description = "Disable validation that datastream content matches Fedora 3 checksum.")
     private boolean disableChecksumValidation;
 
-    @Option(names = {"--enable-metrics"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 32,
+    @Option(names = {"--enable-metrics"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 33,
             description = "Enable gathering of metrics for a Prometheus instance. " +
                           "\nNote: this requires port 8080 to be free in order for Prometheus to scrape metrics.")
     private boolean enableMetrics;
 
-    @Option(names = {"--debug"}, order = 32, description = "Enables debug logging")
+    @Option(names = {"--debug"}, order = 34, description = "Enables debug logging")
     private boolean debug;
 
     private File indexDir;
@@ -302,7 +307,10 @@ public class PicocliMigrator implements Callable<Integer> {
                 .getObject();
 
         final FedoraObjectVersionHandler archiveGroupHandler =
-                new ArchiveGroupHandler(ocflSessionFactory, migrationType, addExtensions, deleteInactive, foxmlFile,
+                new ArchiveGroupHandler(
+                        ocflSessionFactory, migrationType,
+                        atomicResources ? ResourceMigrationType.ATOMIC : ResourceMigrationType.ARCHIVAL,
+                        addExtensions, deleteInactive, foxmlFile,
                         user, idPrefix, disableChecksumValidation);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 archiveGroupHandler);
