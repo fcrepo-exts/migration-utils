@@ -19,7 +19,7 @@
     <spring.version>5.2.1.RELEASE</spring.version>
     <fcrepo-storage-ocfl.version>6.1.0-SNAPSHOT</fcrepo-storage-ocfl.version>
     <lucene.version>7.1.0</lucene.version>
-    <jena.version>3.17.0</jena.version>
+    <jena.version>4.2.0</jena.version>
     <checkstyle.plugin.version>3.1.1</checkstyle.plugin.version>
     <logback.version>1.2.0</logback.version>
     <micrometer.version>1.5.5</micrometer.version>
