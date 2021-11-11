@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.fcrepo</groupId>
     <artifactId>fcrepo-parent</artifactId>
-    <version>6.0.0</version>
+    <version>6.1.0</version>
   </parent>
   <groupId>org.fcrepo.migration</groupId>
   <artifactId>migration-utils</artifactId>
@@ -17,7 +17,7 @@
     <project_name>migration-utils</project_name>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>5.2.1.RELEASE</spring.version>
-    <fcrepo-storage-ocfl.version>6.1.0-SNAPSHOT</fcrepo-storage-ocfl.version>
+    <fcrepo-storage-ocfl.version>6.1.0</fcrepo-storage-ocfl.version>
     <lucene.version>7.1.0</lucene.version>
     <jena.version>4.2.0</jena.version>
     <checkstyle.plugin.version>3.1.1</checkstyle.plugin.version>
@@ -26,8 +26,8 @@
     <mockito.version>2.22.0</mockito.version>
     <slf4j.version>1.7.10</slf4j.version>
     <junit.version>4.13.1</junit.version>
-    <fcrepo-build-tools.version>6.0.0-alpha-1</fcrepo-build-tools.version>
-    <fcrepo-java-client.version>0.2.1</fcrepo-java-client.version>
+    <fcrepo-build-tools.version>6.0.0</fcrepo-build-tools.version>
+    <fcrepo-java-client.version>6.1.0</fcrepo-java-client.version>
     <javaee.xml.version>2.3.1</javaee.xml.version>
     <jaxb.core.version>2.3.0.1</jaxb.core.version>
     <jaxb.impl.version>2.3.1</jaxb.impl.version>
