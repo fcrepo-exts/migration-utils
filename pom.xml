@@ -33,6 +33,7 @@
     <jaxb.impl.version>2.3.1</jaxb.impl.version>
     <woodstox.version>6.2.3</woodstox.version>
     <xerces.version>2.12.1</xerces.version>
+    <sonatype.host>s01.oss.sonatype.org</sonatype.host>
   </properties>
 
   <scm>
@@ -210,7 +211,7 @@
     <repository>
       <id>sonatype-nexus-snapshots</id>
       <name>Sonatype Nexus Snapshots</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <url>https://${sonatype.host}/content/repositories/snapshots</url>
       <releases>
         <enabled>false</enabled>
       </releases>
@@ -221,11 +222,27 @@
 
   </repositories>
 
+  <distributionManagement>
+
+    <repository>
+      <id>sonatype-releases</id>
+      <name>Sonatype Release Staging Maven Repository</name>
+      <url>https://${sonatype.host}/service/local/staging/deploy/maven2</url>
+    </repository>
+
+    <snapshotRepository>
+      <id>sonatype-snapshots</id>
+      <name>Sonatype Snapshots Maven Repository</name>
+      <url>https://${sonatype.host}/content/repositories/snapshots</url>
+    </snapshotRepository>
+
+  </distributionManagement>
+
   <pluginRepositories>
     <pluginRepository>
       <id>sonatype-nexus-snapshots</id>
       <name>Sonatype Nexus Snapshots</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <url>https://${sonatype.host}/content/repositories/snapshots</url>
       <releases>
         <enabled>false</enabled>
       </releases>
