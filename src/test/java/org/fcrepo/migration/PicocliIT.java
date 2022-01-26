@@ -21,6 +21,7 @@ import edu.wisc.library.ocfl.api.model.ObjectVersionId;
 import edu.wisc.library.ocfl.api.model.VersionDetails;
 import edu.wisc.library.ocfl.api.model.VersionInfo;
 import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
+import edu.wisc.library.ocfl.core.storage.OcflStorageBuilder;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -33,7 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
 import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleIdEncapsulationLayoutConfig;
-import edu.wisc.library.ocfl.core.storage.filesystem.FileSystemOcflStorage;
 import picocli.CommandLine;
 
 /**
@@ -159,7 +159,7 @@ public class PicocliIT {
         final Path targetDir = tmpDir.resolve("target");
         final var ocflRepo =  new OcflRepositoryBuilder()
                 .defaultLayoutConfig(new HashedNTupleIdEncapsulationLayoutConfig())
-                .storage(FileSystemOcflStorage.builder().repositoryRoot(targetDir).build())
+                .storage(OcflStorageBuilder.builder().fileSystem(targetDir).build())
                 .workDir(tmpDir)
                 .build();
         assertTrue(Files.list(targetDir).anyMatch(element -> element.endsWith("0=ocfl_1.0")));
@@ -199,7 +199,7 @@ public class PicocliIT {
         assertTrue(inventory.exists());
         final var ocflRepo =  new OcflRepositoryBuilder()
                 .defaultLayoutConfig(new HashedNTupleLayoutConfig())
-                .storage(FileSystemOcflStorage.builder().repositoryRoot(targetDir).build())
+                .storage(OcflStorageBuilder.builder().fileSystem(targetDir).build())
                 .workDir(workingDir)
                 .build();
         final var object = ocflRepo.getObject(ObjectVersionId.head("example:1"));
@@ -293,7 +293,7 @@ public class PicocliIT {
         final var pid = "example:1";
         final var ocflRepo =  new OcflRepositoryBuilder()
                 .defaultLayoutConfig(new HashedNTupleIdEncapsulationLayoutConfig())
-                .storage(FileSystemOcflStorage.builder().repositoryRoot(targetDir).build())
+                .storage(OcflStorageBuilder.builder().fileSystem(targetDir).build())
                 .workDir(tmpDir)
                 .build();
         ocflRepo.updateObject(ObjectVersionId.head(pid), new VersionInfo(), updater -> {
@@ -317,7 +317,7 @@ public class PicocliIT {
         final var ocflObjectId = "info:fedora/example:1";
         final var ocflRepo =  new OcflRepositoryBuilder()
                 .defaultLayoutConfig(new HashedNTupleIdEncapsulationLayoutConfig())
-                .storage(FileSystemOcflStorage.builder().repositoryRoot(targetDir).build())
+                .storage(OcflStorageBuilder.builder().fileSystem(targetDir).build())
                 .workDir(tmpDir)
                 .build();
         ocflRepo.updateObject(ObjectVersionId.head(ocflObjectId), new VersionInfo(), updater -> {

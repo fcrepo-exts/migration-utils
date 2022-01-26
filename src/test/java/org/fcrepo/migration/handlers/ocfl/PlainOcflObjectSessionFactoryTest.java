@@ -20,7 +20,7 @@ import edu.wisc.library.ocfl.api.MutableOcflRepository;
 import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
 import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
 import edu.wisc.library.ocfl.core.path.mapper.LogicalPathMappers;
-import edu.wisc.library.ocfl.core.storage.filesystem.FileSystemOcflStorage;
+import edu.wisc.library.ocfl.core.storage.OcflStorageBuilder;
 import org.apache.commons.lang3.SystemUtils;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.junit.Before;
@@ -58,7 +58,7 @@ public class PlainOcflObjectSessionFactoryTest {
         ocflRepo = new OcflRepositoryBuilder()
                 .defaultLayoutConfig(new HashedNTupleLayoutConfig())
                 .logicalPathMapper(logicalPathMapper)
-                .storage(FileSystemOcflStorage.builder().repositoryRoot(ocflRoot).build())
+                .storage(OcflStorageBuilder.builder().fileSystem(ocflRoot).build())
                 .workDir(staging)
                 .buildMutable();
 
