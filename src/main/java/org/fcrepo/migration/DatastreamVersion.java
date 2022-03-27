@@ -9,6 +9,7 @@ package org.fcrepo.migration;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -54,6 +55,13 @@ public interface DatastreamVersion {
      * @return creation date
      */
     public String getCreated();
+
+    /**
+     * Gets the date when this version was created.
+     *
+     * @return creation date
+     */
+    public Instant getCreatedInstant();
 
     /**
      * Gets the altIDs value for this version.

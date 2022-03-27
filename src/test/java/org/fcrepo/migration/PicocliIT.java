@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.wisc.library.ocfl.api.OcflRepository;
 import edu.wisc.library.ocfl.api.model.FileDetails;
 import edu.wisc.library.ocfl.api.model.ObjectVersionId;
 import edu.wisc.library.ocfl.api.model.VersionDetails;
@@ -25,6 +26,7 @@ import edu.wisc.library.ocfl.core.storage.OcflStorageBuilder;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,10 +44,14 @@ import picocli.CommandLine;
 public class PicocliIT {
 
     private Path tmpDir;
+    private Path targetDir;
+    private Path workingDir;
 
     @Before
     public void setup() throws IOException {
         tmpDir = Files.createTempDirectory("migration-utils");
+        targetDir = tmpDir.resolve("target");
+        workingDir = tmpDir.resolve("working");
     }
 
     @After
@@ -60,8 +66,6 @@ public class PicocliIT {
 
     @Test
     public void testPlainOcfl() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
@@ -81,8 +85,6 @@ public class PicocliIT {
 
     @Test
     public void testPlainOcflEmptyIdPrefix() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
@@ -104,8 +106,6 @@ public class PicocliIT {
 
     @Test
     public void testFedoraOcflCantChangeIdPrefix() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "FEDORA_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
@@ -120,7 +120,6 @@ public class PicocliIT {
 
     @Test
     public void testPlainOcflNoWorkingDirOption() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
         final String[] args = {"--target-dir", targetDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
@@ -137,8 +136,6 @@ public class PicocliIT {
 
     @Test
     public void testFedoraOcfl() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "FEDORA_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
@@ -156,7 +153,6 @@ public class PicocliIT {
     @Test
     public void testExistingRepoDifferentStorageLayout() throws Exception {
         //create repo with different storage layout
-        final Path targetDir = tmpDir.resolve("target");
         final var ocflRepo =  new OcflRepositoryBuilder()
                 .defaultLayoutConfig(new HashedNTupleIdEncapsulationLayoutConfig())
                 .storage(OcflStorageBuilder.builder().fileSystem(targetDir).build())
@@ -182,8 +178,6 @@ public class PicocliIT {
 
     @Test
     public void testMigrateFoxmlFileInsteadOfPropertyFiles() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY", "--migration-type", "PLAIN_OCFL",
                 "--datastreams-dir", "src/test/resources/legacyFS/datastreams/2015/0430/16/01",
@@ -231,8 +225,6 @@ public class PicocliIT {
 
     @Test
     public void testInvalidDigestAlgorithm() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
@@ -250,8 +242,6 @@ public class PicocliIT {
      */
     @Test
     public void testInvalidForUsDigestAlgorithm() {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
@@ -266,8 +256,6 @@ public class PicocliIT {
 
     @Test
     public void testSha256DigestAlgorithm() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS/datastreams/2015/0430/16/01",
@@ -288,8 +276,6 @@ public class PicocliIT {
 
     @Test
     public void testPlainOcflObjectAlreadyExistsInOcfl() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final var pid = "example:1";
         final var ocflRepo =  new OcflRepositoryBuilder()
                 .defaultLayoutConfig(new HashedNTupleIdEncapsulationLayoutConfig())
@@ -312,8 +298,6 @@ public class PicocliIT {
 
     @Test
     public void testFedoraOcflObjectAlreadyExistsInOcfl() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final var ocflObjectId = "info:fedora/example:1";
         final var ocflRepo =  new OcflRepositoryBuilder()
                 .defaultLayoutConfig(new HashedNTupleIdEncapsulationLayoutConfig())
@@ -335,8 +319,6 @@ public class PicocliIT {
 
     @Test
     public void testInvalidChecksumErrorsPlain() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS-invalid-checksum/datastreams/2015/0430/16/01",
@@ -349,8 +331,6 @@ public class PicocliIT {
 
     @Test
     public void testInvalidChecksumErrorsFedora() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "FEDORA_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS-invalid-checksum/datastreams/2015/0430/16/01",
@@ -363,8 +343,6 @@ public class PicocliIT {
 
     @Test
     public void testInvalidChecksumCanBeAllowedPlain() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "PLAIN_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS-invalid-checksum/datastreams/2015/0430/16/01",
@@ -378,8 +356,6 @@ public class PicocliIT {
 
     @Test
     public void testInvalidChecksumCanBeAllowedFedora() throws Exception {
-        final Path targetDir = tmpDir.resolve("target");
-        final Path workingDir = tmpDir.resolve("working");
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
                 "--source-type", "LEGACY","--migration-type", "FEDORA_OCFL",
                 "--datastreams-dir","src/test/resources/legacyFS-invalid-checksum/datastreams/2015/0430/16/01",
@@ -389,6 +365,28 @@ public class PicocliIT {
         final CommandLine cmd = new CommandLine(migrator);
         final int result = cmd.execute(args);
         assertEquals(0, result); //should succeed because checksum validation is disabled
+    }
+
+    @Test
+    public void handleOutOfOrderDatastreamVersions() throws Exception {
+        final var ocflObjectId = "info:fedora/example:1";
+        final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
+                "--source-type", "LEGACY","--migration-type", "FEDORA_OCFL",
+                "--datastreams-dir","src/test/resources/legacyFS-out-of-order/datastreams/2015/0430/16/01",
+                "--objects-dir", "src/test/resources/legacyFS-out-of-order/objects/2015/0430/16/01"};
+        final PicocliMigrator migrator = new PicocliMigrator();
+        final CommandLine cmd = new CommandLine(migrator);
+
+        final int result = cmd.execute(args);
+        assertEquals(0, result);
+
+        final var ocflRepo = createOcflRepo();
+
+        final var obj = ocflRepo.getObject(ObjectVersionId.head(ocflObjectId));
+        try (final var stream = obj.getFile("DS1").getStream()) {
+            assertEquals("\n<test>\n  This is a test that was edited.\n</test>\n",
+                    IOUtils.toString(stream, StandardCharsets.UTF_8));
+        }
     }
 
     /**
@@ -435,4 +433,13 @@ public class PicocliIT {
         }
         return fileManifest;
     }
+
+    private OcflRepository createOcflRepo() {
+        return new OcflRepositoryBuilder()
+                .defaultLayoutConfig(new HashedNTupleLayoutConfig())
+                .storage(OcflStorageBuilder.builder().fileSystem(targetDir.resolve("data/ocfl-root")).build())
+                .workDir(workingDir)
+                .build();
+    }
+
 }

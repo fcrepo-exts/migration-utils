@@ -7,6 +7,7 @@
 package org.fcrepo.migration.handlers;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,12 @@ public class ObjectAbstractionStreamingFedoraObjectHandler implements StreamingF
             for (final String versionDate : versionDates) {
                 versions.add(getObjectVersionReference(versionDate, versionDates, objectReference, versionMap));
             }
+
+            // Need to sort the datastream versions because they may not appear in order in FOXML
+            dsIdToVersionListMap.forEach((dsId, dsVersions) -> {
+                dsVersions.sort(Comparator.comparing(DatastreamVersion::getCreatedInstant));
+            });
+
             versionHandler.processObjectVersions(versions, object);
         } finally {
             cleanForReuse();

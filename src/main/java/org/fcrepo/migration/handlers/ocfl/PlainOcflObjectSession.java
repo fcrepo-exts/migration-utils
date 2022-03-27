@@ -153,6 +153,11 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     }
 
     @Override
+    public void invalidateCache(final String objectId) {
+        ocflRepo.invalidateCache(objectId);
+    }
+
+    @Override
     public synchronized void commit() {
         enforceOpen();
         closed = true;
