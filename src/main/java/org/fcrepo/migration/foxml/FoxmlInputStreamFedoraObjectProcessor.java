@@ -65,6 +65,7 @@ import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -347,6 +348,7 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         private String id;
         private String label;
         private String created;
+        private Instant createdInstant;
         private String mimeType;
         private String altIds;
         private String formatUri;
@@ -369,6 +371,7 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
             id = dsAttributes.get("ID");
             label = dsAttributes.get("LABEL");
             created = dsAttributes.get("CREATED");
+            createdInstant = created != null ? Instant.parse(created) : null;
             mimeType = dsAttributes.get("MIMETYPE");
             altIds = dsAttributes.get("ALT_IDS");
             formatUri = dsAttributes.get("FORMAT_URI");
@@ -558,6 +561,11 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         @Override
         public String getCreated() {
             return created;
+        }
+
+        @Override
+        public Instant getCreatedInstant() {
+            return createdInstant;
         }
 
         @Override

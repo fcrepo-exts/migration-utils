@@ -137,6 +137,11 @@ public class OcflObjectSessionWrapper implements OcflObjectSession {
     }
 
     @Override
+    public void invalidateCache(final String objectId) {
+        inner.invalidateCache(objectId);
+    }
+
+    @Override
     public void commitType(final CommitType commitType) {
         inner.commitType(commitType);
     }
