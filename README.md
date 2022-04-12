@@ -96,6 +96,12 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
   -U, --user-uri=<userUri>   The username to associate with all of the migrated
                                resources.
                                Default: info:fedora/fedoraAdmin
+  -H, --head-only            Migrate only the HEAD of each datastream
+                               Default: false
+      --head-only-pids=<headOnlyPidList>
+                             A list of pids to migrate only the HEAD of. Only
+                               used if --head-only is specified.
+                               Default: false
       --algorithm=<digestAlgorithm>
                              The digest algorithm to use in the OCFL objects
                                created. Either sha256 or sha512
@@ -121,6 +127,13 @@ There are three means by which a subset of objects may be selected for migration
 * *PID List*: When a pid-list is provided (detailed above), the migration will only be performed on the objects associated with the PIDs in the provided pid-list file.
 * *Resume*: When enabling the `resume` configuration (detailed above), a file is maintained that keeps track of the last successfully migration object. Subsequent executions will only migrate objects following the last migrated object. Note, this capability is based on the assumption that the order of objects to be migrated is deterministic and the same from one execution to the next.
 
+### HEAD only migrations
+
+Using the `--head-only` option, migrations can be done on only the HEAD versions of a datastream. If further specification
+is needed, the `--head-only-pids` can be used to provide a selection of pids and their datastreams which should be used.
+For example, if you wanted to migrate only the HEAD version for all datastreams of a pid, you could provide `repo:example-1`
+in the file. If instead you wanted to only migrate the head of the RELS-EXT for the pid, you would instead provide 
+`repo:example-1/RELS-EXT`.
 
 ### Examples
 
