@@ -42,6 +42,7 @@ import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.ResourceMigrationType;
+import org.fcrepo.migration.pidlist.HeadOnlyPidListManager;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -126,6 +127,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final String idPrefix;
     private final Detector mimeDetector;
     private final boolean disableChecksumValidation;
+    private final HeadOnlyPidListManager headOnlyPidListManager;
 
     /**
      * Create an ArchiveGroupHandler,
@@ -146,8 +148,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *        the username to associated with the migrated resources
      * @param idPrefix
      *        the prefix to add to the Fedora 3 pid (default "info:fedora/", like Fedora 3)
+     * @param headOnlyPidListManager
+     *        pid list manager to check if datastreams should migrate only head versions
      * @param disableChecksumValidation
-     *        if true, migrator should not try to verify that the datastream content matches Fedora 3 checksums
      */
     public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
                                final MigrationType migrationType,
@@ -157,6 +160,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final boolean foxmlFile,
                                final String user,
                                final String idPrefix,
+                               final HeadOnlyPidListManager headOnlyPidListManager,
                                final boolean disableChecksumValidation) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
@@ -167,6 +171,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         this.foxmlFile = foxmlFile;
         this.user = Preconditions.checkNotNull(Strings.emptyToNull(user), "user cannot be blank");
         this.idPrefix = idPrefix;
+        this.headOnlyPidListManager = headOnlyPidListManager;
         this.disableChecksumValidation = disableChecksumValidation;
         try {
             this.mimeDetector = new TikaConfig().getDetector();
@@ -246,6 +251,13 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     dsCreateDates.put(dsId, dv.getCreated());
                     datastreamStates.put(f6DsId, dv.getDatastreamInfo().getState());
                 }
+
+                final var skip = headOnlyPidListManager.accept(objectId, dsId);
+                if (skip && !dv.isLastVersionIn(ov.getObject())) {
+                    LOGGER.debug("Skipping {} - {}", objectId, dv.getVersionId());
+                    continue;
+                }
+
                 final var createDate = dsCreateDates.get(dsId);
 
                 final var filename = resolveFilename(datastreamFilename,
