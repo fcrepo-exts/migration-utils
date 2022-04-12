@@ -63,7 +63,7 @@ public class HeadOnlyPidListManager {
      *
      * @param pid the pid of the object
      * @param dsId the datastreamId
-     * @return true if Object should be processed
+     * @return true if Object is required to migrate only HEAD datastreams
      */
     public boolean accept(final String pid, final String dsId) {
         final var fullDsId = pid + "/" + dsId;

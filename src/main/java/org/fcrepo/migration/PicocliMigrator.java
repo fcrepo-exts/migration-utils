@@ -23,6 +23,7 @@ import org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler;
 import org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler;
 import org.fcrepo.migration.metrics.PrometheusActuator;
+import org.fcrepo.migration.pidlist.HeadOnlyPidListManager;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -155,6 +156,14 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Enable gathering of metrics for a Prometheus instance. " +
                           "\nNote: this requires port 8080 to be free in order for Prometheus to scrape metrics.")
     private boolean enableMetrics;
+
+    @Option(names = {"--head-only", "-H"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 35,
+            description = "Migrate only the HEAD of each datastream")
+    private boolean headOnly;
+
+    @Option(names = {"--head-only-pids"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 36,
+            description = "A list of pids to migrate only the HEAD of. Only used if --head-only is specified.")
+    private File headOnlyPidList;
 
     @Option(names = {"--debug"}, order = 34, description = "Enables debug logging")
     private boolean debug;
@@ -297,12 +306,14 @@ public class PicocliMigrator implements Callable<Integer> {
                 ocflStagingDir.toPath(), migrationType, user, userUri, algorithm, disableChecksumValidation)
                 .getObject();
 
+        final HeadOnlyPidListManager headOnlyPidListManager = new HeadOnlyPidListManager(headOnly, headOnlyPidList);
+
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(
                         ocflSessionFactory, migrationType,
                         atomicResources ? ResourceMigrationType.ATOMIC : ResourceMigrationType.ARCHIVAL,
                         addExtensions, deleteInactive, foxmlFile,
-                        user, idPrefix, disableChecksumValidation);
+                        user, idPrefix, headOnlyPidListManager, disableChecksumValidation);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 archiveGroupHandler);
 
