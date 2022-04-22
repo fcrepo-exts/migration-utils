@@ -16,7 +16,7 @@
   <properties>
     <project_name>migration-utils</project_name>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring.version>5.2.1.RELEASE</spring.version>
+    <spring.version>5.3.19</spring.version>
     <fcrepo-storage-ocfl.version>6.2.0-SNAPSHOT</fcrepo-storage-ocfl.version>
     <lucene.version>7.1.0</lucene.version>
     <jena.version>4.2.0</jena.version>
