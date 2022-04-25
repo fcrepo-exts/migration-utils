@@ -162,7 +162,7 @@ public class PicocliMigrator implements Callable<Integer> {
     private boolean headOnly;
 
     @Option(names = {"--head-only-ids"}, order = 36,
-            description = "A list of pids to migrate only the HEAD of. Only used if --head-only is specified.")
+            description = "A list of datastreams to migrate only the HEAD of. Only used if --head-only is specified.")
     private File headOnlyList;
 
     @Option(names = {"--debug"}, order = 34, description = "Enables debug logging")
