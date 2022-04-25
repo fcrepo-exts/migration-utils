@@ -24,17 +24,17 @@ import java.util.Set;
 
 
 /**
- * Control was pids/datastreams to accept only the HEAD versions of datastreams.
+ * Control was datastreams to accept only the HEAD versions of datastreams.
  *
- * If headOnly is true and there are no pids specified, all datastreams are accepted. Otherwise, pids and their
- * datastreams can be specified by passing in a File with a listing of the pids/datastreams to accept.
+ * If headOnly is true and there are no datastreams specified, all datastreams are accepted. Otherwise,
+ * datastreams can be specified by passing in a File with a listing of the datastream ids to accept.
  *
  * @author mikejritter
  */
 public class HeadOnlyPidListManager {
 
     private final boolean headOnly;
-    private final Set<String> pidList = new HashSet<>();
+    private final Set<String> dsIdList = new HashSet<>();
 
     public HeadOnlyPidListManager(final boolean headOnly) {
         this.headOnly = headOnly;
@@ -49,7 +49,7 @@ public class HeadOnlyPidListManager {
             }
 
             try (BufferedReader reader = new BufferedReader(new FileReader(headOnlyListFile))) {
-                reader.lines().forEach(pidList::add);
+                reader.lines().forEach(dsIdList::add);
             } catch (IOException e) {
                 // Should not happen based on previous check
                 throw new RuntimeException(e);
@@ -58,16 +58,14 @@ public class HeadOnlyPidListManager {
     }
 
     /**
-     * Similar to accept from {@link PidListManager}, but with an additional variable for the datastreamId. If no
-     * entries are in the pidList, it is assumed all objects should be accepted.
+     * Similar to accept from {@link PidListManager}, but for the datastreamId. If no entries are present,
+     * it is assumed all objects should be accepted.
      *
-     * @param pid the pid of the object
      * @param dsId the datastreamId
      * @return true if Object is required to migrate only HEAD datastreams
      */
-    public boolean accept(final String pid, final String dsId) {
-        final var fullDsId = pid + "/" + dsId;
-        final var accept = pidList.isEmpty() || pidList.contains(pid) || pidList.contains(fullDsId);
+    public boolean accept(final String dsId) {
+        final var accept = dsIdList.isEmpty() || dsIdList.contains(dsId);
         return headOnly && accept;
     }
 }

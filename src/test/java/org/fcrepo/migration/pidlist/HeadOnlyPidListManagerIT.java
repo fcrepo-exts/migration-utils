@@ -136,10 +136,10 @@ public class HeadOnlyPidListManagerIT {
     }
 
     @Test
-    public void testMigrateHeadOnlySpecifyFiles() throws IOException, XMLStreamException {
+    public void testMigrateHeadOnlyWithFile() throws IOException, XMLStreamException {
         final var headOnlyFile = workingDir.toPath().resolve("head-only");
         final var writer = Files.newBufferedWriter(headOnlyFile);
-        writer.write("example:1/DC");
+        writer.write("DC");
         writer.flush();
         writer.close();
 
@@ -163,30 +163,6 @@ public class HeadOnlyPidListManagerIT {
 
         assertEquals(1, dcVersions.size());
         assertEquals(2, ds1Versions.size());
-    }
-
-    @Test
-    public void testMigrateHeadOnlySpecifyObject() throws IOException, XMLStreamException {
-        final var headOnlyFile = workingDir.toPath().resolve("head-only");
-        final var writer = Files.newBufferedWriter(headOnlyFile);
-        writer.write("example:1");
-        writer.flush();
-        writer.close();
-
-        final var headOnly = new HeadOnlyPidListManager(true, headOnlyFile.toFile());
-        final var agh = archiveGroupHandler(headOnly);
-        final var handler = new ObjectAbstractionStreamingFedoraObjectHandler(agh);
-        final var migrator = new Migrator();
-        migrator.setSource(objectSource);
-        migrator.setHandler(handler);
-
-        migrator.run();
-
-        final var ocflRepository = repository();
-        final var objectDetails = ocflRepository.describeObject(testPid);
-        final var fileVersions = collectDatastreamVersions(objectDetails);
-
-        fileVersions.values().forEach(versions -> assertEquals(1, versions.size()));
     }
 
     private ArchiveGroupHandler archiveGroupHandler(final HeadOnlyPidListManager headOnlyPidListManager) {
