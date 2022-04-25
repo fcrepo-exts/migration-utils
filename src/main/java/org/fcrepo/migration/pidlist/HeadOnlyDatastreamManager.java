@@ -31,16 +31,16 @@ import java.util.Set;
  *
  * @author mikejritter
  */
-public class HeadOnlyPidListManager {
+public class HeadOnlyDatastreamManager {
 
     private final boolean headOnly;
     private final Set<String> dsIdList = new HashSet<>();
 
-    public HeadOnlyPidListManager(final boolean headOnly) {
+    public HeadOnlyDatastreamManager(final boolean headOnly) {
         this.headOnly = headOnly;
     }
 
-    public HeadOnlyPidListManager(final boolean headOnly, final File headOnlyListFile) {
+    public HeadOnlyDatastreamManager(final boolean headOnly, final File headOnlyListFile) {
         this.headOnly = headOnly;
         if (headOnly && headOnlyListFile != null) {
             if (!headOnlyListFile.exists() || !headOnlyListFile.canRead()) {

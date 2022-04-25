@@ -37,7 +37,7 @@ import org.junit.Test;
  *
  * @author mikejritter
  */
-public class HeadOnlyPidListManagerIT {
+public class HeadOnlyDatastreamManagerIT {
 
     private final String user = "fedoraAdmin";
     private final String idPrefix = "info:fedora/";
@@ -96,7 +96,7 @@ public class HeadOnlyPidListManagerIT {
 
     @Test
     public void testMigrateHeadOnly() throws XMLStreamException {
-        final var headOnly = new HeadOnlyPidListManager(true);
+        final var headOnly = new HeadOnlyDatastreamManager(true);
         final var agh = archiveGroupHandler(headOnly);
         final var handler = new ObjectAbstractionStreamingFedoraObjectHandler(agh);
         final var migrator = new Migrator();
@@ -115,7 +115,7 @@ public class HeadOnlyPidListManagerIT {
 
     @Test
     public void testMigrateHeadOnlyDisabled() throws XMLStreamException {
-        final var headOnly = new HeadOnlyPidListManager(false);
+        final var headOnly = new HeadOnlyDatastreamManager(false);
         final var agh = archiveGroupHandler(headOnly);
         final var handler = new ObjectAbstractionStreamingFedoraObjectHandler(agh);
         final var migrator = new Migrator();
@@ -143,7 +143,7 @@ public class HeadOnlyPidListManagerIT {
         writer.flush();
         writer.close();
 
-        final var headOnly = new HeadOnlyPidListManager(true, headOnlyFile.toFile());
+        final var headOnly = new HeadOnlyDatastreamManager(true, headOnlyFile.toFile());
         final var agh = archiveGroupHandler(headOnly);
         final var handler = new ObjectAbstractionStreamingFedoraObjectHandler(agh);
         final var migrator = new Migrator();
@@ -165,14 +165,14 @@ public class HeadOnlyPidListManagerIT {
         assertEquals(2, ds1Versions.size());
     }
 
-    private ArchiveGroupHandler archiveGroupHandler(final HeadOnlyPidListManager headOnlyPidListManager) {
+    private ArchiveGroupHandler archiveGroupHandler(final HeadOnlyDatastreamManager headOnlyDatastreamManager) {
         final boolean foxmlFile = false;
         final boolean deleteInactive = false;
         final boolean datastreamExtensions = false;
         final ResourceMigrationType resourceMigrationType = ResourceMigrationType.ARCHIVAL;
         return new ArchiveGroupHandler(ocflObjectSessionFactory, migrationType, resourceMigrationType,
-                                datastreamExtensions, deleteInactive, foxmlFile, user, idPrefix,
-                                headOnlyPidListManager, disableChecksum);
+                                       datastreamExtensions, deleteInactive, foxmlFile, user, idPrefix,
+                                       headOnlyDatastreamManager, disableChecksum);
     }
 
     private OcflRepository repository() {

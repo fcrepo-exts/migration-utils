@@ -49,7 +49,7 @@
         <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
     </bean>
 
-    <bean id="headOnlyPidManager" class="org.fcrepo.migration.pidlist.HeadOnlyPidListManager">
+    <bean id="headOnlyPidManager" class="org.fcrepo.migration.pidlist.HeadOnlyDatastreamManager">
         <constructor-arg name="headOnly" value="false"/>
     </bean>
 
@@ -62,7 +62,7 @@
         <constructor-arg name="foxmlFile" value="false" />
         <constructor-arg name="user" value="fedoraAdmin" />
         <constructor-arg name="idPrefix" value="info:fedora/" />
-        <constructor-arg name="headOnlyPidListManager" ref="headOnlyPidManager" />
+        <constructor-arg name="headOnlyDatastreamManager" ref="headOnlyPidManager" />
         <constructor-arg name="disableChecksumValidation" value="false" />
     </bean>
 
