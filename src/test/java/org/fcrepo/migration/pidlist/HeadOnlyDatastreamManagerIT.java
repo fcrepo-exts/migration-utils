@@ -78,13 +78,12 @@ public class HeadOnlyDatastreamManagerIT {
 
         // Init Fedora3 classes
         final var f3Hostname = "fedora.info";
-        final var index = new File(workingDir, "index");
 
         final var f3ObjectDir = new File("src/test/resources/legacyFS-multiple-versions/objects/2015/0430/16/01");
         final var f3DatastreamDir =
             new File("src/test/resources/legacyFS-multiple-versions/datastreams/2015/0430/16/01");
 
-        idResolver = new LegacyFSIDResolver(index, f3DatastreamDir);
+        idResolver = new LegacyFSIDResolver(f3DatastreamDir);
         objectSource = new NativeFoxmlDirectoryObjectSource(f3ObjectDir, idResolver, f3Hostname);
 
         // Init OCFL classes
@@ -155,7 +154,6 @@ public class HeadOnlyDatastreamManagerIT {
         final var ocflRepository = repository();
         final var objectDetails = ocflRepository.describeObject(testPid);
         final var fileVersions = collectDatastreamVersions(objectDetails);
-
 
         // DC specified to have only the head written, so expect a single version for it but all for DS1
         final var dcVersions = fileVersions.get("/DC");
