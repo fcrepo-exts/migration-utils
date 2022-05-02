@@ -94,6 +94,10 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
+    private enum HeadOnlyOpts {
+        HEAD_ONLY, ALL_DS
+    }
+
     private static final Logger LOGGER = getLogger(ArchiveGroupHandler.class);
 
     private static final String FCREPO_ROOT = "info:fedora/";
@@ -116,9 +120,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
     private static final String RELS_EXT = "RELS-EXT";
     private static final String RELS_INT = "RELS-INT";
-
-    private static final String HEAD_ONLY_OK = "OK";
-    private static final String HEAD_ONLY_SKIP = "SKIP";
 
     private final OcflObjectSessionFactory sessionFactory;
     private final boolean addDatastreamExtensions;
@@ -194,7 +195,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
         String objectState = null;
         // track head only processing for datastreams
-        final Map<String, String> headOnlyStates = new HashMap<>();
+        final Map<String, HeadOnlyOpts> headOnlyStates = new HashMap<>();
         final Map<String, String> datastreamStates = new HashMap<>();
         // tracks the triples used to create containers and binary descriptions
         final Map<String, MetaHolder> metaMap = new HashMap<>();
@@ -257,11 +258,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     datastreamStates.put(f6DsId, dv.getDatastreamInfo().getState());
                 }
 
-                headOnlyStates.put(f6DsId, HEAD_ONLY_OK);
+                headOnlyStates.put(f6DsId, HeadOnlyOpts.ALL_DS);
                 final var skip = headOnlyDatastreamManager.accept(dsId);
                 if (skip && !dv.isLastVersionIn(ov.getObject())) {
                     LOGGER.debug("<{}> Skipping {}", f6ObjectId, dv.getVersionId());
-                    headOnlyStates.put(f6DsId, HEAD_ONLY_SKIP);
+                    headOnlyStates.put(f6DsId, HeadOnlyOpts.HEAD_ONLY);
                     continue;
                 }
 
@@ -448,10 +449,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                  final Map<String, String> relsDeletedFilenames,
                                  final OcflObjectSession objectSession,
                                  final Map<String, OcflObjectSession> datastreamSessions,
-                                 final Map<String, String> headOnlyStates) {
+                                 final Map<String, HeadOnlyOpts> headOnlyStates) {
         if (migrationType == MigrationType.FEDORA_OCFL) {
             toUpdate.forEach(id -> {
-                if (HEAD_ONLY_OK.equals(headOnlyStates.get(id))) {
+                if (HeadOnlyOpts.ALL_DS.equals(headOnlyStates.get(id))) {
                     final var session = datastreamSessions.computeIfAbsent(id.replace(FCRMETA_SUFFIX, ""),
                                                                            k -> datastreamSession(k, objectSession));
                     final var origHeaders = session.readHeaders(id);
@@ -463,7 +464,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
             });
             relsDeletedFilenames.forEach((id, filename) -> {
-                if (HEAD_ONLY_OK.equals(headOnlyStates.get(id))) {
+                if (HeadOnlyOpts.ALL_DS.equals(headOnlyStates.get(id))) {
                     final var session = datastreamSessions.computeIfAbsent(id.replace(FCRMETA_SUFFIX, ""),
                                                                            k -> datastreamSession(k, objectSession));
                     final var origHeaders = session.readHeaders(id);
