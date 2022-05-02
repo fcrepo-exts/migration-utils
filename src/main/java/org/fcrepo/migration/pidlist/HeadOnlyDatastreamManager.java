@@ -64,7 +64,7 @@ public class HeadOnlyDatastreamManager {
      * @param dsId the datastreamId
      * @return true if Object is required to migrate only HEAD datastreams
      */
-    public boolean accept(final String dsId) {
+    public boolean isHeadOnly(final String dsId) {
         final var accept = dsIdList.isEmpty() || dsIdList.contains(dsId);
         return headOnly && accept;
     }

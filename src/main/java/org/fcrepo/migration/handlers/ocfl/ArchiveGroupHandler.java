@@ -259,7 +259,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
 
                 headOnlyStates.put(f6DsId, HeadOnlyOpts.ALL_DS);
-                final var skip = headOnlyDatastreamManager.accept(dsId);
+                final var skip = headOnlyDatastreamManager.isHeadOnly(dsId);
                 if (skip && !dv.isLastVersionIn(ov.getObject())) {
                     LOGGER.debug("<{}> Skipping {}", f6ObjectId, dv.getVersionId());
                     headOnlyStates.put(f6DsId, HeadOnlyOpts.HEAD_ONLY);
