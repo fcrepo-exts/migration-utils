@@ -3,8 +3,6 @@ package org.fcrepo.migration.pidlist;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -135,14 +133,11 @@ public class HeadOnlyDatastreamManagerIT {
     }
 
     @Test
-    public void testMigrateHeadOnlyWithFile() throws IOException, XMLStreamException {
+    public void testMigrateHeadOnlyWithFile() throws XMLStreamException {
         final var headOnlyFile = workingDir.toPath().resolve("head-only");
-        final var writer = Files.newBufferedWriter(headOnlyFile);
-        writer.write("DC");
-        writer.flush();
-        writer.close();
+        final var ids = "DC";
 
-        final var headOnly = new HeadOnlyDatastreamManager(true, headOnlyFile.toFile());
+        final var headOnly = new HeadOnlyDatastreamManager(true, ids);
         final var agh = archiveGroupHandler(headOnly);
         final var handler = new ObjectAbstractionStreamingFedoraObjectHandler(agh);
         final var migrator = new Migrator();

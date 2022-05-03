@@ -15,12 +15,9 @@
  */
 package org.fcrepo.migration.pidlist;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
 
 /**
@@ -34,26 +31,18 @@ import java.util.Set;
 public class HeadOnlyDatastreamManager {
 
     private final boolean headOnly;
-    private final Set<String> dsIdList = new HashSet<>();
+    private final Set<String> datastreamIds = new HashSet<>();
 
     public HeadOnlyDatastreamManager(final boolean headOnly) {
         this.headOnly = headOnly;
     }
 
-    public HeadOnlyDatastreamManager(final boolean headOnly, final File headOnlyListFile) {
+    public HeadOnlyDatastreamManager(final boolean headOnly, final String headOnlyIds) {
         this.headOnly = headOnly;
-        if (headOnly && headOnlyListFile != null) {
-            if (!headOnlyListFile.exists() || !headOnlyListFile.canRead()) {
-                throw new IllegalArgumentException("File either does not exist or is inaccessible :" +
-                                                   headOnlyListFile.getAbsolutePath());
-            }
-
-            try (BufferedReader reader = new BufferedReader(new FileReader(headOnlyListFile))) {
-                reader.lines().forEach(dsIdList::add);
-            } catch (IOException e) {
-                // Should not happen based on previous check
-                throw new RuntimeException(e);
-            }
+        if (headOnly && headOnlyIds != null) {
+            Stream.of(headOnlyIds.split(","))
+                .map(String::strip)
+                .forEach(datastreamIds::add);
         }
     }
 
@@ -62,10 +51,10 @@ public class HeadOnlyDatastreamManager {
      * it is assumed all objects should be accepted.
      *
      * @param dsId the datastreamId
-     * @return true if Object is required to migrate only HEAD datastreams
+     * @return true if the datastream is required to migrate only HEAD datastreams
      */
     public boolean isHeadOnly(final String dsId) {
-        final var accept = dsIdList.isEmpty() || dsIdList.contains(dsId);
+        final var accept = datastreamIds.isEmpty() || datastreamIds.contains(dsId);
         return headOnly && accept;
     }
 }

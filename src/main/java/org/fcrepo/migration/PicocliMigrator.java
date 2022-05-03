@@ -162,8 +162,9 @@ public class PicocliMigrator implements Callable<Integer> {
     private boolean headOnly;
 
     @Option(names = {"--head-only-ids"}, order = 36,
-            description = "A list of datastreams to migrate only the HEAD of. Only used if --head-only is specified.")
-    private File headOnlyList;
+            description = "A comma separated list of datastreams to migrate only the HEAD of. " +
+                          "Only used if --head-only is specified.")
+    private String headOnlyIds;
 
     @Option(names = {"--debug"}, order = 34, description = "Enables debug logging")
     private boolean debug;
@@ -306,7 +307,7 @@ public class PicocliMigrator implements Callable<Integer> {
                 ocflStagingDir.toPath(), migrationType, user, userUri, algorithm, disableChecksumValidation)
                 .getObject();
 
-        final HeadOnlyDatastreamManager headOnlyManager = new HeadOnlyDatastreamManager(headOnly, headOnlyList);
+        final HeadOnlyDatastreamManager headOnlyManager = new HeadOnlyDatastreamManager(headOnly, headOnlyIds);
 
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(
