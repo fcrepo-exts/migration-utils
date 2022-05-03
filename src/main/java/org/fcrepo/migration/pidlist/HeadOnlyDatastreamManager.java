@@ -43,6 +43,9 @@ public class HeadOnlyDatastreamManager {
             Stream.of(headOnlyIds.split(","))
                 .map(String::strip)
                 .forEach(datastreamIds::add);
+        } else if (!headOnly && headOnlyIds != null) {
+            throw new IllegalArgumentException("Arg --head-only-ids used without --head-only. If you wish to specify" +
+                                               "datastreams to migrate, try again with the --head-only flag enabled.");
         }
     }
 
