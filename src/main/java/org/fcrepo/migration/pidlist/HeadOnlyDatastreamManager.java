@@ -60,4 +60,8 @@ public class HeadOnlyDatastreamManager {
         final var accept = datastreamIds.isEmpty() || datastreamIds.contains(dsId);
         return headOnly && accept;
     }
+
+    public boolean isHeadOnly() {
+        return headOnly;
+    }
 }
