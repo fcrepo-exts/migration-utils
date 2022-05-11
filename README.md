@@ -98,9 +98,6 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
                                Default: info:fedora/fedoraAdmin
   -H, --head-only            Migrate only the HEAD of each datastream
                                Default: false
-      --head-only-ids=<headOnlyList>
-                             A list of datastreams to migrate only the HEAD of.
-                               Only used if --head-only is specified.
       --algorithm=<digestAlgorithm>
                              The digest algorithm to use in the OCFL objects
                                created. Either sha256 or sha512
@@ -128,10 +125,8 @@ There are three means by which a subset of objects may be selected for migration
 
 ### HEAD only migrations
 
-Using the `--head-only` option, migrations can be done on only the HEAD versions of a datastream. If further specification
-is needed, the `--head-only-ids` can be used to provide a selection of datastreams which should be matched against.
-For example, if you wanted to migrate the head of only the RELS-EXT datastreams, you would provide 
-`RELS-EXT`.
+Using the `--head-only` option, migrations can be done on only the HEAD versions of a datastream. This will flatten the
+history of a Fedora 3 object to a single version. This is currently not compatible with Atomic migrations.
 
 ### Examples
 
