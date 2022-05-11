@@ -35,7 +35,7 @@ import org.junit.Test;
  *
  * @author mikejritter
  */
-public class HeadOnlyDatastreamManagerIT {
+public class HeadOnlyIT {
 
     private final String user = "fedoraAdmin";
     private final String idPrefix = "info:fedora/";
@@ -93,8 +93,7 @@ public class HeadOnlyDatastreamManagerIT {
 
     @Test
     public void testMigrateHeadOnly() throws XMLStreamException {
-        final var headOnly = new HeadOnlyDatastreamManager(true);
-        final var agh = archiveGroupHandler(headOnly);
+        final var agh = archiveGroupHandler(true);
         final var handler = new ObjectAbstractionStreamingFedoraObjectHandler(agh);
         final var migrator = new Migrator();
         migrator.setSource(objectSource);
@@ -112,8 +111,7 @@ public class HeadOnlyDatastreamManagerIT {
 
     @Test
     public void testMigrateHeadOnlyDisabled() throws XMLStreamException {
-        final var headOnly = new HeadOnlyDatastreamManager(false);
-        final var agh = archiveGroupHandler(headOnly);
+        final var agh = archiveGroupHandler(false);
         final var handler = new ObjectAbstractionStreamingFedoraObjectHandler(agh);
         final var migrator = new Migrator();
         migrator.setSource(objectSource);
@@ -132,40 +130,14 @@ public class HeadOnlyDatastreamManagerIT {
         assertEquals(2, ds1Versions.size());
     }
 
-    @Test
-    public void testMigrateHeadOnlyWithFile() throws XMLStreamException {
-        final var headOnlyFile = workingDir.toPath().resolve("head-only");
-        final var ids = "DC";
-
-        final var headOnly = new HeadOnlyDatastreamManager(true, ids);
-        final var agh = archiveGroupHandler(headOnly);
-        final var handler = new ObjectAbstractionStreamingFedoraObjectHandler(agh);
-        final var migrator = new Migrator();
-        migrator.setSource(objectSource);
-        migrator.setHandler(handler);
-
-        migrator.run();
-
-        final var ocflRepository = repository();
-        final var objectDetails = ocflRepository.describeObject(testPid);
-        final var fileVersions = collectDatastreamVersions(objectDetails);
-
-        // DC specified to have only the head written, so expect a single version for it but all for DS1
-        final var dcVersions = fileVersions.get("/DC");
-        final var ds1Versions = fileVersions.get("/DS1");
-
-        assertEquals(1, dcVersions.size());
-        assertEquals(2, ds1Versions.size());
-    }
-
-    private ArchiveGroupHandler archiveGroupHandler(final HeadOnlyDatastreamManager headOnlyDatastreamManager) {
+    private ArchiveGroupHandler archiveGroupHandler(final boolean headOnly) {
         final boolean foxmlFile = false;
         final boolean deleteInactive = false;
         final boolean datastreamExtensions = false;
         final ResourceMigrationType resourceMigrationType = ResourceMigrationType.ARCHIVAL;
         return new ArchiveGroupHandler(ocflObjectSessionFactory, migrationType, resourceMigrationType,
                                        datastreamExtensions, deleteInactive, foxmlFile, user, idPrefix,
-                                       headOnlyDatastreamManager, disableChecksum);
+                                       headOnly, disableChecksum);
     }
 
     private OcflRepository repository() {

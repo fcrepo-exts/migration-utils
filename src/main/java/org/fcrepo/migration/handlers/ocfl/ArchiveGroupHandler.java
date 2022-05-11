@@ -42,7 +42,6 @@ import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.ResourceMigrationType;
-import org.fcrepo.migration.pidlist.HeadOnlyDatastreamManager;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -94,10 +93,6 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
-    private enum HeadOnlyOpts {
-        HEAD_ONLY, ALL_DS
-    }
-
     private static final Logger LOGGER = getLogger(ArchiveGroupHandler.class);
 
     private static final String FCREPO_ROOT = "info:fedora/";
@@ -130,8 +125,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final String user;
     private final String idPrefix;
     private final Detector mimeDetector;
+    private final boolean headOnly;
     private final boolean disableChecksumValidation;
-    private final HeadOnlyDatastreamManager headOnlyDatastreamManager;
 
     /**
      * Create an ArchiveGroupHandler,
@@ -152,8 +147,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      *        the username to associated with the migrated resources
      * @param idPrefix
      *        the prefix to add to the Fedora 3 pid (default "info:fedora/", like Fedora 3)
-     * @param headOnlyDatastreamManager
-     *        pid list manager to check if datastreams should migrate only head versions
+     * @param headOnly
+     *        flag to enable head only migrations
      * @param disableChecksumValidation
      */
     public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
@@ -164,7 +159,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final boolean foxmlFile,
                                final String user,
                                final String idPrefix,
-                               final HeadOnlyDatastreamManager headOnlyDatastreamManager,
+                               final boolean headOnly,
                                final boolean disableChecksumValidation) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
@@ -175,7 +170,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         this.foxmlFile = foxmlFile;
         this.user = Preconditions.checkNotNull(Strings.emptyToNull(user), "user cannot be blank");
         this.idPrefix = idPrefix;
-        this.headOnlyDatastreamManager = headOnlyDatastreamManager;
+        this.headOnly = headOnly;
         this.disableChecksumValidation = disableChecksumValidation;
         try {
             this.mimeDetector = new TikaConfig().getDetector();
@@ -197,8 +192,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         OffsetDateTime objectCreation = null;
         OcflObjectSession objectSession = null;
 
-        // track head only processing for datastreams
-        final Map<String, HeadOnlyOpts> headOnlyStates = new HashMap<>();
         final Map<String, String> datastreamStates = new HashMap<>();
         // tracks the triples used to create containers and binary descriptions
         final Map<String, MetaHolder> metaMap = new HashMap<>();
@@ -215,9 +208,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             // tracks the binaries that need their filename updated based on a RELS-INT removal
             final Map<String, String> relsDeletedFilenames = new HashMap<>();
 
-            objectSession = (objectSession == null || !headOnlyDatastreamManager.isHeadOnly())
-                            ? newSession(f6ObjectId)
-                            : objectSession;
+            // reuse the objectSession when headOnly is set
+            objectSession = (objectSession == null || !headOnly) ? newSession(f6ObjectId) : objectSession;
 
             if (ov.isFirstVersion()) {
                 if (objectSession.containsResource(f6ObjectId)) {
@@ -256,14 +248,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 final String f6DsId = resolveF6DatastreamId(dsId, f6ObjectId);
                 final var datastreamFilename = lastPartFromId(f6DsId);
 
-                // reuse previous objectsession when headonly flag is set
-                final var datastreamSession = headOnlyDatastreamManager.isHeadOnly()
-                                              ? objectSession
-                                              : datastreamSession(f6DsId, objectSession);
+                final var datastreamSession = datastreamSession(f6DsId, objectSession);
                 datastreamSessions.putIfAbsent(f6DsId, datastreamSession);
-
-                // final var datastreamSession = datastreamSessions.computeIfAbsent(f6DsId,
-                  //       k -> datastreamSession(f6DsId, finalObjectSession));
 
                 if (dv.isFirstVersionIn(ov.getObject())) {
                     dsCreateDates.put(dsId, dv.getCreated());
@@ -349,10 +335,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             }
 
             writeMeta(toWrite, metaMap, objectSession, datastreamSessions);
-            updateFilenames(relsFilenameUpdates, filenameMap, relsDeletedFilenames, objectSession, datastreamSessions,
-                            headOnlyStates);
+            updateFilenames(relsFilenameUpdates, filenameMap, relsDeletedFilenames, objectSession, datastreamSessions);
 
-            if (!headOnlyDatastreamManager.isHeadOnly()) {
+            if (!headOnly) {
                 LOGGER.debug("Committing object <{}>", f6ObjectId);
 
                 final var creationTimestamp = OffsetDateTime.parse(ov.getVersionDate());
@@ -370,13 +355,13 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             }
         }
 
-        if (headOnlyDatastreamManager.isHeadOnly() && objectSession != null) {
+        handleDeletedResources(f6ObjectId, objectState, datastreamStates, objectSession);
+
+        // final commit when headOnly is set
+        if (headOnly && objectSession != null) {
             LOGGER.debug("Committing object <{}>", f6ObjectId);
-            handleDeletedResources(f6ObjectId, objectState, datastreamStates, objectSession);
             objectSession.versionCreationTimestamp(objectCreation);
             objectSession.commit();
-        } else {
-            handleDeletedResources(f6ObjectId, objectState, datastreamStates, null);
         }
     }
 
@@ -461,8 +446,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                  final Map<String, String> filenameMap,
                                  final Map<String, String> relsDeletedFilenames,
                                  final OcflObjectSession objectSession,
-                                 final Map<String, OcflObjectSession> datastreamSessions,
-                                 final Map<String, HeadOnlyOpts> headOnlyStates) {
+                                 final Map<String, OcflObjectSession> datastreamSessions) {
         if (migrationType == MigrationType.FEDORA_OCFL) {
             toUpdate.forEach(id -> {
                 final var session = datastreamSessions.computeIfAbsent(id.replace(FCRMETA_SUFFIX, ""),
@@ -538,7 +522,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                         final String objectState,
                                         final Map<String, String> datastreamStates,
                                         final OcflObjectSession objectSession) {
-        final OcflObjectSession session = objectSession != null ? objectSession : newSession(f6ObjectId);
+        final OcflObjectSession session = headOnly ? objectSession : newSession(f6ObjectId);
         final var datastreamSessions = new HashMap<String, OcflObjectSession>();
 
         try {
@@ -570,7 +554,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 });
             }
 
-            if (objectSession == null && hasDeletes.get()) {
+            if (!headOnly && hasDeletes.get()) {
                 session.versionCreationTimestamp(now);
                 session.commit();
 
@@ -580,7 +564,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                         dsSession.commit();
                     });
                 }
-            } else if (objectSession == null) {
+            } else if (!headOnly) {
                 session.abort();
                 if (resourceMigrationType == ResourceMigrationType.ATOMIC) {
                     datastreamSessions.forEach((id, dsSession) -> {

@@ -22,7 +22,6 @@ import org.fcrepo.migration.ObjectProperties;
 import org.fcrepo.migration.ObjectProperty;
 import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.ResourceMigrationType;
-import org.fcrepo.migration.pidlist.HeadOnlyDatastreamManager;
 import org.fcrepo.storage.ocfl.CommitType;
 import org.fcrepo.storage.ocfl.DefaultOcflObjectSessionFactory;
 import org.fcrepo.storage.ocfl.InteractionModel;
@@ -1243,15 +1242,14 @@ public class ArchiveGroupHandlerTest {
                                               final boolean addExtensions,
                                               final boolean deleteInactive,
                                               final boolean headOnly) {
-        final var headOnlyPidListManager = new HeadOnlyDatastreamManager(headOnly);
         if (migrationType == MigrationType.PLAIN_OCFL) {
             return new ArchiveGroupHandler(plainSessionFactory, migrationType, resourceMigrationType,
                                            addExtensions, deleteInactive,
-                                           false, USER, "info:fedora/", headOnlyPidListManager, false);
+                                           false, USER, "info:fedora/", headOnly, false);
         } else {
             return new ArchiveGroupHandler(sessionFactory, migrationType, resourceMigrationType,
                                            addExtensions, deleteInactive, false, USER,
-                                           "info:fedora/", headOnlyPidListManager, false);
+                                           "info:fedora/", headOnly, false);
         }
     }
 

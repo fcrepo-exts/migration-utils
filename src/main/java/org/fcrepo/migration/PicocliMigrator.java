@@ -23,7 +23,6 @@ import org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler;
 import org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler;
 import org.fcrepo.migration.metrics.PrometheusActuator;
-import org.fcrepo.migration.pidlist.HeadOnlyDatastreamManager;
 import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -161,11 +160,6 @@ public class PicocliMigrator implements Callable<Integer> {
             description = "Migrate only the HEAD of each datastream")
     private boolean headOnly;
 
-    @Option(names = {"--head-only-ids"}, order = 36,
-            description = "A comma separated list of datastreams to migrate only the HEAD of. " +
-                          "Only used if --head-only is specified.")
-    private String headOnlyIds;
-
     @Option(names = {"--debug"}, order = 34, description = "Enables debug logging")
     private boolean debug;
 
@@ -228,6 +222,11 @@ public class PicocliMigrator implements Callable<Integer> {
         if (!digestAlgorithm.equals("sha512") && !digestAlgorithm.equalsIgnoreCase("sha256")) {
             throw new IllegalArgumentException("Invalid algorithm specified, must be one of sha512 or sha256");
         }
+
+        if (headOnly && atomicResources) {
+            throw new IllegalArgumentException("Atomic migrations currently do not support the head only option");
+        }
+
         final DigestAlgorithm algorithm = DigestAlgorithmRegistry.getAlgorithm(digestAlgorithm);
         notNull(algorithm, "Invalid algorithm specified, must be one of sha512 or sha256");
 
@@ -307,14 +306,12 @@ public class PicocliMigrator implements Callable<Integer> {
                 ocflStagingDir.toPath(), migrationType, user, userUri, algorithm, disableChecksumValidation)
                 .getObject();
 
-        final HeadOnlyDatastreamManager headOnlyManager = new HeadOnlyDatastreamManager(headOnly, headOnlyIds);
-
         final FedoraObjectVersionHandler archiveGroupHandler =
                 new ArchiveGroupHandler(
                         ocflSessionFactory, migrationType,
                         atomicResources ? ResourceMigrationType.ATOMIC : ResourceMigrationType.ARCHIVAL,
                         addExtensions, deleteInactive, foxmlFile,
-                        user, idPrefix, headOnlyManager, disableChecksumValidation);
+                        user, idPrefix, headOnly, disableChecksumValidation);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 archiveGroupHandler);
 

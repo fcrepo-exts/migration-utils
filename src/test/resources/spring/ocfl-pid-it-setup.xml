@@ -71,10 +71,6 @@
         <constructor-arg name="namespaceFile" type="java.io.File" ref="namespaceFile"/>
     </bean>
 
-    <bean id="headOnlyPidManager" class="org.fcrepo.migration.pidlist.HeadOnlyDatastreamManager">
-        <constructor-arg name="headOnly" value="false"/>
-    </bean>
-
     <bean id="minimal" class="org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler">
         <constructor-arg name="sessionFactory" ref="ocflSessionFactory" />
         <constructor-arg name="migrationType" value="FEDORA_OCFL" />
@@ -84,7 +80,7 @@
         <constructor-arg name="foxmlFile" value="false" />
         <constructor-arg name="user" value="fedoraAdmin" />
         <constructor-arg name="idPrefix" value="info:fedora/" />
-        <constructor-arg name="headOnlyDatastreamManager" ref="headOnlyPidManager" />
+        <constructor-arg name="headOnly" value="false"/>
         <constructor-arg name="disableChecksumValidation" value="false" />
     </bean>
 
