@@ -156,6 +156,10 @@ public class PicocliMigrator implements Callable<Integer> {
                           "\nNote: this requires port 8080 to be free in order for Prometheus to scrape metrics.")
     private boolean enableMetrics;
 
+    @Option(names = {"--head-only", "-H"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 35,
+            description = "Migrate only the HEAD of each datastream")
+    private boolean headOnly;
+
     @Option(names = {"--debug"}, order = 34, description = "Enables debug logging")
     private boolean debug;
 
@@ -218,6 +222,11 @@ public class PicocliMigrator implements Callable<Integer> {
         if (!digestAlgorithm.equals("sha512") && !digestAlgorithm.equalsIgnoreCase("sha256")) {
             throw new IllegalArgumentException("Invalid algorithm specified, must be one of sha512 or sha256");
         }
+
+        if (headOnly && atomicResources) {
+            throw new IllegalArgumentException("Atomic migrations currently do not support the head only option");
+        }
+
         final DigestAlgorithm algorithm = DigestAlgorithmRegistry.getAlgorithm(digestAlgorithm);
         notNull(algorithm, "Invalid algorithm specified, must be one of sha512 or sha256");
 
@@ -302,7 +311,7 @@ public class PicocliMigrator implements Callable<Integer> {
                         ocflSessionFactory, migrationType,
                         atomicResources ? ResourceMigrationType.ATOMIC : ResourceMigrationType.ARCHIVAL,
                         addExtensions, deleteInactive, foxmlFile,
-                        user, idPrefix, disableChecksumValidation);
+                        user, idPrefix, headOnly, disableChecksumValidation);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 archiveGroupHandler);
 

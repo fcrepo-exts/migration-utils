@@ -58,6 +58,7 @@
         <constructor-arg name="foxmlFile" value="false" />
         <constructor-arg name="user" value="fedoraAdmin" />
         <constructor-arg name="idPrefix" value="info:fedora/" />
+        <constructor-arg name="headOnly" value="false"/>
         <constructor-arg name="disableChecksumValidation" value="false" />
     </bean>
 

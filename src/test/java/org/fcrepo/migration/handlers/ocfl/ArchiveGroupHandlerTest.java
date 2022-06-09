@@ -128,7 +128,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionF6Format() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -161,7 +161,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsF6Format() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -202,7 +202,7 @@ public class ArchiveGroupHandlerTest {
     @Test
     public void processObjectMultipleVersionsAtomic() throws IOException {
         resourceMigrationType = ResourceMigrationType.ATOMIC;
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -244,7 +244,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void updateFilenameFromRelsInt() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -282,7 +282,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void filenameRemovedFromRelsInt() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -330,7 +330,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void filenameRemovedFromRelsIntAndLabelChanged() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, true, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, true, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -344,7 +344,7 @@ public class ArchiveGroupHandlerTest {
                         "\t</rdf:Description>\n" +
                         "</rdf:RDF>", null);
 
-        final var ds1V2 = datastreamVersion(dsId1, false, MANAGED, "application/xml", "<h1>hello</h1>",
+        final var ds1V2 = datastreamVersion(dsId1, false, false, MANAGED, "application/xml", "<h1>hello</h1>",
                 DS_ACTIVE, null, "test");
         final var relsIntV2 = datastreamVersion(RELS_INT, false, MANAGED, "application/rdf+xml",
                 "<rdf:RDF xmlns:fedora-model=\"info:fedora/fedora-system:def/model#\"" +
@@ -381,7 +381,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void addRelsTriples() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -476,18 +476,18 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsWithDeletedDsF6Format() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
         final var dsId2 = "ds4";
 
-        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>",
+        final var ds1V1 = datastreamVersion(dsId1, true, true, MANAGED, "application/xml", "<h1>hello</h1>",
                 DS_INACTIVE, null, dsId1 + "-label");
-        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye",
+        final var ds2V1 = datastreamVersion(dsId2, true, false, MANAGED, "text/plain", "goodbye",
                 DS_DELETED, null, dsId2 + "-label");
 
-        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora",
+        final var ds2V2 = datastreamVersion(dsId2, false, true, MANAGED, "text/plain", "fedora",
                 DS_DELETED, null, dsId2 + "-label");
 
         handler.processObjectVersions(List.of(
@@ -522,18 +522,18 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsAndDeleteInactiveF6Format() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
         final var dsId2 = "ds4";
 
-        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>",
+        final var ds1V1 = datastreamVersion(dsId1, true, true, MANAGED, "application/xml", "<h1>hello</h1>",
                 DS_INACTIVE, null, dsId1 + "-label");
-        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye",
+        final var ds2V1 = datastreamVersion(dsId2, true, false, MANAGED, "text/plain", "goodbye",
                 DS_DELETED, null, dsId2 + "-label");
 
-        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora",
+        final var ds2V2 = datastreamVersion(dsId2, false, true, MANAGED, "text/plain", "fedora",
                 DS_DELETED, null, dsId2 + "-label");
 
         handler.processObjectVersions(List.of(
@@ -570,7 +570,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsAndObjectDeletedF6Format() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -616,7 +616,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsAndObjectInactiveDeletedF6Format() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, true, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -662,16 +662,16 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsPlainFormat() throws IOException {
-        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false);
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
         final var dsId2 = "ds4";
 
-        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds1V1 = datastreamVersion(dsId1, true, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
         final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye", null);
 
-        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora", null);
+        final var ds2V2 = datastreamVersion(dsId2, false, true, MANAGED, "text/plain", "fedora", null);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
@@ -709,17 +709,17 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsWithDeletedDsPlainFormat() throws IOException {
-        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false);
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
         final var dsId2 = "ds4";
 
         final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
-        final var ds2V1 = datastreamVersion(dsId2, true, MANAGED, "text/plain", "goodbye",
+        final var ds2V1 = datastreamVersion(dsId2, true, false, MANAGED, "text/plain", "goodbye",
                 DS_DELETED, null, dsId2 + "-label");
 
-        final var ds2V2 = datastreamVersion(dsId2, false, MANAGED, "text/plain", "fedora",
+        final var ds2V2 = datastreamVersion(dsId2, false, true, MANAGED, "text/plain", "fedora",
                 DS_DELETED, null, dsId2 + "-label");
 
         handler.processObjectVersions(List.of(
@@ -764,7 +764,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectMultipleVersionsWithInactiveDeletedObjectPlainFormat() throws IOException {
-        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, true);
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, true, false);
 
         final var pid = "obj2";
         final var dsId1 = "ds3";
@@ -826,7 +826,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionF6FormatWithExtensions() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, true, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, true, false, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -865,7 +865,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionPlainFormatWithExtensions() throws IOException {
-        final var handler = createHandler(MigrationType.PLAIN_OCFL, true, false);
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, true, false, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -917,7 +917,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionF6FormatWithExternalBinary() throws IOException {
-        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false);
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -956,7 +956,7 @@ public class ArchiveGroupHandlerTest {
 
     @Test
     public void processObjectSingleVersionPlainFormatWithExternalBinary() throws IOException {
-        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false);
+        final var handler = createHandler(MigrationType.PLAIN_OCFL, false, false, false);
 
         final var pid = "obj1";
         final var dsId1 = "ds1";
@@ -1240,15 +1240,16 @@ public class ArchiveGroupHandlerTest {
 
     private ArchiveGroupHandler createHandler(final MigrationType migrationType,
                                               final boolean addExtensions,
-                                              final boolean deleteInactive) {
+                                              final boolean deleteInactive,
+                                              final boolean headOnly) {
         if (migrationType == MigrationType.PLAIN_OCFL) {
             return new ArchiveGroupHandler(plainSessionFactory, migrationType, resourceMigrationType,
-                    addExtensions, deleteInactive,
-                    false, USER,"info:fedora/", false);
+                                           addExtensions, deleteInactive,
+                                           false, USER, "info:fedora/", headOnly, false);
         } else {
             return new ArchiveGroupHandler(sessionFactory, migrationType, resourceMigrationType,
-                    addExtensions, deleteInactive, false, USER,
-                    "info:fedora/", false);
+                                           addExtensions, deleteInactive, false, USER,
+                                           "info:fedora/", headOnly, false);
         }
     }
 
@@ -1299,12 +1300,24 @@ public class ArchiveGroupHandlerTest {
                                                 final String mimeType,
                                                 final String content,
                                                 final String externalUrl) {
-        return datastreamVersion(datastreamId, isFirst, controlGroup, mimeType,
+        return datastreamVersion(datastreamId, isFirst, false, controlGroup, mimeType,
                 content, DS_ACTIVE, externalUrl, datastreamId + "-label");
     }
 
     private DatastreamVersion datastreamVersion(final String datastreamId,
                                                 final boolean isFirst,
+                                                final boolean isLast,
+                                                final String controlGroup,
+                                                final String mimeType,
+                                                final String content,
+                                                final String externalUrl) {
+        return datastreamVersion(datastreamId, isFirst, isLast, controlGroup, mimeType,
+                                 content, DS_ACTIVE, externalUrl, datastreamId + "-label");
+    }
+
+    private DatastreamVersion datastreamVersion(final String datastreamId,
+                                                final boolean isFirst,
+                                                final boolean isLast,
                                                 final String controlGroup,
                                                 final String mimeType,
                                                 final String content,
@@ -1322,6 +1335,7 @@ public class ArchiveGroupHandlerTest {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+        when(mock.isLastVersionIn(Mockito.isNull())).thenReturn(isLast);
         when(mock.isFirstVersionIn(Mockito.isNull())).thenReturn(isFirst);
         when(mock.getCreated()).thenReturn(Instant.now().toString());
         when(mock.getExternalOrRedirectURL()).thenReturn(externalUrl);
