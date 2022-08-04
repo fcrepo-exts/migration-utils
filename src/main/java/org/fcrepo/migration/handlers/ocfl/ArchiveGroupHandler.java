@@ -28,6 +28,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.writer.NTriplesWriter;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
@@ -174,7 +175,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         this.disableChecksumValidation = disableChecksumValidation;
         try {
             this.mimeDetector = new TikaConfig().getDetector();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -200,7 +201,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         // tracks filenames pulled from RELS-INT
         final Map<String, String> filenameMap = new HashMap<>();
 
-        for (var ov : versions) {
+        for (final var ov : versions) {
             // tracks the binary descriptions that need to be written
             final Set<String> toWrite = new HashSet<>();
             // tracks the binaries that need their filename updated base on RELS-INT
@@ -219,14 +220,15 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 objectState = getObjectState(ov, objectId);
                 // Object properties are written only once (as fcrepo3 object properties were unversioned).
                 if (foxmlFile) {
-                    try (InputStream is = new BufferedInputStream(Files.newInputStream(objectInfo.getFoxmlPath()))) {
+                    try (final InputStream is =
+                                 new BufferedInputStream(Files.newInputStream(objectInfo.getFoxmlPath()))) {
                         final var foxmlDsId = f6ObjectId + "/FOXML";
                         final var headers = createHeaders(foxmlDsId, f6ObjectId,
                                 InteractionModel.NON_RDF).build();
                         objectSession.writeResource(headers, is);
                         //mark FOXML as a deleted datastream so it gets deleted in handleDeletedResources()
                         datastreamStates.put(foxmlDsId, DS_DELETED);
-                    } catch (IOException io) {
+                    } catch (final IOException io) {
                         LOGGER.error("error writing " + objectId + " FOXML file to " + f6ObjectId + ": " + io);
                         throw new UncheckedIOException(io);
                     }
@@ -242,7 +244,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             final var datastreamSessions = new HashMap<String, OcflObjectSession>();
 
             // Write datastreams and their metadata
-            for (var dv : ov.listChangedDatastreams()) {
+            for (final var dv : ov.listChangedDatastreams()) {
                 final var mimeType = resolveMimeType(dv);
                 final String dsId = dv.getDatastreamInfo().getDatastreamId();
                 final String f6DsId = resolveF6DatastreamId(dsId, f6ObjectId);
@@ -276,7 +278,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     }
                     datastreamSession.writeResource(datastreamHeaders, content);
                 } else {
-                    try (var contentStream = dv.getContent()) {
+                    try (final var contentStream = dv.getContent()) {
                         writeDatastreamContent(dv, datastreamHeaders, contentStream, datastreamSession);
                     } catch (final IOException e) {
                         throw new UncheckedIOException(e);
@@ -434,7 +436,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 try {
                     final var existingHeaders = session.readHeaders(id);
                     meta.headers.withMementoCreatedDate(existingHeaders.getMementoCreatedDate());
-                } catch (NotFoundException e) {
+                } catch (final NotFoundException e) {
                     // this just means the resource hasn't been written yet
                 }
             }
@@ -491,7 +493,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 if (migrationType == MigrationType.PLAIN_OCFL) {
                     session.writeResource(datastreamHeaders, contentStream);
                 } else {
-                    try (var digestStream = new DigestInputStream(contentStream, messageDigest)) {
+                    try (final var digestStream = new DigestInputStream(contentStream, messageDigest)) {
                         session.writeResource(datastreamHeaders, digestStream);
                         final var expectedDigest = f3Digest.getDigest();
                         final var actualDigest = Bytes.wrap(digestStream.getMessageDigest().digest()).encodeHex();
@@ -572,7 +574,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                     });
                 }
             }
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             session.abort();
             throw e;
         }
@@ -694,9 +696,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         if (Strings.isNullOrEmpty(mime)) {
             final var meta = new Metadata();
             meta.set(Metadata.RESOURCE_NAME_KEY, dv.getDatastreamInfo().getDatastreamId());
-            try (var content = TikaInputStream.get(dv.getContent())) {
+            try (final var content = TikaInputStream.get(dv.getContent())) {
                 mime = mimeDetector.detect(content, meta).toString();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new UncheckedIOException(e);
             }
         }
@@ -875,7 +877,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         try (final var is = datastreamVersion.getContent()) {
             RDFDataMgr.read(model, is, Lang.RDFXML);
             return model;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(String.format("Failed to parse RDF XML in %s/%s",
                     datastreamVersion.getDatastreamInfo().getObjectInfo().getPid(),
                     datastreamVersion.getDatastreamInfo().getDatastreamId()), e);
@@ -956,7 +958,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 triples.add(relsTriples.listStatements());
             }
 
-            triples.write(output, Lang.NTRIPLES.getName());
+            NTriplesWriter.write(output, triples.getGraph().find());
             return new ByteArrayInputStream(output.toByteArray());
         }
 
