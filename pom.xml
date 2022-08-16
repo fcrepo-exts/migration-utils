@@ -16,6 +16,7 @@
   <properties>
     <project_name>migration-utils</project_name>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.main.class>org.fcrepo.migration.PicocliMigrator</project.main.class>
     <spring.version>5.2.22.RELEASE</spring.version>
     <fcrepo-storage-ocfl.version>6.2.0-SNAPSHOT</fcrepo-storage-ocfl.version>
     <lucene.version>7.1.0</lucene.version>
@@ -349,42 +350,45 @@
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.3.0</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.4</version>
         <executions>
           <execution>
-            <id>create-runnable-jar</id>
+            <id>create-shaded-jar</id>
             <phase>package</phase>
             <goals>
-              <goal>single</goal>
+              <goal>shade</goal>
             </goals>
             <configuration>
-              <descriptors>
-                <descriptor>src/assembly/driver.xml</descriptor>
-              </descriptors>
-              <archive>
-                <manifest>
-                  <mainClass>org.fcrepo.migration.PicocliMigrator</mainClass>
-                </manifest>
-              </archive>
-            </configuration>
-          </execution>
-          <execution>
-            <id>create-distribution</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>migration-utils</finalName>
-              <descriptors>
-                <descriptor>src/assembly/zip.xml</descriptor>
-              </descriptors>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <finalName>${project.artifactId}-${project.version}-driver</finalName>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <Main-Class>${project.main.class}</Main-Class>
+                  </manifestEntries>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                  <resource>conf/fedora3.xml</resource>
+                  <file>${project.basedir}/conf/fedora3.xml</file>
+                </transformer>
+              </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
 </project>
