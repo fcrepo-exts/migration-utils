@@ -7,7 +7,7 @@
   </parent>
   <groupId>org.fcrepo.migration</groupId>
   <artifactId>migration-utils</artifactId>
-  <version>6.2.0-SNAPSHOT</version>
+  <version>6.3.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>migration-utils</name>
@@ -17,7 +17,7 @@
     <project_name>migration-utils</project_name>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>5.2.22.RELEASE</spring.version>
-    <fcrepo-storage-ocfl.version>6.2.0-SNAPSHOT</fcrepo-storage-ocfl.version>
+    <fcrepo-storage-ocfl.version>6.3.0-SNAPSHOT</fcrepo-storage-ocfl.version>
     <lucene.version>7.1.0</lucene.version>
     <jena.version>4.2.0</jena.version>
     <checkstyle.plugin.version>3.1.1</checkstyle.plugin.version>
