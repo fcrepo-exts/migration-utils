@@ -468,6 +468,10 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
         private void validateInlineXml() {
             if (isInlineXml && contentDigest != null && StringUtils.isNotBlank(contentDigest.getDigest())) {
+                if (StringUtils.equals(contentDigest.getType(), "DISABLED")) {
+                    LOG.warn("Datastream Digest DISABLED. Skipping digest validation");
+                    return;
+                }
                 final var transformedXml = transformInlineXmlForChecksum();
                 final var digest = DigestUtils.getDigest(contentDigest.getType());
                 final var digestBytes = DigestUtils.digest(digest, transformedXml);
