@@ -370,10 +370,6 @@
                     <Main-Class>${project.main.class}</Main-Class>
                   </manifestEntries>
                 </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                  <resource>conf/fedora3.xml</resource>
-                  <file>${project.basedir}/conf/fedora3.xml</file>
-                </transformer>
               </transformers>
               <filters>
                 <filter>
