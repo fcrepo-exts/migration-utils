@@ -64,6 +64,11 @@ public class PicocliIT {
         }
     }
 
+    private boolean checkDirForNamaste(final Path targetDir) throws IOException {
+        return Files.list(targetDir).map(Path::getFileName).map(Path::toString)
+                .anyMatch(e -> e.startsWith("0=ocfl_1."));
+    }
+
     @Test
     public void testPlainOcfl() throws Exception {
         final String[] args = {"--target-dir", targetDir.toString(), "--working-dir", workingDir.toString(),
@@ -74,7 +79,7 @@ public class PicocliIT {
         final CommandLine cmd = new CommandLine(migrator);
 
         cmd.execute(args);
-        assertTrue(Files.list(targetDir).anyMatch(element -> element.endsWith("0=ocfl_1.0")));
+        assertTrue(checkDirForNamaste(targetDir));
         final Path baseDir = targetDir.resolve("5b5").resolve("62d").resolve("d69")
                 .resolve("5b562dd698f17e3198e007e6f77f9e48f20a556c6bae84e6fc8d98544831daa6");
         final File inventory = baseDir.resolve("inventory.json").toFile();
@@ -95,7 +100,7 @@ public class PicocliIT {
 
         final int result = cmd.execute(args);
         assertEquals(0, result);
-        assertTrue(Files.list(targetDir).anyMatch(element -> element.endsWith("0=ocfl_1.0")));
+        assertTrue(checkDirForNamaste(targetDir));
         final Path baseDir = targetDir.resolve("750").resolve("677").resolve("e9b")
                 .resolve("750677e9b953845ba5069d27a3775fbced186987fd0f4a8c968ac457a7d415a8");
         final File inventory = baseDir.resolve("inventory.json").toFile();
@@ -129,7 +134,7 @@ public class PicocliIT {
 
         cmd.execute(args);
         final Path workingDir = Path.of(System.getProperty("user.dir"));
-        assertTrue(Files.list(targetDir).anyMatch(element -> element.endsWith("0=ocfl_1.0")));
+        assertTrue(checkDirForNamaste(targetDir));
         assertTrue(Files.list(workingDir).anyMatch(element -> element.endsWith("index")));
         assertTrue(Files.list(workingDir).anyMatch(element -> element.endsWith("pid")));
     }
@@ -144,8 +149,7 @@ public class PicocliIT {
         final CommandLine cmd = new CommandLine(migrator);
 
         cmd.execute(args);
-        assertTrue(Files.list(targetDir.resolve("data").resolve("ocfl-root"))
-                .anyMatch(element -> element.endsWith("0=ocfl_1.0")));
+        assertTrue(checkDirForNamaste(targetDir.resolve("data").resolve("ocfl-root")));
         assertTrue(Files.list(workingDir).anyMatch(element -> element.endsWith("index")));
         assertTrue(Files.list(workingDir).anyMatch(element -> element.endsWith("pid")));
     }
@@ -158,7 +162,7 @@ public class PicocliIT {
                 .storage(OcflStorageBuilder.builder().fileSystem(targetDir).build())
                 .workDir(tmpDir)
                 .build();
-        assertTrue(Files.list(targetDir).anyMatch(element -> element.endsWith("0=ocfl_1.0")));
+        assertTrue(checkDirForNamaste(targetDir));
 
         //migrate object into it
         final Path workingDir = tmpDir.resolve("working");
@@ -212,8 +216,8 @@ public class PicocliIT {
         //now check for a FOXML, which should show up in a previous version
         final var versions = ocflRepo.describeObject("example:1").getVersionMap().values();
         boolean foundFoxml = false;
-        for (VersionDetails v : versions) {
-            for (FileDetails f : v.getFiles()) {
+        for (final VersionDetails v : versions) {
+            for (final FileDetails f : v.getFiles()) {
                 if (f.getPath().equals("FOXML")) {
                     foundFoxml = true;
                     break;
@@ -266,7 +270,7 @@ public class PicocliIT {
 
         final int result = cmd.execute(args);
         assertEquals(0, result);
-        assertTrue(Files.list(targetDir).anyMatch(element -> element.endsWith("0=ocfl_1.0")));
+        assertTrue(checkDirForNamaste(targetDir));
         final Path baseDir = targetDir.resolve("5b5").resolve("62d").resolve("d69")
                 .resolve("5b562dd698f17e3198e007e6f77f9e48f20a556c6bae84e6fc8d98544831daa6");
         final File inventory = baseDir.resolve("inventory.json").toFile();
