@@ -32,7 +32,7 @@
     <javaee.xml.version>2.3.1</javaee.xml.version>
     <jaxb.core.version>2.3.0.1</jaxb.core.version>
     <jaxb.impl.version>2.3.1</jaxb.impl.version>
-    <woodstox.version>6.2.3</woodstox.version>
+    <woodstox.version>6.4.0</woodstox.version>
     <xerces.version>2.12.2</xerces.version>
     <sonatype.host>s01.oss.sonatype.org</sonatype.host>
   </properties>
