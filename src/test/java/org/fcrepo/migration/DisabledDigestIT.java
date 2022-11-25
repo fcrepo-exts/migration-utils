@@ -18,7 +18,6 @@ package org.fcrepo.migration;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -28,33 +27,18 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * @author pwinckles
+ * @author Dan Field
  */
-public class InlineXmlIT {
-
-    private static final String OBJECT_ID = "info:fedora/1711.dl:CModelAudioStream";
-    private static final String AUDIT_ID = OBJECT_ID + "/AUDIT";
-    private static final String DC_ID = OBJECT_ID + "/DC";
-    private static final String DS_COMPOSITE_MODEL_ID = OBJECT_ID + "/DS-COMPOSITE-MODEL";
-    private static final String RELS_EXT_ID = OBJECT_ID + "/RELS-EXT";
-
-    private static final Map<String, String> EXPECTED_DIGESTS = Map.of(
-            AUDIT_ID, "c5aa5d74afc74aaf769b685e08d32cbc",
-            DC_ID, "9b3cb6287c11be2eddd3ff0a66805103",
-            DS_COMPOSITE_MODEL_ID, "84184d2d8ee6eae9dbcc5f02eaff681c",
-            RELS_EXT_ID, "c30c3df0877b8f113f8f4f844bdfe3e6"
-    );
+public class DisabledDigestIT {
 
     private ConfigurableApplicationContext context;
     private Migrator migrator;
-    private OcflObjectSessionFactory sessionFactory;
 
     @After
     public void tearDown() {
@@ -64,7 +48,6 @@ public class InlineXmlIT {
     }
 
     private void setup(final String name) throws Exception {
-        // Create directories expected in this test (based on `spring/ocfl-user-it-setup.xml`)
         final var storage = Paths.get(String.format("target/test/ocfl/%s/storage", name));
         final var staging = Paths.get(String.format("target/test/ocfl/%s/staging", name));
 
@@ -80,40 +63,16 @@ public class InlineXmlIT {
 
         context = new ClassPathXmlApplicationContext(String.format("spring/%s-setup.xml", name));
         migrator = (Migrator) context.getBean("migrator");
-        sessionFactory = (OcflObjectSessionFactory) context.getBean("ocflSessionFactory");
     }
 
     @Test
-    public void testMigrateObjectWithInlineXml() throws Exception {
-        setup("inline-it");
-
-        migrator.run();
-
-        final var session = sessionFactory.newSession(OBJECT_ID);
-
-        EXPECTED_DIGESTS.forEach((id, expected) -> {
-            final var content = session.readContent(id);
-            try {
-                final var actual = DigestUtils.md5Hex(content.getContentStream().get());
-                assertEquals(id, expected, actual);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
-    }
-
-    @Test
-    public void failMigrationWhenInlineXmlDoesNotMatchDigest() throws Exception {
-        setup("inline-invalid-it");
-
+    public void testMigrateObjectWithExternalDatastreamAndDisabledDigest() throws Exception {
+        setup("inline-disabled-it");
         try {
             migrator.run();
-            fail("Expected migrator to fail");
         } catch (RuntimeException e) {
-            assertTrue(e.getMessage()
-                    .contains("DC failed checksum validation. Expected MD5: 4e2a6140aa1369de6dd9736dfa8ab946"));
+            assertTrue(e.getMessage().contains("DISABLED digest. Skipping digest validation"));
         }
     }
-
 
 }

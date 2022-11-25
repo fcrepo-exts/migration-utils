@@ -193,7 +193,11 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                         dsInfo = new Foxml11DatastreamInfo(objectInfo, reader);
                     } else if (reader.getLocalName().equals("datastreamVersion")) {
                         final var v = new Foxml11DatastreamVersion(dsInfo, reader);
-                        v.validateInlineXml();
+                        try {
+                            v.validateInlineXml();
+                        } catch (RuntimeException e) { 
+                            // do we need to do anyting with disabled digests? 
+                        } 
                         handler.processDatastreamVersion(v);
                     } else {
                         throw new RuntimeException("Unexpected element! \"" + reader.getLocalName() + "\"!");
@@ -469,9 +473,10 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         private void validateInlineXml() {
             if (isInlineXml && contentDigest != null && StringUtils.isNotBlank(contentDigest.getDigest())) {
                 if (StringUtils.equals(contentDigest.getType(), "DISABLED")) {
-                    LOG.warn("Datastream Digest DISABLED. Skipping digest validation");
-                    return;
+                    LOG.info("Datastream Digest DISABLED. Skipping digest validation");
+                    throw new RuntimeException("DISABLED digest. Skipping digest validation");
                 }
+
                 final var transformedXml = transformInlineXmlForChecksum();
                 final var digest = DigestUtils.getDigest(contentDigest.getType());
                 final var digestBytes = DigestUtils.digest(digest, transformedXml);
