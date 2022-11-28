@@ -195,9 +195,9 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                         final var v = new Foxml11DatastreamVersion(dsInfo, reader);
                         try {
                             v.validateInlineXml();
-                        } catch (RuntimeException e) { 
-                            // do we need to do anyting with disabled digests? 
-                        } 
+                        } catch (RuntimeException e) {
+                            // do we need to do anyting with disabled digests?
+                        }
                         handler.processDatastreamVersion(v);
                     } else {
                         throw new RuntimeException("Unexpected element! \"" + reader.getLocalName() + "\"!");

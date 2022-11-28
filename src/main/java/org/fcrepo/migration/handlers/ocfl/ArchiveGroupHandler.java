@@ -657,7 +657,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             if (!dv.getContentDigest().getDigest().equals("none")) {
                 final var digest = dv.getContentDigest();
                 final var digests = new ArrayList<URI>();
-                digests.add(URI.create("urn:" + digest.getType().toLowerCase() + ":" + digest.getDigest().toLowerCase()));
+                digests.add(URI.create("urn:" + digest.getType().toLowerCase() + ":" +
+                            digest.getDigest().toLowerCase()));
                 headers.withDigests(digests);
             } else {
                 LOGGER.warn("Digest content 'none' found. Not adding to header");
