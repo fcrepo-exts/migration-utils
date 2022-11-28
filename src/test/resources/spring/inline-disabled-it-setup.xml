@@ -38,7 +38,7 @@
     </bean>
 
     <bean id="indexRoot" class="java.io.File">
-        <constructor-arg type="java.lang.String" value="target/test/ocfl/inline-disabled-it/index}" />
+        <constructor-arg type="java.lang.String" value="target/test/ocfl/inline-it/index}" />
     </bean>
 
     <bean id="objectAbstraction" class="org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler">
