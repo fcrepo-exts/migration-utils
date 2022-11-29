@@ -476,7 +476,6 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
             if (isInlineXml && contentDigest != null && StringUtils.isNotBlank(contentDigest.getDigest())) {
 
                 if (StringUtils.equals(contentDigest.getType(), "DISABLED")) {
-                    LOG.info("Datastream Digest DISABLED. Skipping digest validation");
                     throw new RuntimeException("DISABLED digest. Skipping digest validation");
                 }
 
