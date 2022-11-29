@@ -17,15 +17,11 @@
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <property name="fetcher" ref="httpClientURLFetcher"/>
     </bean>
-
+    
     <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml.AkubraFSIDResolver" lazy-init="true">
         <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
-        <!-- Add the following line back in if you wish to maintain a cache of the internal id mapping between
-             runs of this application.  This will save substantial time at startup, but is not appropriate if
-             the repository changes.  -->
-        <!--<constructor-arg name="indexDir" type="java.io.File" ref="indexRoot" />-->
     </bean>
-
+    
 
     <!-- Set foxml.dir.objects or CHANGE THIS TO YOUR FEDORA 3 OBJECTS DIRECTORY -->
     <bean id="objectStore" class="java.io.File">

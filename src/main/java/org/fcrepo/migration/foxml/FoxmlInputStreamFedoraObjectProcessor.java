@@ -197,6 +197,8 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                             v.validateInlineXml();
                         } catch (RuntimeException e) {
                             // do we need to do anyting with disabled digests?
+                            LOG.error("Inline Validation failed", e);
+                            throw new RuntimeException(e);
                         }
                         handler.processDatastreamVersion(v);
                     } else {
@@ -472,6 +474,7 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
         private void validateInlineXml() {
             if (isInlineXml && contentDigest != null && StringUtils.isNotBlank(contentDigest.getDigest())) {
+
                 if (StringUtils.equals(contentDigest.getType(), "DISABLED")) {
                     LOG.info("Datastream Digest DISABLED. Skipping digest validation");
                     throw new RuntimeException("DISABLED digest. Skipping digest validation");
