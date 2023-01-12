@@ -63,11 +63,11 @@ public class DisabledDigestIT {
     @Test
     public void testMigrateObjectWithExternalDatastreamAndDisabledDigest() throws Exception {
         setup("inline-disabled-it");
-        try {
-            migrator.run();
-        } catch (RuntimeException e) {
-            assertTrue(e.getMessage().contains("DISABLED digest. Skipping digest validation"));
-        }
+        migrator.run();
+        final var migratedAuditPath = "target/test/ocfl/inline-disabled-it/storage/8f8/e55/54c/" +
+            "8f8e5554c836c316e17cdaf961657eb6ed6e56c7747304627fdc178b7e15ed75/v1/content/AUDIT";
+        final var migratedAudit = Paths.get(migratedAuditPath);
+        assertTrue(Files.exists(migratedAudit));
     }
 
 }
