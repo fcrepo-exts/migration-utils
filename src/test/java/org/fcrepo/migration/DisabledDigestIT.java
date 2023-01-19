@@ -21,6 +21,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -34,6 +35,7 @@ public class DisabledDigestIT {
 
     private ConfigurableApplicationContext context;
     private Migrator migrator;
+    private OcflObjectSessionFactory sessionFactory;
 
     @After
     public void tearDown() {
@@ -58,16 +60,15 @@ public class DisabledDigestIT {
 
         context = new ClassPathXmlApplicationContext(String.format("spring/%s-setup.xml", name));
         migrator = (Migrator) context.getBean("migrator");
+        sessionFactory = (OcflObjectSessionFactory) context.getBean("ocflSessionFactory");
     }
 
     @Test
     public void testMigrateObjectWithExternalDatastreamAndDisabledDigest() throws Exception {
         setup("inline-disabled-it");
         migrator.run();
-        final var migratedAuditPath = "target/test/ocfl/inline-disabled-it/storage/8f8/e55/54c/" +
-            "8f8e5554c836c316e17cdaf961657eb6ed6e56c7747304627fdc178b7e15ed75/v1/content/AUDIT";
-        final var migratedAudit = Paths.get(migratedAuditPath);
-        assertTrue(Files.exists(migratedAudit));
+        final var session = sessionFactory.newSession("info:fedora/llgc-id:1591190");
+        assertTrue(session.containsResource("info:fedora/llgc-id:1591190/AUDIT"));
     }
 
 }
