@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="UTF-8"?><foxml:digitalObject xmlns:foxml="info:fedora/fedora-system:def/foxml#" xmlns:fedoraxsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:audit="info:fedora/fedora-system:def/audit#" VERSION="1.1" PID="llgc-id:1591190">
+    <foxml:objectProperties>
+        
+        <foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="Dei Tomos: Glannau Shir Gar"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2013-04-18T21:15:50.582Z"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2013-04-18T21:15:50.582Z"/>
+        
+        <foxml:extproperty NAME="http://dev.llgc.org.uk/digitisation/identifiers/nlw_id" VALUE="AOAAA00079444"/>
+        <foxml:extproperty NAME="http://dev.llgc.org.uk/digitisation/identifiers/catalogue" VALUE=""/>
+        <foxml:extproperty NAME="http://dev.llgc.org.uk/digitisation/identifiers/handle" VALUE="10107/1591190"/>
+    </foxml:objectProperties>
+    <foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+        <foxml:datastreamVersion ID="AUDIT.0" LABEL="Fedora Object Audit Trail" CREATED="2013-04-18T21:15:50.582Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+            <foxml:xmlContent>
+            <audit:auditTrail>
+                <audit:record ID="AUDREC1">
+                    <audit:process type="Fedora API-M"/>
+                    <audit:action>ingestObject</audit:action>
+                    <audit:componentID/>
+                    <audit:responsibility>fedoraAdmin</audit:responsibility>
+                    <audit:date>2013-04-18T21:15:50.582Z</audit:date>
+                    <audit:justification>Ingested by NLW ingest program</audit:justification>
+                </audit:record>
+            </audit:auditTrail>
+            </foxml:xmlContent>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="RELS-EXT.0" LABEL="Relationship Datastream" CREATED="2013-04-18T21:15:50.582Z" SIZE="1326" MIMETYPE="application/rdf+xml" FORMAT_URI="info:fedora/fedora-system:FedoraRELSExt-1.0">
+            <foxml:contentDigest TYPE="DISABLED" DIGEST="none"/>
+            <foxml:xmlContent>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:METS="http://www.loc.gov/METS/" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rel="info:fedora/fedora-system:def/relations-external#">
+          <rdf:Description rdf:about="info:fedora/llgc-id:1591190"><fedora-model:hasModel xmlns:fedora-model="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/model:offair"/><fedora-model:hasModel xmlns:fedora-model="info:fedora/fedora-system:def/model#" rdf:resource="info:fedora/fedora-system:FedoraObject-3.0"/>
+            <rel:isMemberOf rdf:resource="info:fedora/collection:offair"/>
+            <oai:itemID xmlns:oai="http://www.openarchives.org/OAI/2.0/">oai:llgc.org.uk:llgc-id:1591190</oai:itemID>
+            <nlw:nlw_id xmlns:nlw="http://dev.llgc.org.uk/digitisation/identifiers/">AOAAA00079444</nlw:nlw_id>
+            <nlw:handle xmlns:nlw="http://dev.llgc.org.uk/digitisation/identifiers/">10107/1591190</nlw:handle>
+            <nlw:catalogue xmlns:nlw="http://dev.llgc.org.uk/digitisation/identifiers/">(WlAbNL)006509574</nlw:catalogue>
+            <nlw:barcode xmlns:nlw="http://dev.llgc.org.uk/digitisation/identifiers/">0047235</nlw:barcode>
+          </rdf:Description>
+        </rdf:RDF>
+            </foxml:xmlContent>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:datastream ID="archive" STATE="A" CONTROL_GROUP="E" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="archive.0" LABEL="METS ID: BoB1. This will be used as an archive copy" CREATED="2013-04-18T21:15:50.582Z" ALT_IDS="BoB1" MIMETYPE="video/mpg" SIZE="0">
+            <foxml:contentDigest TYPE="DISABLED" DIGEST="none"/>
+            <foxml:contentLocation TYPE="URL" REF=" http://unreachable.host/dir/to/file/12345.mpg"/>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:datastream ID="METS" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="METS.0" LABEL="Mets Record" CREATED="2013-04-18T21:15:50.582Z" MIMETYPE="text/xml" SIZE="39820">
+            <foxml:contentDigest TYPE="DISABLED" DIGEST="none"/>
+            <foxml:xmlContent>
+<METS:mets xmlns:METS="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/  http://www.loc.gov/standards/mets/mets.xsd   http://www.loc.gov/mods/v3  http://www.loc.gov/standards/mods//v3/mods-3-3.xsd   http://www.loc.gov/VMD/ http://lcweb2.loc.gov/mets/Schemas/VMD.xsd   http://www.loc.gov/AMD/   http://lcweb2.loc.gov/mets/Schemas/AMD.xsd   http://www.loc.gov/standards/premis http://www.loc.gov/standards/premis/PREMIS-v1-0.xsd  http://purl.org/dc/elements/1.1/  http://dublincore.org/schemas/xmls/simpledc20021212.xsd http://cosimo.stanford.edu/sdr/metsrights/ http://cosimo.stanford.edu/sdr/metsrights.xsd" ID="AOAAA00079444" LABEL="Dei Tomos: Glannau Shir Gar" OBJID="10107/1591190" PROFILE="METS-VITAL06" TYPE="electronic resource">
+          <METS:metsHdr xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" ID="metsHdr1" CREATEDATE="2013-04-18T22:16:05" LASTMODDATE="2013-04-18T22:16:05" RECORDSTATUS="active">
+            <METS:agent ROLE="CREATOR" TYPE="OTHER" OTHERTYPE="GROUP" ID="FfIG">
+              <METS:name>FfIG Group</METS:name>
+              <METS:note>Discussions November/December 2008</METS:note>
+            </METS:agent>
+            <METS:agent ROLE="CREATOR" TYPE="OTHER" OTHERTYPE="SOFTWARE" ID="ingest">
+              <METS:name>National Library of Wales Fedora ingest program</METS:name>
+              <METS:note>Version 1.0</METS:note>
+            </METS:agent>
+            <METS:agent ROLE="CUSTODIAN" TYPE="ORGANIZATION" ID="WlAbNL-1">
+              <METS:name>Llyfrgell Genedlaethol Cymru : The National Library of Wales</METS:name>
+            </METS:agent>
+            <METS:agent ROLE="DISSEMINATOR" TYPE="ORGANIZATION" ID="WlAbNL-2">
+              <METS:name>Llyfrgell Genedlaethol Cymru : The National Library of Wales</METS:name>
+            </METS:agent>
+          </METS:metsHdr>
+          <METS:dmdSec xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" ID="BoBdmdSec1">
+            <METS:mdWrap MDTYPE="MODS">
+              <METS:xmlData>
+                <mods:mods>
+                  <mods:titleInfo>
+                    <mods:title>Dei Tomos: Glannau Shir Gar</mods:title>
+                  </mods:titleInfo>
+                  <mods:abstract type="content">Traethau gwag, cestyll, pysgotwyr a hanes torri record byd mewn car ac mewn awyren. Dei Tomos' travels along the shores of Carmarthenshire.</mods:abstract>
+                  <mods:originInfo>
+                    <mods:publisher>BBC Radio Cymru</mods:publisher>
+                    <mods:dateIssued encoding="marc" point="start">2013-01-01T17:28:00</mods:dateIssued>
+                    <mods:dateIssued encoding="iso8601" point="end">2013-01-01T18:35:00</mods:dateIssued>
+                    <dateCaptured xmlns="http://www.loc.gov/mods/v3" encoding="iso8601">201301011728</dateCaptured>
+                    <place xmlns="http://www.loc.gov/mods/v3">
+                      <placeTerm type="code" authority="marccountry">wlk</placeTerm>
+                    </place>
+                  </mods:originInfo>
+                  <mods:typeOfResource>sound recording</mods:typeOfResource>
+                  <mods:note type="overal_bit_rate">166 Kbps</mods:note>
+                  <mods:physicalDescription>
+                    <mods:extent>01:07:00</mods:extent>
+                    <reformattingQuality xmlns="http://www.loc.gov/mods/v3">access</reformattingQuality>
+                    <form xmlns="http://www.loc.gov/mods/v3" authority="marcform">electronic</form>
+                  </mods:physicalDescription>
+                  <recordInfo xmlns="http://www.loc.gov/mods/v3">
+                    <recordContentSource authority="marcorg">WlAbNL</recordContentSource>
+                    <recordCreationDate encoding="marc">130417</recordCreationDate>
+                    <recordChangeDate encoding="iso8601">20130417194300.0</recordChangeDate>
+                    <recordIdentifier source="WlAbNL">vtls006509574</recordIdentifier>
+                    <recordOrigin>Converted from MARCXML to MODS version 3.3 using MARC21slim2MODS3-3.xsl
+				(Revision 1.51)</recordOrigin>
+                    <languageOfCataloging>
+                      <languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+                    </languageOfCataloging>
+                    <mods:recordIdentifier source="handle">10107/1591190</mods:recordIdentifier>
+                    <mods:recordIdentifier source="PID">llgc-id:1591190</mods:recordIdentifier>
+                    <mods:recordIdentifier source="bar_code">0047235</mods:recordIdentifier>
+                  </recordInfo>
+                  <accessCondition xmlns="http://www.loc.gov/mods/v3" type="restrictionOnAccess">I wylio/gwrando ar y recordiad hwn, gwnewch gais a chysylltwch ag aelod o staff, os gwelwch yn dda. = To consult this recording, please place a request and contact a member of staff.</accessCondition>
+                  <note xmlns="http://www.loc.gov/mods/v3" type="venue">Recorded 1 January 2013 17:28:00.</note>
+                  <note xmlns="http://www.loc.gov/mods/v3">Recorded off-air by NLW under the terms of Statutory Instrument 1991 No. 1116. Freeview data stream and associated metadata captured by BoB (Box of Broadcasts), supplied by Cambridge Imaging Systems Ltd.</note>
+                  <note xmlns="http://www.loc.gov/mods/v3">Content not verified.</note>
+                  <genre xmlns="http://www.loc.gov/mods/v3" authority="">Radio programs.</genre>
+                  <name xmlns="http://www.loc.gov/mods/v3">
+                    <namePart>BBC Radio Cymru</namePart>
+                  </name>
+                </mods:mods>
+              </METS:xmlData>
+            </METS:mdWrap>
+          </METS:dmdSec>
+          <METS:dmdSec xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" ID="BobdmdSec2">
+            <METS:mdRef xlink:type="simple" xlink:href="http://hdl.handle.net/10107/1591190-1" MDTYPE="DC" LOCTYPE="URL"/>
+          </METS:dmdSec>
+          <METS:dmdSec xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" ID="BoBdmdSec3">
+            <METS:mdRef LOCTYPE="OTHER" OTHERLOCTYPE="LCN" MDTYPE="MARC" xlink:type="simple" xlink:href="(WlAbNL)006509574"/>
+          </METS:dmdSec>
+          <METS:dmdSec xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" ID="BoBdmdSec4">
+            <METS:mdWrap MDTYPE="PREMIS:OBJECT">
+              <METS:xmlData>
+                <premis:object>
+                  <premis:objectIdentifier>
+                    <premis:objectIdentifierType>WlAbNL_METS_AOAAA00079444</premis:objectIdentifierType>
+                    <premis:objectIdentifierValue>BoB1</premis:objectIdentifierValue>
+                  </premis:objectIdentifier>
+                  <premis:objectCategory>file</premis:objectCategory>
+                  <premis:originalName>aoaaa00079444</premis:originalName>
+                </premis:object>
+              </METS:xmlData>
+            </METS:mdWrap>
+          </METS:dmdSec>
+          <METS:dmdSec xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" ID="dmdSec5">
+            <METS:mdRef xlink:type="simple" xlink:href="http://hdl.handle.net/10107/1591190-2" OTHERMDTYPE="RDF" MDTYPE="OTHER" LOCTYPE="URL"/>
+          </METS:dmdSec>
+          <METS:amdSec xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" ID="BoBamdSec1">
+            <METS:techMD ID="BoBtechMD2">
+              <METS:mdWrap MDTYPE="LC-AV">
+                <METS:xmlData>
+                  <AMD:AUDIOMD ANALOGDIGITALFLAG="FileDigital">
+                    <AMD:file_data>
+                      <AMD:compression>
+                        <AMD:codec_quality>lossy</AMD:codec_quality>
+                      </AMD:compression>
+                      <AMD:data_rate>128</AMD:data_rate>
+                      <AMD:data_rate_mode>Fixed</AMD:data_rate_mode>
+                      <AMD:format_name>MPEG Audio</AMD:format_name>
+                      <AMD:format_note>profile:	Layer 2</AMD:format_note>
+                      <AMD:format_version>1</AMD:format_version>
+                      <AMD:sampling_frequency>48.0</AMD:sampling_frequency>
+                    </AMD:file_data>
+                    <AMD:audio_info>
+                      <AMD:duration>01:07:00</AMD:duration>
+                      <AMD:note>Mode: Joint stereo</AMD:note>
+                      <AMD:note>data_rate element above is in Kbps</AMD:note>
+                      <AMD:note>sampling_frequency element above is in KHz</AMD:note>
+                      <AMD:note>Stream_size: 62.3 MiB (77%)</AMD:note>
+                      <AMD:note>Language: Welsh</AMD:note>
+                      <AMD:num_channels>2</AMD:num_channels>
+                    </AMD:audio_info>
+                  </AMD:AUDIOMD>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:techMD>
+            <METS:techMD ID="BoBtechMD5">
+              <METS:mdWrap MDTYPE="PREMIS">
+                <METS:xmlData>
+                  <premis:premis>
+                    <premis:object>
+                      <premis:objectIdentifier>
+                        <premis:objectIdentifierType>WlAbNL_METS_AOAAA00079444</premis:objectIdentifierType>
+                        <premis:objectIdentifierValue>bob1</premis:objectIdentifierValue>
+                      </premis:objectIdentifier>
+                      <premis:objectCategory>file</premis:objectCategory>
+                      <premis:objectCharacteristics>
+                        <premis:compositionLevel>0</premis:compositionLevel>
+                        <premis:fixity>
+                          <premis:messageDigestAlgorithm>MD5</premis:messageDigestAlgorithm>
+                          <premis:messageDigest>9c188cb6ec979097c0927d632baf8745</premis:messageDigest>
+                        </premis:fixity>
+                        <premis:fixity>
+                          <premis:messageDigestAlgorithm>SHA-1</premis:messageDigestAlgorithm>
+                          <premis:messageDigest>a8466bd11039eda5c667f202aa72867a</premis:messageDigest>
+                        </premis:fixity>
+                        <premis:format>
+                          <premis:formatDesignation>
+                            <premis:formatName>MPEG2 Transport Stream</premis:formatName>
+                            <premis:formatVersion>ISO/IEC 13818-1, Second edition 2000-12-01, http://neuron2.net/library/mpeg2/iso13818-1.pdf</premis:formatVersion>           
+               </premis:formatDesignation>
+                        </premis:format>
+                      </premis:objectCharacteristics>
+                    </premis:object>
+                  </premis:premis>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:techMD>
+            <METS:rightsMD ID="BoBrights1">
+              <METS:mdWrap MDTYPE="PREMIS:RIGHTS">
+                <METS:xmlData>
+                  <premis:rights>
+                    <premis:permissionStatement>
+                      <premis:permissionStatementIdentifier>
+                        <premis:permissionStatementIdentifierType>WlAbNL</premis:permissionStatementIdentifierType>
+                        <premis:permissionStatementIdentifierValue>R-001</premis:permissionStatementIdentifierValue>
+                      </premis:permissionStatementIdentifier>
+                      <premis:linkingObject>all</premis:linkingObject>
+                      <premis:grantingAgreement>
+                        <premis:grantingAgreementIdentification>Copyright (Archiving Broadcasts Designated
+									Bodies), Order, 18/10/1993, No. 74</premis:grantingAgreementIdentification>
+                        <premis:grantingAgreementInformation>
+                          <p>The Library is a designated body under the Order made under Section 75 of the
+										Copyright, Designs and Patents Act 1988 which provides that copies of broadcasts
+										of a designated class may be made for the purpose of being placed in an archive
+										maintained by a designated body without infringement of copyright.</p>
+                        </premis:grantingAgreementInformation>
+                      </premis:grantingAgreement>
+                      <premis:permissionGranted>
+                        <premis:act>all</premis:act>
+                        <premis:termOfGrant>
+                          <premis:startDate>2008-12-01</premis:startDate>
+                          <premis:endDate>9999-01-01</premis:endDate>
+                        </premis:termOfGrant>
+                      </premis:permissionGranted>
+                    </premis:permissionStatement>
+                  </premis:rights>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:rightsMD>
+            <METS:rightsMD ID="BoBrights2">
+              <METS:mdRef LABEL="Gwybodaeth am hawliau=Rights information" MIMETYPE="text/xml" xlink:href="http://hdl.handle.net/10107/1591190-4" OTHERMDTYPE="METSRightsMD" MDTYPE="OTHER" LOCTYPE="HANDLE"/>
+            </METS:rightsMD>
+            <METS:digiprovMD ID="BoBdigiprovMD3">
+              <METS:mdWrap MDTYPE="PREMIS:EVENT">
+                <METS:xmlData>
+                  <premis:event>
+                    <premis:eventIdentifier>
+                      <premis:eventIdentifierType>WlAbNL</premis:eventIdentifierType>
+                      <premis:eventIdentifierValue>V-001</premis:eventIdentifierValue>
+                    </premis:eventIdentifier>
+                    <premis:eventType>format validation</premis:eventType>
+                    <premis:eventDateTime>2013-02-13T12:02:02</premis:eventDateTime>
+                    <premis:eventOutcomeInformation>
+                      <premis:eventOutcome>C-001</premis:eventOutcome>
+                    </premis:eventOutcomeInformation>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>media_info</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                  </premis:event>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigiprovMD4">
+              <METS:mdWrap MDTYPE="PREMIS:EVENT">
+                <METS:xmlData>
+                  <premis:event>
+                    <premis:eventIdentifier>
+                      <premis:eventIdentifierType>WlAbNL</premis:eventIdentifierType>
+                      <premis:eventIdentifierValue>FC-001</premis:eventIdentifierValue>
+                    </premis:eventIdentifier>
+                    <premis:eventType>fixity check</premis:eventType>
+                    <premis:eventDateTime>2008-11-21T10:00:00</premis:eventDateTime>
+                    <premis:eventOutcomeInformation>
+                      <premis:eventOutcome>C-001</premis:eventOutcome>
+                    </premis:eventOutcomeInformation>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>UNIX_TOOLS-001</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                  </premis:event>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigiprovMD6">
+              <METS:mdWrap MDTYPE="PREMIS:EVENT">
+                <METS:xmlData>
+                  <premis:event>
+                    <premis:eventIdentifier>
+                      <premis:eventIdentifierType>WlAbNL</premis:eventIdentifierType>
+                      <premis:eventIdentifierValue>REC-001</premis:eventIdentifierValue>
+                    </premis:eventIdentifier>
+                    <premis:eventType>off-air recording</premis:eventType>
+                    <premis:eventDateTime>2013-01-01T17:28:00</premis:eventDateTime>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>HP-01</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>HP-02</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>INFORTREND-01</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>CIS-01</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>CIS-02</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>CIS-03</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>CIS-04</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>CIS-05</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>          
+            <premis:linkingAgentIdentifierValue>IMAGEN-01</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>IMAGEN-02</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>IMAGEN-03</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>IMAGEN-04</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>IMAGEN-05</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>IMAGEN-06</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>PHP-01</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>POSTGRE-01</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>MEDIAPLAN-01</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                    <premis:linkingAgentIdentifier>
+                      <premis:linkingAgentIdentifierType>WlAbNL</premis:linkingAgentIdentifierType>
+                      <premis:linkingAgentIdentifierValue>VIDEOARCHIVE-01</premis:linkingAgentIdentifierValue>
+                    </premis:linkingAgentIdentifier>
+                  </premis:event>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigiprovMD8">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>media_info</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>media_info version 0.7.60</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigiprovMD9">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>                      
+<premis:agentIdentifierValue>UNIX_TOOLS-001</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>UNIX checksum tools (/usr/bin/md5sum, /usr/bin/gpg --print-md sha1),
+              see dev.llgc.org.uk</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD10">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>CIS-01</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>CIS Capture Server version 1.5.0.14</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD11">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>CIS-02</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>CIS Feed Server 2.5.129.2</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD12">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>CIS-03</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>CIS Transcoder version 1.9.0.23</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD13">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>IMAGEN-01</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>Imagen Server version 1.1.0.69</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD14">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>IMAGEN-02</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>Imagen Server Soap Interface version 1.0.0.30</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD15">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>IMAGEN-03</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>Imagen Client version 2.1.0.179</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD16">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>IMAGEN-04</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>Imagen Media Control Centre version 1.0.0.48</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD17">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>PHP-01</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>PHP version 5.0.5.5</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD18">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>POSTGRE-01</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>PostrgreSQL version 8.1</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD19">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>CIS-04</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>CIS Web Site version 1.6</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD20">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>CIS-05</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>CIS Encoder Service version 1.0.0.22</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD21">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>IMAGEN-05</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>Imagen Ingest GUI version 1.0.0.39</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD22">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>IMAGEN-06</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>Imagen Client 2.1.0.174</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD23">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>MEDIAPLAN-01</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>Media Plan version 1.3.0.36</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD24">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>VIDEOARCHIVE-01</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>Video Archive.NET version 1.4.1.34</premis:agentName>
+                    <premis:agentType>software</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD25">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>HP-01</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>2 x HP DL360 G4p servers each with 2xSCSI hard disk drives, with RAID1
+              mirror configuration</premis:agentName>
+                    <premis:agentType>hardware</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD26">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>                     
+ <premis:agentIdentifierValue>INFORTREND-01</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>2x Infortrend 24-Bay SCSI to SATA RAID controllers</premis:agentName>
+                    <premis:agentType>hardware</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+            <METS:digiprovMD ID="BoBdigidprovMD27">
+              <METS:mdWrap MDTYPE="PREMIS:AGENT">
+                <METS:xmlData>
+                  <premis:agent>
+                    <premis:agentIdentifier>
+                      <premis:agentIdentifierType>WlAbNL</premis:agentIdentifierType>
+                      <premis:agentIdentifierValue>HP-02</premis:agentIdentifierValue>
+                    </premis:agentIdentifier>
+                    <premis:agentName>1x HP DC7700 workstation with 6Mbps encoder card</premis:agentName>
+                    <premis:agentType>hardware</premis:agentType>
+                  </premis:agent>
+                </METS:xmlData>
+              </METS:mdWrap>
+            </METS:digiprovMD>
+          </METS:amdSec>
+          <METS:fileSec xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" ID="BoBfileSec1">
+            <METS:fileGrp ID="BoBfileGrp1" USE="archive">
+              <METS:file GROUPID="BoBfileGrp1-1" ID="BoB1" MIMETYPE="video/mpg" SEQ="1" CREATED="2013-01-01T17:28:00" SIZE="84620083">
+                <METS:FLocat xlink:href="http://hdl.handle.net/10107/1591190-10" LOCTYPE="HANDLE"/>
+              </METS:file>
+            </METS:fileGrp>
+          </METS:fileSec>
+          <METS:structMap xmlns:mods="http://www.loc.gov/mods/v3" xmlns:VMD="http://www.loc.gov/VMD/" xmlns:AMD="http://www.loc.gov/AMD/" xmlns:premis="http://www.loc.gov/standards/premis" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:metsRights="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" ID="structMap1" TYPE="Physical">
+            <METS:div ORDER="1" DMDID="BoBdmdSec1 BobdmdSec2 BoBdmdSec3 BoBdmdSec4 dmdSec5" ADMID="BoBtechMD2 BoBtechMD5 BoBdigiprovMD3 BoBdigiprovMD4 BoBdigiprovMD6 BoBdigiprovMD8 BoBdigiprovMD9 BoBdigidprovMD10 BoBdigidprovMD11 BoBdigidprovMD12 BoBdigidprovMD13 BoBdigidprovMD14 BoBdigidprovMD15 BoBdigidprovMD16 BoBdigidprovMD17 BoBdigidprovMD18 BoBdigidprovMD19 BoBdigidprovMD20 BoBdigidprovMD21 BoBdigidprovMD22 BoBdigidprovMD23 BoBdigidprovMD24 BoBdigidprovMD25 BoBdigidprovMD26 BoBdigidprovMD27" LABEL="Dei Tomos: Glannau Shir Gar">
+              <METS:fptr FILEID="BoB1"/>
+            </METS:div>
+          </METS:structMap>
+        </METS:mets>
+            </foxml:xmlContent>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="DC.0" LABEL="Dublin Core Record" CREATED="2013-04-18T21:15:50.582Z" SIZE="1471" MIMETYPE="text/xml" FORMAT_URI="http://www.openarchives.org/OAI/2.0/oai_dc/">
+            <foxml:contentDigest TYPE="DISABLED" DIGEST="none"/>
+            <foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <dc:title>Dei Tomos: Glannau Shir Gar</dc:title>
+  <dc:creator>BBC Radio Cymru</dc:creator>
+  <dc:description>Traethau gwag, cestyll, pysgotwyr a hanes torri record byd mewn car ac mewn awyren. Dei Tomos' travels along the shores of Carmarthenshire.</dc:description>
+  <dc:description>Recorded 1 January 2013 17:28:00.</dc:description>
+  <dc:publisher>[Wales] : BBC Radio Cymru,</dc:publisher>
+  <dc:date>2013-January-01 17:28:00</dc:date>
+  <dc:type>sound recording</dc:type>
+  <dc:type>Radio programs.</dc:type>
+  <dc:identifier>llgc-id:1591190</dc:identifier>
+  <dc:language>|||</dc:language>
+  <dc:rights/>
+  <dc:rights>Nid oes modd gwneud copïau o'r deunydd hwn heb ganiatâd deiliaid yr hawlfraint. = It is not possible to make copies of this material without permission from the copyright holders.</dc:rights>
+</oai_dc:dc>
+            </foxml:xmlContent>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:datastream ID="POLICY" STATE="A" CONTROL_GROUP="E" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="POLICY.0" LABEL="Contains the XACML statment for this object" CREATED="2013-04-18T21:15:50.582Z" SIZE="0" MIMETYPE="text/xml" FORMAT_URI="urn:oasis:names:tc:xacml:1.0:policy">
+            <foxml:contentDigest TYPE="DISABLED" DIGEST="none"/>
+            <foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/mets_disseminators/rights/collection:offair/FILE_POLICY"/>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    <foxml:datastream ID="RIGHTS" STATE="A" CONTROL_GROUP="E" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="RIGHTS.0" LABEL="Contains the METS:rights statment for this object" CREATED="2013-04-18T21:15:50.582Z" MIMETYPE="text/xml" SIZE="0">
+            <foxml:contentDigest TYPE="DISABLED" DIGEST="none"/>
+            <foxml:contentLocation TYPE="URL" REF="http://local.fedora.server/mets_disseminators/rights/collection:offair/FILE_RIGHTS"/>
+        </foxml:datastreamVersion>
+    </foxml:datastream>
+    
+    
+    
+    
+</foxml:digitalObject>
