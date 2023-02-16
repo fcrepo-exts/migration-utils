@@ -68,7 +68,7 @@ public class DisabledDigestIT {
         setup("inline-disabled-it");
         migrator.run();
         final var session = sessionFactory.newSession("info:fedora/llgc-id:1591190");
-        assertTrue(session.containsResource("info:fedora/llgc-id:1591190/AUDIT"));
+        assertTrue(session.containsResource("info:fedora/llgc-id:1591190/POLICY"));
     }
 
 }
