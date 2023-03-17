@@ -28,7 +28,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Statement;
@@ -61,7 +60,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.File;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -78,16 +76,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.util.JAXBSource;
-import javax.xml.bind.util.JAXBResult;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -317,18 +306,18 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                         } catch (final IOException e) {
                             LOGGER.error("problem parsing DC record within: " + f6DsId);
                             throw new UncheckedIOException(e);
-                        } catch (final JAXBException e) {
-                            LOGGER.error(e.toString());
+                        } catch (JAXBException e) {
+                            LOGGER.error("problem parsing DC within: " + f6DsId);
                         }
 
                         final var model = ModelFactory.createDefaultModel();
-                        for(String uri : dc.getRepresentedElementURIs()) {
+                        for (String uri : dc.getRepresentedElementURIs()) {
                             for (String value : dc.getValuesForURI(uri)) {
-                                Triple dcTriple = new Triple(
+                                final Triple dcTriple = new Triple(
                                     NodeFactory.createURI(f6ObjectId),
                                     NodeFactory.createURI(uri),
                                     NodeFactory.createLiteral(value, XSDDatatype.XSDstring));
-                                Statement statement = model.asStatement(dcTriple);
+                                final Statement statement = model.asStatement(dcTriple);
                                 model.add(statement);
                                 LOGGER.info(dcTriple.toString());
                             }
@@ -920,19 +909,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         LOGGER.warn("No mimetype found for '{}'", mime);
         return "";
     }
-
-    private Model parseRdfDcXml(final DatastreamVersion datastreamVersion) {
-        final var model = ModelFactory.createDefaultModel();
-        try (final var is = datastreamVersion.getContent()) {
-            RDFDataMgr.read(model, is, "http://foo/", Lang.RDFXML);
-            return model;
-        } catch (Exception e) {
-            throw new RuntimeException(String.format("Failed to parse RDF XML in %s/%s",
-                    datastreamVersion.getDatastreamInfo().getObjectInfo().getPid(),
-                    datastreamVersion.getDatastreamInfo().getDatastreamId()), e);
-        }
-    }
-
 
     private Model parseRdfXml(final DatastreamVersion datastreamVersion) {
         final var model = ModelFactory.createDefaultModel();
