@@ -1245,11 +1245,11 @@ public class ArchiveGroupHandlerTest {
         if (migrationType == MigrationType.PLAIN_OCFL) {
             return new ArchiveGroupHandler(plainSessionFactory, migrationType, resourceMigrationType,
                                            addExtensions, deleteInactive,
-                                           false, USER, "info:fedora/", headOnly, false);
+                                           false, USER, "info:fedora/", headOnly, false, false);
         } else {
             return new ArchiveGroupHandler(sessionFactory, migrationType, resourceMigrationType,
                                            addExtensions, deleteInactive, false, USER,
-                                           "info:fedora/", headOnly, false);
+                                           "info:fedora/", headOnly, false, false);
         }
     }
 

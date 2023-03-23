@@ -133,6 +133,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final Detector mimeDetector;
     private final boolean headOnly;
     private final boolean disableChecksumValidation;
+    private final boolean disableDc;
 
     /**
      * Create an ArchiveGroupHandler,
@@ -156,6 +157,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      * @param headOnly
      *        flag to enable head only migrations
      * @param disableChecksumValidation
+     *        disable Checksum validation
+     * @param disableDc
+     *        true if DC datastreams should not be migrated to RDF object properties
      */
     public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
                                final MigrationType migrationType,
@@ -166,7 +170,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final String user,
                                final String idPrefix,
                                final boolean headOnly,
-                               final boolean disableChecksumValidation) {
+                               final boolean disableChecksumValidation,
+                               final boolean disableDc) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
         this.resourceMigrationType = Preconditions.checkNotNull(resourceMigrationType,
@@ -178,6 +183,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         this.idPrefix = idPrefix;
         this.headOnly = headOnly;
         this.disableChecksumValidation = disableChecksumValidation;
+        this.disableDc = disableDc;
         try {
             this.mimeDetector = new TikaConfig().getDetector();
         } catch (Exception e) {
@@ -299,7 +305,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                             .setContentTriples(descriptionTriples);
                     toWrite.add(f6DescId);
 
-                    if (DC_DS.equals(dsId)) {
+                    if (DC_DS.equals(dsId) && !disableDc) {
                         DC dc = new DC();
                         try {
                             dc = DC.parseDC(dv.getContent());

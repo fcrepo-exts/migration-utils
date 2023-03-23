@@ -41,6 +41,7 @@ public class HeadOnlyIT {
     private final String idPrefix = "info:fedora/";
     private final String testPid = idPrefix + "example:1";
     private final boolean disableChecksum = false;
+    private final boolean disableDc = false;
 
     private final DigestAlgorithm digestAlgorithm = DigestAlgorithm.sha512;
     private final MigrationType migrationType = MigrationType.FEDORA_OCFL;
@@ -137,7 +138,7 @@ public class HeadOnlyIT {
         final ResourceMigrationType resourceMigrationType = ResourceMigrationType.ARCHIVAL;
         return new ArchiveGroupHandler(ocflObjectSessionFactory, migrationType, resourceMigrationType,
                                        datastreamExtensions, deleteInactive, foxmlFile, user, idPrefix,
-                                       headOnly, disableChecksum);
+                                       headOnly, disableChecksum, disableDc);
     }
 
     private OcflRepository repository() {
