@@ -9,9 +9,18 @@ Migrations to Fedora 6 write migrated objects directly to the filesystem as [OCF
 objects.  
 In particular:
 
-* There is a 1:1 correspondence between Fedora 3 objects and OCFL objects.  Fedora 3 datastreams appear as files within the resulting OCFL objects.
 * RDF is not re-mapped, `info:fedora/` subjects and objects are kept intact as-is
 * FOXML object and datastream properties are represented as triples in additional sidecar files
+
+There are two options for the OCFL structure of your Fedora 3 objects. 
+1. Using Archival Groups (default).
+   * There is a 1:1 correspondence between Fedora 3 objects and OCFL objects. Fedora 3 datastreams appear as files within the resulting OCFL objects. 
+   * Pros: The object and all datastreams are versioned together and remain "close" on the filesystem.
+   * Cons: Archival Groups with a lot of children and versions can become very large as the inventory files grow quickly.
+2. Using Atomic Resources (`--atomic-resources`).
+   * Each Fedora 3 object and datastream becomes a separate OCFL object, storing the one resource.
+   * Pros: Because each OCFL object contains a single resource it is less susceptible to having very large inventory files.
+   * Cons: Parent and child (or object and datastream) resources can be spread out in the OCFL repository on disk.
 
 ## Status
 
@@ -26,6 +35,9 @@ Background work
     * If so, you will need all of the export FOXML in a known directory.
   * Will you be migrating from from a native fcrepo3 filesystem?
     * If so, fcrepo3 should not be running, and you will need to determine if you're using legacy or akubra storage
+* How do you want your objects arranged in OCFL?
+  * Archival Groups? (default) or Atomic Resources? (`--atomic-resources`)
+
 
 General usage of the migration utils CLI is as follows:
 
@@ -35,9 +47,11 @@ General usage of the migration utils CLI is as follows:
 
 The following CLI options for specifying details of a given migration are available:
 ```
-Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
-                       [-d=<f3DatastreamsDir>] [-e=<f3ExportedDir>]
-                       [-f=<f3hostname>] [-i=<indexDir>] [-l=<objectLimit>]
+Usage: migration-utils [-AchHIrVx] [--debug] [--enable-metrics] [--foxml-file]
+                       [--no-checksum-validation] -a=<targetDir>
+                       [--algorithm=<digestAlgorithm>] [-d=<f3DatastreamsDir>]
+                       [-e=<f3ExportedDir>] [-f=<f3hostname>] [-i=<workingDir>]
+                       [--id-prefix=<idPrefix>] [-l=<objectLimit>]
                        [-m=<migrationType>] [-o=<f3ObjectsDir>] [-p=<pidFile>]
                        -t=<f3SourceType> [-u=<user>] [-U=<userUri>]
   -h, --help                 Show this help message and exit.
@@ -55,13 +69,17 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
                              Directory containing Fedora 3 export (used with
                                --source-type 'exported')
   -a, --target-dir=<targetDir>
-                             Directory where OCFL storage root and supporting
-                               state will be written
+                             OCFL storage root directory (data/ocfl-root is
+                               created for migration-type FEDORA_OCFL)
   -i, --working-dir=<workingDir>
                              Directory where supporting state will be written
                                (cached index of datastreams, ...)
   -I, --delete-inactive      Migrate objects and datastreams in the Inactive
                                state as deleted. Default: false.
+                               Default: false
+  -A, --atomic-resources     Migrate objects and datastreams as atomic
+                               resources instead of archival groups
+                               Default: false
   -m, --migration-type=<migrationType>
                              Type of OCFL objects to migrate to. Choices:
                                FEDORA_OCFL | PLAIN_OCFL
@@ -96,8 +114,6 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
   -U, --user-uri=<userUri>   The username to associate with all of the migrated
                                resources.
                                Default: info:fedora/fedoraAdmin
-  -H, --head-only            Migrate only the HEAD of each datastream
-                               Default: false
       --algorithm=<digestAlgorithm>
                              The digest algorithm to use in the OCFL objects
                                created. Either sha256 or sha512
@@ -112,6 +128,8 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
                                for Prometheus to scrape metrics.
                                Default: false
       --debug                Enables debug logging
+  -H, --head-only            Migrate only the HEAD of each datastream
+                               Default: false
 ```
 
 ### PID migration selection
