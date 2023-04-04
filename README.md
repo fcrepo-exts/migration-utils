@@ -111,6 +111,7 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
                              Note: this requires port 8080 to be free in order
                                for Prometheus to scrape metrics.
                                Default: false
+      --disable-dc           Disable creation of DC properties from DC datastreams
       --debug                Enables debug logging
 ```
 
@@ -194,8 +195,6 @@ java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=legacy 
 | purgeDatastream                    | audit:contentRemoval‡                           |
 
 † The `fedora3model` namespace is not a published namespace. It is a representation of the fcrepo 3 namespace `info:fedora/fedora-system:def/model`.
-
-‡ Not yet implemented
 
 **Note**: All fcrepo 3 DC (Dublin Core) datastream values are mapped as dcterms properties on the Object in fcrepo 6+. The same goes for any properties in the RELS-EXT and RELS-INT datastreams.
 
