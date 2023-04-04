@@ -157,7 +157,7 @@ public class PicocliMigrator implements Callable<Integer> {
     private boolean enableMetrics;
 
     @Option(names = {"--disable-dc"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 36,
-            description = "Disable migrating DC datastream into RDF object properties. ") 
+            description = "Disable migrating DC datastream into RDF object properties. ")
     private boolean disableDc;
 
 

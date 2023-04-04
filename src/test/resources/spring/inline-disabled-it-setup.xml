@@ -17,11 +17,11 @@
         <constructor-arg name="localFedoraServer" ref="localFedoraServer" />
         <property name="fetcher" ref="httpClientURLFetcher"/>
     </bean>
-    
+
     <bean id="akubraIDResolver" class="org.fcrepo.migration.foxml.AkubraFSIDResolver" lazy-init="true">
         <constructor-arg name="dsRoot" type="java.io.File" ref="datastreamStore"/>
     </bean>
-    
+
 
     <!-- Set foxml.dir.objects or CHANGE THIS TO YOUR FEDORA 3 OBJECTS DIRECTORY -->
     <bean id="objectStore" class="java.io.File">
@@ -56,6 +56,7 @@
         <constructor-arg name="idPrefix" value="info:fedora/" />
         <constructor-arg name="headOnly" value="false"/>
         <constructor-arg name="disableChecksumValidation" value="false" />
+        <constructor-arg name="disableDc" value="false" />
     </bean>
 
     <bean id="ocflSessionFactory" class="org.fcrepo.migration.OcflSessionFactoryFactoryBean">
