@@ -76,7 +76,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.xml.bind.JAXBException;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -309,11 +308,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                         DC dc = new DC();
                         try {
                             dc = DC.parseDC(dv.getContent());
-                        } catch (final IOException e) {
-                            LOGGER.error("problem parsing DC record within: " + f6DsId);
-                            throw new UncheckedIOException(e);
-                        } catch (JAXBException e) {
-                            LOGGER.error("problem parsing DC within: " + f6DsId);
+                        } catch (Exception e) {
+                            throw new RuntimeException(String.format("Failed to parse DC XML in %s/%s",
+                                objectId,f6DsId), e);
                         }
 
                         final var model = ModelFactory.createDefaultModel();
@@ -325,7 +322,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                     NodeFactory.createLiteral(value, XSDDatatype.XSDstring));
                                 final Statement statement = model.asStatement(dcTriple);
                                 model.add(statement);
-                                LOGGER.info(dcTriple.toString());
+                                LOGGER.debug(dcTriple.toString());
                             }
                         }
 
