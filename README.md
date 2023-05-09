@@ -196,6 +196,8 @@ java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=legacy 
 
 † The `fedora3model` namespace is not a published namespace. It is a representation of the fcrepo 3 namespace `info:fedora/fedora-system:def/model`.
 
+‡ Not yet implemented
+
 **Note**: All fcrepo 3 DC (Dublin Core) datastream values are mapped as dcterms properties on the Object in fcrepo 6+. The same goes for any properties in the RELS-EXT and RELS-INT datastreams.
 
 
