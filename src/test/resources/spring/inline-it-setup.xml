@@ -60,6 +60,7 @@
         <constructor-arg name="idPrefix" value="info:fedora/" />
         <constructor-arg name="headOnly" value="false"/>
         <constructor-arg name="disableChecksumValidation" value="false" />
+        <constructor-arg name="disableDc" value="false" />
     </bean>
 
     <bean id="ocflSessionFactory" class="org.fcrepo.migration.OcflSessionFactoryFactoryBean">

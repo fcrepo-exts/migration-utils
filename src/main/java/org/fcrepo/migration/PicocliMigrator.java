@@ -156,6 +156,11 @@ public class PicocliMigrator implements Callable<Integer> {
                           "\nNote: this requires port 8080 to be free in order for Prometheus to scrape metrics.")
     private boolean enableMetrics;
 
+    @Option(names = {"--disable-dc"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 36,
+            description = "Disable migrating DC datastream into RDF object properties. ")
+    private boolean disableDc;
+
+
     @Option(names = {"--head-only", "-H"}, defaultValue = "false", showDefaultValue = ALWAYS, order = 35,
             description = "Migrate only the HEAD of each datastream")
     private boolean headOnly;
@@ -311,7 +316,7 @@ public class PicocliMigrator implements Callable<Integer> {
                         ocflSessionFactory, migrationType,
                         atomicResources ? ResourceMigrationType.ATOMIC : ResourceMigrationType.ARCHIVAL,
                         addExtensions, deleteInactive, foxmlFile,
-                        user, idPrefix, headOnly, disableChecksumValidation);
+                        user, idPrefix, headOnly, disableChecksumValidation, disableDc);
         final StreamingFedoraObjectHandler objectHandler = new ObjectAbstractionStreamingFedoraObjectHandler(
                 archiveGroupHandler);
 

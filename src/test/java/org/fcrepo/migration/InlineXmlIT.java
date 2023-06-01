@@ -29,7 +29,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
-
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -81,6 +84,20 @@ public class InlineXmlIT {
         context = new ClassPathXmlApplicationContext(String.format("spring/%s-setup.xml", name));
         migrator = (Migrator) context.getBean("migrator");
         sessionFactory = (OcflObjectSessionFactory) context.getBean("ocflSessionFactory");
+    }
+
+    @Test
+    public void testDcProperties() throws Exception {
+        setup("inline-it");
+        migrator.run();
+        final var session = sessionFactory.newSession("info:fedora/fedora-system:ContentModel-3.0");
+        final var content = session.readContent("info:fedora/fedora-system:ContentModel-3.0");
+        final String contentText = new BufferedReader(
+            new InputStreamReader(content.getContentStream().get(), StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
+        assertTrue(contentText.contains("<info:fedora/fedora-system:ContentModel-3.0> " +
+                    "<http://purl.org/dc/elements/1.1/identifier> \"fedora-system:ContentModel-3.0\""));
     }
 
     @Test

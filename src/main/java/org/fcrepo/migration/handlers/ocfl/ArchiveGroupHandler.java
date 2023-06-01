@@ -28,6 +28,10 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Statement;
+
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
@@ -42,6 +46,7 @@ import org.fcrepo.migration.MigrationType;
 import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.ResourceMigrationType;
+import org.fcrepo.migration.foxml.DC;
 import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
@@ -71,7 +76,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -115,6 +119,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
     private static final String RELS_EXT = "RELS-EXT";
     private static final String RELS_INT = "RELS-INT";
+    private static final String DC_DS = "DC";
 
     private final OcflObjectSessionFactory sessionFactory;
     private final boolean addDatastreamExtensions;
@@ -127,6 +132,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private final Detector mimeDetector;
     private final boolean headOnly;
     private final boolean disableChecksumValidation;
+    private final boolean disableDc;
 
     /**
      * Create an ArchiveGroupHandler,
@@ -150,6 +156,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
      * @param headOnly
      *        flag to enable head only migrations
      * @param disableChecksumValidation
+     *        disable Checksum validation
+     * @param disableDc
+     *        true if DC datastreams should not be migrated to RDF object properties
      */
     public ArchiveGroupHandler(final OcflObjectSessionFactory sessionFactory,
                                final MigrationType migrationType,
@@ -160,7 +169,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                                final String user,
                                final String idPrefix,
                                final boolean headOnly,
-                               final boolean disableChecksumValidation) {
+                               final boolean disableChecksumValidation,
+                               final boolean disableDc) {
         this.sessionFactory = Preconditions.checkNotNull(sessionFactory, "sessionFactory cannot be null");
         this.migrationType = Preconditions.checkNotNull(migrationType, "migrationType cannot be null");
         this.resourceMigrationType = Preconditions.checkNotNull(resourceMigrationType,
@@ -172,6 +182,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         this.idPrefix = idPrefix;
         this.headOnly = headOnly;
         this.disableChecksumValidation = disableChecksumValidation;
+        this.disableDc = disableDc;
         try {
             this.mimeDetector = new TikaConfig().getDetector();
         } catch (Exception e) {
@@ -292,6 +303,33 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                             .setHeaders(descriptionHeaders)
                             .setContentTriples(descriptionTriples);
                     toWrite.add(f6DescId);
+
+                    if (DC_DS.equals(dsId) && !disableDc) {
+                        DC dc = new DC();
+                        try {
+                            dc = DC.parseDC(dv.getContent());
+                        } catch (Exception e) {
+                            throw new RuntimeException(String.format("Failed to parse DC XML in %s/%s",
+                                objectId,f6DsId), e);
+                        }
+
+                        final var model = ModelFactory.createDefaultModel();
+                        for (String uri : dc.getRepresentedElementURIs()) {
+                            for (String value : dc.getValuesForURI(uri)) {
+                                final Triple dcTriple = new Triple(
+                                    NodeFactory.createURI(f6ObjectId),
+                                    NodeFactory.createURI(uri),
+                                    NodeFactory.createLiteral(value, XSDDatatype.XSDstring));
+                                final Statement statement = model.asStatement(dcTriple);
+                                model.add(statement);
+                                LOGGER.debug(dcTriple.toString());
+                            }
+                        }
+
+                        metaMap.get(f6ObjectId).setDcTriples(model);
+                        toWrite.add(f6ObjectId);
+
+                    }
 
                     if (RELS_EXT.equals(dsId) || RELS_INT.equals(dsId)) {
                         final var triples = parseRdfXml(dv);
@@ -927,6 +965,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
     private static class MetaHolder {
         Model contentTriples;
         Model relsTriples;
+        Model dcTriples;
         ResourceHeaders.Builder headers;
 
         public static MetaHolder fromContent(final Model contentTriples, final ResourceHeaders.Builder headers) {
@@ -938,11 +977,22 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
         private MetaHolder(final Model contentTriples,
                            final Model relsTriples,
+                           final Model dcTriples,
+                           final ResourceHeaders.Builder headers) {
+            this.contentTriples = contentTriples;
+            this.relsTriples = relsTriples;
+            this.dcTriples = dcTriples;
+            this.headers = headers;
+        }
+
+        private MetaHolder(final Model contentTriples,
+                           final Model relsTriples,
                            final ResourceHeaders.Builder headers) {
             this.contentTriples = contentTriples;
             this.relsTriples = relsTriples;
             this.headers = headers;
         }
+
 
         /**
          * Constructs a complete set of triples at the current version of the resource and serializes them as n-triples.
@@ -959,6 +1009,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
             if (relsTriples != null) {
                 triples.add(relsTriples.listStatements());
+            }
+
+            if (dcTriples != null) {
+                triples.add(dcTriples.listStatements());
             }
 
             triples.write(output, Lang.NTRIPLES.getName());
@@ -979,6 +1033,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             this.relsTriples = relsTriples;
             return this;
         }
+        public MetaHolder setDcTriples(final Model dcTriples) {
+            this.dcTriples = dcTriples;
+            return this;
+        }
+
     }
 
     private static class BinaryMeta {

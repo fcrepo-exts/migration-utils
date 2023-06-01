@@ -111,6 +111,7 @@ Usage: migration-utils [-chrVx] [--debug] -a=<targetDir>
                              Note: this requires port 8080 to be free in order
                                for Prometheus to scrape metrics.
                                Default: false
+      --disable-dc           Disable creation of DC properties from DC datastreams
       --debug                Enables debug logging
 ```
 
