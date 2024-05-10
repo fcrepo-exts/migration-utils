@@ -16,11 +16,11 @@
 
 package org.fcrepo.migration.handlers.ocfl;
 
-import edu.wisc.library.ocfl.api.MutableOcflRepository;
-import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
-import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
-import edu.wisc.library.ocfl.core.path.mapper.LogicalPathMappers;
-import edu.wisc.library.ocfl.core.storage.OcflStorageBuilder;
+import io.ocfl.api.MutableOcflRepository;
+import io.ocfl.core.OcflRepositoryBuilder;
+import io.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
+import io.ocfl.core.path.mapper.LogicalPathMappers;
+import io.ocfl.core.storage.OcflStorageBuilder;
 import org.apache.commons.lang3.SystemUtils;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.junit.Before;

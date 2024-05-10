@@ -16,13 +16,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.wisc.library.ocfl.api.OcflRepository;
-import edu.wisc.library.ocfl.api.model.FileDetails;
-import edu.wisc.library.ocfl.api.model.ObjectVersionId;
-import edu.wisc.library.ocfl.api.model.VersionDetails;
-import edu.wisc.library.ocfl.api.model.VersionInfo;
-import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
-import edu.wisc.library.ocfl.core.storage.OcflStorageBuilder;
+import io.ocfl.api.OcflRepository;
+import io.ocfl.api.model.FileDetails;
+import io.ocfl.api.model.ObjectVersionId;
+import io.ocfl.api.model.VersionDetails;
+import io.ocfl.api.model.VersionInfo;
+import io.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
+import io.ocfl.core.storage.OcflStorageBuilder;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -34,8 +34,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.wisc.library.ocfl.core.OcflRepositoryBuilder;
-import edu.wisc.library.ocfl.core.extension.storage.layout.config.HashedNTupleIdEncapsulationLayoutConfig;
+import io.ocfl.core.OcflRepositoryBuilder;
+import io.ocfl.core.extension.storage.layout.config.HashedNTupleIdEncapsulationLayoutConfig;
 import picocli.CommandLine;
 
 /**

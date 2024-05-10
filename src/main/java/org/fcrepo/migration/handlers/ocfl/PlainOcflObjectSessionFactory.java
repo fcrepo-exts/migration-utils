@@ -16,7 +16,7 @@
 
 package org.fcrepo.migration.handlers.ocfl;
 
-import edu.wisc.library.ocfl.api.MutableOcflRepository;
+import io.ocfl.api.MutableOcflRepository;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.slf4j.Logger;
