@@ -16,13 +16,13 @@
 
 package org.fcrepo.migration.handlers.ocfl;
 
-import edu.wisc.library.ocfl.api.MutableOcflRepository;
-import edu.wisc.library.ocfl.api.OcflObjectUpdater;
-import edu.wisc.library.ocfl.api.OcflOption;
-import edu.wisc.library.ocfl.api.exception.OcflInputException;
-import edu.wisc.library.ocfl.api.model.DigestAlgorithm;
-import edu.wisc.library.ocfl.api.model.ObjectVersionId;
-import edu.wisc.library.ocfl.api.model.VersionInfo;
+import io.ocfl.api.MutableOcflRepository;
+import io.ocfl.api.OcflObjectUpdater;
+import io.ocfl.api.OcflOption;
+import io.ocfl.api.exception.OcflInputException;
+import io.ocfl.api.model.DigestAlgorithm;
+import io.ocfl.api.model.ObjectVersionId;
+import io.ocfl.api.model.VersionInfo;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.fcrepo.storage.ocfl.CommitType;

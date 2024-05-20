@@ -6,8 +6,8 @@
  */
 package org.fcrepo.migration;
 
-import static edu.wisc.library.ocfl.api.util.Enforce.expressionTrue;
-import static edu.wisc.library.ocfl.api.util.Enforce.notNull;
+import static io.ocfl.api.util.Enforce.expressionTrue;
+import static io.ocfl.api.util.Enforce.notNull;
 import static org.slf4j.LoggerFactory.getLogger;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 
@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-import edu.wisc.library.ocfl.api.DigestAlgorithmRegistry;
-import edu.wisc.library.ocfl.api.model.DigestAlgorithm;
+import io.ocfl.api.DigestAlgorithmRegistry;
+import io.ocfl.api.model.DigestAlgorithm;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
