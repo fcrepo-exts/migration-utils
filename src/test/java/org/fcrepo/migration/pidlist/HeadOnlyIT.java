@@ -10,6 +10,7 @@ import javax.xml.stream.XMLStreamException;
 
 import io.ocfl.api.OcflRepository;
 import io.ocfl.api.model.DigestAlgorithm;
+import io.ocfl.api.DigestAlgorithmRegistry;
 import io.ocfl.api.model.FileDetails;
 import io.ocfl.api.model.ObjectDetails;
 import io.ocfl.core.OcflRepositoryBuilder;
@@ -43,7 +44,7 @@ public class HeadOnlyIT {
     private final boolean disableChecksum = false;
     private final boolean disableDc = false;
 
-    private final DigestAlgorithm digestAlgorithm = DigestAlgorithm.sha512;
+    private final DigestAlgorithm digestAlgorithm = DigestAlgorithmRegistry.sha512;
     private final MigrationType migrationType = MigrationType.FEDORA_OCFL;
 
     private LegacyFSIDResolver idResolver;

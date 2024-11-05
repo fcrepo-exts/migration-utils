@@ -254,6 +254,17 @@ public class PlainOcflObjectSession implements OcflObjectSession {
     }
 
     @Override
+    public ResourceContent readRange(final String resourceId, final long start, final long end) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public ResourceContent readRange(final String resourceId, final String versionNumber,
+                                     final long start, final long end) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
     public List<OcflVersionInfo> listVersions(final String resourceId) {
         throw new UnsupportedOperationException("Not implemented");
     }
