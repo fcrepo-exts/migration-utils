@@ -22,6 +22,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.ocfl.api.OcflConfig;
 import io.ocfl.api.model.DigestAlgorithm;
+import io.ocfl.api.DigestAlgorithmRegistry;
 import io.ocfl.core.OcflRepositoryBuilder;
 import io.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
 import io.ocfl.core.path.mapper.LogicalPathMappers;
@@ -93,7 +94,8 @@ public class OcflSessionFactoryFactoryBean implements FactoryBean<OcflObjectSess
                                          final String user,
                                          final String userUri,
                                          final boolean disableChecksumValidation) {
-        this(ocflRoot, stagingDir, migrationType, user, userUri, DigestAlgorithm.sha512, disableChecksumValidation);
+        this(ocflRoot, stagingDir, migrationType, user, userUri,
+                        DigestAlgorithmRegistry.sha512, disableChecksumValidation);
     }
 
     @Override

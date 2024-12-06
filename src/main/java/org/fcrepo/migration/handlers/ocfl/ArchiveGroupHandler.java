@@ -276,8 +276,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
                 final var datastreamHeaders = createDatastreamHeaders(dv, f6DsId, f6ObjectId,
                         filename, mimeType, createDate);
-
-                binaryMeta.put(f6DsId, new BinaryMeta(datastreamFilename, mimeType, dv.getLabel()));
+                binaryMeta.put(f6DsId, new BinaryMeta(filename, mimeType, dv.getLabel()));
 
                 if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
                     InputStream content = null;
@@ -492,7 +491,8 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 final var origHeaders = session.readHeaders(id);
                 final var filename = filenameMap.get(id);
                 if (StringUtils.isNotBlank(filename)) {
-                    final var newHeaders = ResourceHeaders.builder(origHeaders).withFilename(filename).build();
+                    final var newHeaders = ResourceHeaders.builder(origHeaders).
+                        withContentPath(filename).withFilename(filename).build();
                     session.writeHeaders(newHeaders);
                 }
             });
@@ -673,6 +673,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             headers.withArchivalGroupId(f6ObjectId);
         }
         headers.withFilename(filename);
+        //headers.withContentPath(filename);
         headers.withCreatedDate(Instant.parse(createDate));
         headers.withLastModifiedDate(lastModified);
         headers.withLastModifiedBy(user);

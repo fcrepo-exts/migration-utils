@@ -249,7 +249,8 @@ public class ArchiveGroupHandlerTest {
         final var pid = "obj2";
         final var dsId1 = "ds3";
 
-        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
+        final var ds1V1 = datastreamVersion(dsId1, true, true, MANAGED, "application/xml",
+                            "<h1>hello</h1>", DS_ACTIVE, null, null);
         final var relsIntV1 = datastreamVersion(RELS_INT, true, MANAGED, "application/rdf+xml",
                 "<rdf:RDF xmlns:fedora-model=\"info:fedora/fedora-system:def/model#\"" +
                         " xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
@@ -287,18 +288,19 @@ public class ArchiveGroupHandlerTest {
         final var pid = "obj2";
         final var dsId1 = "ds3";
 
-        final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
-        final var relsIntV1 = datastreamVersion(RELS_INT, true, MANAGED, "application/rdf+xml",
+        final var ds1V1 = datastreamVersion(dsId1, true, true, MANAGED, "application/xml",
+                            "<h1>hello</h1>", DS_ACTIVE, null, "example.xml");
+        final var relsIntV1 = datastreamVersion(RELS_INT, true, false, MANAGED, "application/rdf+xml",
                 "<rdf:RDF xmlns:fedora-model=\"info:fedora/fedora-system:def/model#\"" +
                         " xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
                         "\t<rdf:Description rdf:about=\"info:fedora/obj2/ds3\">\n" +
                         "\t\t<fedora-model:downloadFilename>example.xml</fedora-model:downloadFilename>\n" +
                         "\t</rdf:Description>\n" +
-                        "</rdf:RDF>", null);
-        final var relsIntV2 = datastreamVersion(RELS_INT, false, MANAGED, "application/rdf+xml",
+                        "</rdf:RDF>", DS_ACTIVE, null, RELS_INT );
+        final var relsIntV2 = datastreamVersion(RELS_INT, false, false, MANAGED, "application/rdf+xml",
                 "<rdf:RDF xmlns:fedora-model=\"info:fedora/fedora-system:def/model#\"" +
                         " xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                        "</rdf:RDF>", null);
+                        "</rdf:RDF>", DS_ACTIVE, null, RELS_INT );
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1)),
@@ -313,7 +315,7 @@ public class ArchiveGroupHandlerTest {
         verifyObjectHeaders(session, ocflObjectId);
 
         verifyBinary(contentVersionToString(session, ocflObjectId, dsId1, "v1"), ds1V1);
-        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v1");
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v1", "example.xml");
         verifyDescRdf(session, ocflObjectId, dsId1, ds1V1, "v1");
         verifyDescHeaders(session, ocflObjectId, dsId1, "v1");
 
@@ -323,7 +325,7 @@ public class ArchiveGroupHandlerTest {
         verifyDescHeaders(session, ocflObjectId, dsId1, "v2");
 
         verifyBinary(contentVersionToString(session, ocflObjectId, dsId1, "v3"), ds1V1);
-        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v3", "ds3-label");
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v3", "example.xml");
         verifyDescRdf(session, ocflObjectId, dsId1, ds1V1, "v3");
         verifyDescHeaders(session, ocflObjectId, dsId1, "v3");
     }
@@ -364,7 +366,7 @@ public class ArchiveGroupHandlerTest {
         verifyObjectHeaders(session, ocflObjectId);
 
         verifyBinary(contentVersionToString(session, ocflObjectId, dsId1, "v1"), ds1V1);
-        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v1", "ds3-label.xml");
+        verifyHeaders(session, ocflObjectId, dsId1, ds1V1, "v1", "ds3.xml");
         verifyDescRdf(session, ocflObjectId, dsId1, ds1V1, "v1");
         verifyDescHeaders(session, ocflObjectId, dsId1, "v1");
 
@@ -483,12 +485,12 @@ public class ArchiveGroupHandlerTest {
         final var dsId2 = "ds4";
 
         final var ds1V1 = datastreamVersion(dsId1, true, true, MANAGED, "application/xml", "<h1>hello</h1>",
-                DS_INACTIVE, null, dsId1 + "-label");
+                DS_INACTIVE, null, dsId1);
         final var ds2V1 = datastreamVersion(dsId2, true, false, MANAGED, "text/plain", "goodbye",
-                DS_DELETED, null, dsId2 + "-label");
+                DS_DELETED, null, dsId2);
 
         final var ds2V2 = datastreamVersion(dsId2, false, true, MANAGED, "text/plain", "fedora",
-                DS_DELETED, null, dsId2 + "-label");
+                DS_DELETED, null, dsId2);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
@@ -529,12 +531,12 @@ public class ArchiveGroupHandlerTest {
         final var dsId2 = "ds4";
 
         final var ds1V1 = datastreamVersion(dsId1, true, true, MANAGED, "application/xml", "<h1>hello</h1>",
-                DS_INACTIVE, null, dsId1 + "-label");
+                DS_INACTIVE, null, dsId1);
         final var ds2V1 = datastreamVersion(dsId2, true, false, MANAGED, "text/plain", "goodbye",
-                DS_DELETED, null, dsId2 + "-label");
+                DS_DELETED, null, dsId2);
 
         final var ds2V2 = datastreamVersion(dsId2, false, true, MANAGED, "text/plain", "fedora",
-                DS_DELETED, null, dsId2 + "-label");
+                DS_DELETED, null, dsId2);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
@@ -717,10 +719,10 @@ public class ArchiveGroupHandlerTest {
 
         final var ds1V1 = datastreamVersion(dsId1, true, MANAGED, "application/xml", "<h1>hello</h1>", null);
         final var ds2V1 = datastreamVersion(dsId2, true, false, MANAGED, "text/plain", "goodbye",
-                DS_DELETED, null, dsId2 + "-label");
+                DS_DELETED, null, dsId2);
 
         final var ds2V2 = datastreamVersion(dsId2, false, true, MANAGED, "text/plain", "fedora",
-                DS_DELETED, null, dsId2 + "-label");
+                DS_DELETED, null, dsId2);
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
@@ -848,17 +850,17 @@ public class ArchiveGroupHandlerTest {
         verifyObjectHeaders(session, ocflObjectId);
 
         verifyBinary(contentToString(session, ocflObjectId, dsId1), ds1);
-        verifyHeaders(session, ocflObjectId, dsId1, ds1, "v1", "ds1-label.txt");
+        verifyHeaders(session, ocflObjectId, dsId1, ds1, "v1", "ds1.txt");
         verifyDescRdf(session, ocflObjectId, dsId1, ds1);
         verifyDescHeaders(session, ocflObjectId, dsId1);
 
         verifyBinary(contentToString(session, ocflObjectId, dsId2), ds2);
-        verifyHeaders(session, ocflObjectId, dsId2, ds2, "v1", "ds2-label.rdf");
+        verifyHeaders(session, ocflObjectId, dsId2, ds2, "v1", "ds2.rdf");
         verifyDescRdf(session, ocflObjectId, dsId2, ds2);
         verifyDescHeaders(session, ocflObjectId, dsId2);
 
         verifyBinary(contentToString(session, ocflObjectId, dsId3), ds3);
-        verifyHeaders(session, ocflObjectId, dsId3, ds3, "v1", "ds3-label.jpg");
+        verifyHeaders(session, ocflObjectId, dsId3, ds3, "v1", "ds3.jpg");
         verifyDescRdf(session, ocflObjectId, dsId3, ds3);
         verifyDescHeaders(session, ocflObjectId, dsId3);
     }
@@ -1021,7 +1023,7 @@ public class ArchiveGroupHandlerTest {
                                final String dsId,
                                final DatastreamVersion datastreamVersion,
                                final String versionNumber) {
-        verifyHeaders(session, ocflObjectId, dsId, datastreamVersion, versionNumber, dsId + "-label");
+        verifyHeaders(session, ocflObjectId, dsId, datastreamVersion, versionNumber, dsId);
     }
 
     private void verifyHeaders(final OcflObjectSession session,
@@ -1301,7 +1303,7 @@ public class ArchiveGroupHandlerTest {
                                                 final String content,
                                                 final String externalUrl) {
         return datastreamVersion(datastreamId, isFirst, false, controlGroup, mimeType,
-                content, DS_ACTIVE, externalUrl, datastreamId + "-label");
+                content, DS_ACTIVE, externalUrl, datastreamId );
     }
 
     private DatastreamVersion datastreamVersion(final String datastreamId,
@@ -1312,7 +1314,7 @@ public class ArchiveGroupHandlerTest {
                                                 final String content,
                                                 final String externalUrl) {
         return datastreamVersion(datastreamId, isFirst, isLast, controlGroup, mimeType,
-                                 content, DS_ACTIVE, externalUrl, datastreamId + "-label");
+                                 content, DS_ACTIVE, externalUrl, datastreamId );
     }
 
     private DatastreamVersion datastreamVersion(final String datastreamId,
