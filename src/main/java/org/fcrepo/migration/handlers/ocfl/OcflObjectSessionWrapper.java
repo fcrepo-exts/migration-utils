@@ -112,6 +112,18 @@ public class OcflObjectSessionWrapper implements OcflObjectSession {
     }
 
     @Override
+    public ResourceContent readRange(final String resourceId, final String versionNumber,
+                                     final long startPosition, final long endPosition) {
+        return readContentTimer.record(() -> inner.readRange(resourceId, versionNumber,
+                                                        startPosition, endPosition));
+    }
+
+    @Override
+    public ResourceContent readRange(final String resourceId, final long startPosition, final long endPosition) {
+        return readContentTimer.record(() -> inner.readRange(resourceId, null, startPosition, endPosition));
+    }
+
+    @Override
     public List<OcflVersionInfo> listVersions(final String resourceId) {
         return listVersionsTimer.record(() -> inner.listVersions(resourceId));
     }
