@@ -36,6 +36,7 @@ jobs:
     - name: Build with Maven
       run: mvn -B -U clean install org.jacoco:jacoco-maven-plugin:0.8.12:report
     - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest'
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
