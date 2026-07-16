@@ -68,4 +68,23 @@ public class UserProvidedPidListManagerTest {
         Assert.assertFalse("'bad' should NOT be accepted", manager.accept("bad"));
         Assert.assertFalse("'junk' should NOT be accepted", manager.accept("junk"));
     }
+
+    @Test
+    public void finishedProcessingAllPids() {
+        Assert.assertFalse("not finished before processing", manager.finishedProcessingAllPids());
+        pidList.forEach(pid -> manager.accept(pid));
+        Assert.assertTrue("finished once every pid is processed", manager.finishedProcessingAllPids());
+    }
+
+    @Test
+    public void acceptAllNeverFinishes() {
+        final UserProvidedPidListManager acceptAll = new UserProvidedPidListManager(null);
+        acceptAll.accept("pid:1");
+        Assert.assertFalse("accept-all mode has no completion state", acceptAll.finishedProcessingAllPids());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void missingFileThrows() {
+        new UserProvidedPidListManager(new File("does-not-exist-98765.txt"));
+    }
 }
