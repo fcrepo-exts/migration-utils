@@ -25,7 +25,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * Unit tests for {@link Migrator#run()} covering limit handling, pid filtering
  * and error handling behaviour.
  *
- * @author Claude
+ * @author Dan Field
  */
 @RunWith(MockitoJUnitRunner.class)
 public class MigratorTest {

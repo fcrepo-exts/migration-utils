@@ -19,7 +19,7 @@ import org.junit.rules.TemporaryFolder;
 /**
  * Covers the {@code setFileFilter} configuration hooks of the directory-based object sources.
  *
- * @author Claude
+ * @author Dan Field
  */
 public class ObjectSourceFileFilterTest {
 

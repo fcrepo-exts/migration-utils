@@ -16,7 +16,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * @author Claude
+ * @author Dan Field
  */
 @RunWith(MockitoJUnitRunner.class)
 public class SelfReferencingURLMapperTest {

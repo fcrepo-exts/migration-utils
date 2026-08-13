@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 
 /**
- * @author Claude
+ * @author Dan Field
  */
 public class CountingInputStreamTest {
 

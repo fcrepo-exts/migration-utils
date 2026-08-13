@@ -20,7 +20,7 @@ import org.junit.rules.TemporaryFolder;
  * Exercises the shared indexing and lookup behaviour of {@link DirectoryScanningIDResolver}
  * via a concrete subclass.
  *
- * @author Claude
+ * @author Dan Field
  */
 public class DirectoryScanningIDResolverTest {
 

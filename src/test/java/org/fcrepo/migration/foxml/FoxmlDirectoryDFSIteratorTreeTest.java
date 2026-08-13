@@ -22,7 +22,7 @@ import org.junit.rules.TemporaryFolder;
  * Exercises the depth-first traversal of {@link FoxmlDirectoryDFSIterator} over a real
  * directory tree.
  *
- * @author Claude
+ * @author Dan Field
  */
 public class FoxmlDirectoryDFSIteratorTreeTest {
 

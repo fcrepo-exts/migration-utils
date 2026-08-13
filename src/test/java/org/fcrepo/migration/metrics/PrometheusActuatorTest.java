@@ -30,7 +30,7 @@ import io.micrometer.core.instrument.Timer;
 import org.junit.Test;
 
 /**
- * @author Claude
+ * @author Dan Field
  */
 public class PrometheusActuatorTest {
 

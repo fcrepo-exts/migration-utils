@@ -29,7 +29,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * Directly exercises the {@link ObjectReference} and {@link ObjectVersionReference}
  * views produced by {@link ObjectAbstractionStreamingFedoraObjectHandler}.
  *
- * @author Claude
+ * @author Dan Field
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ObjectAbstractionStreamingFedoraObjectHandlerTest {

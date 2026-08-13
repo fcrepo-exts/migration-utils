@@ -42,7 +42,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 /**
  * Verifies that {@link OcflObjectSessionWrapper} delegates every operation to the wrapped session.
  *
- * @author Claude
+ * @author Dan Field
  */
 @RunWith(MockitoJUnitRunner.class)
 public class OcflObjectSessionWrapperTest {

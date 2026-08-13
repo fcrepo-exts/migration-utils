@@ -22,7 +22,7 @@ import org.junit.rules.TemporaryFolder;
  * Drives {@link PicocliMigrator#main(String[])} through failure paths to exercise the
  * command wiring, converter and execution exception handler.
  *
- * @author Claude
+ * @author Dan Field
  */
 public class PicocliMigratorTest {
 

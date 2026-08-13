@@ -24,7 +24,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * Exercises every callback of the console logging handler to ensure the
  * (side-effect only) logging paths run without error.
  *
- * @author Claude
+ * @author Dan Field
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ConsoleLoggingStreamingFedoraObjectHandlerTest {

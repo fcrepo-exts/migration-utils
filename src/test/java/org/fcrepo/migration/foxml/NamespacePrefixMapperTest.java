@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * @author Claude
+ * @author Dan Field
  */
 public class NamespacePrefixMapperTest {
 

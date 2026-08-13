@@ -17,7 +17,7 @@ import org.junit.rules.TemporaryFolder;
  * Covers the constructor validation and the resume-state mismatch handling of
  * {@link ResumePidListManager}.
  *
- * @author Claude
+ * @author Dan Field
  */
 public class ResumePidListManagerResumeTest {
 
