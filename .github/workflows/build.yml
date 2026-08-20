@@ -36,10 +36,10 @@ jobs:
     - name: Build with Maven
       run: mvn -B -U clean install
     - name: Upload coverage to Codecov
-      if: matrix.os == 'ubuntu-latest'
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+        flags: ${{ matrix.os }}
   deploy:
     if: github.ref == 'refs/heads/main'
     needs: [build]
