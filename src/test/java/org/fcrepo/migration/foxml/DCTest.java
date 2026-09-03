@@ -44,6 +44,14 @@ public class DCTest {
         }
     }
 
+    @Test(expected = RuntimeException.class)
+    public void testUnknownUriThrows() {
+        dcSample1.getValuesForURI(DC.DC_NS + "notADcElement");
+    }
 
+    @Test
+    public void testNullFieldReturnsNull() {
+        Assert.assertNull(new DC().getValuesForURI(DC.DC_NS + "title"));
+    }
 
 }

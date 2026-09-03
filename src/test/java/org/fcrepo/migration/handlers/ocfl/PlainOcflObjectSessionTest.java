@@ -35,10 +35,16 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -153,6 +159,138 @@ public class PlainOcflObjectSessionTest {
         session.abort();
 
         assertTrue(Files.notExists(staging.resolve(session.sessionId())));
+    }
+
+    @Test
+    public void identifiersAreExposed() {
+        final var session = newSession();
+        assertEquals(AG_ID, session.ocflObjectId());
+        assertTrue(session.isOpen());
+    }
+
+    @Test
+    public void invalidateCacheAndCloseAreSupported() {
+        final var session = newSession();
+        session.invalidateCache(AG_ID);
+        session.close();
+        assertFalse(session.isOpen());
+    }
+
+    @Test
+    public void unsupportedOperationsThrow() {
+        final var session = newSession();
+        assertThrows(UnsupportedOperationException.class, () -> session.writeHeaders(null));
+        assertThrows(UnsupportedOperationException.class, () -> session.deleteResource("x"));
+        assertThrows(UnsupportedOperationException.class, () -> session.readHeaders("x"));
+        assertThrows(UnsupportedOperationException.class, () -> session.readHeaders("x", "v1"));
+        assertThrows(UnsupportedOperationException.class, () -> session.readContent("x"));
+        assertThrows(UnsupportedOperationException.class, () -> session.readContent("x", "v1"));
+        assertThrows(UnsupportedOperationException.class, () -> session.readRange("x", "v1", 0L, 1L));
+        assertThrows(UnsupportedOperationException.class, () -> session.readRange("x", 0L, 1L));
+        assertThrows(UnsupportedOperationException.class, () -> session.listVersions("x"));
+        assertThrows(UnsupportedOperationException.class, () -> session.streamResourceHeaders());
+        assertThrows(UnsupportedOperationException.class, () -> session.commitType(null));
+        assertThrows(UnsupportedOperationException.class, session::rollback);
+    }
+
+    @Test
+    public void containsResourceReflectsRepository() {
+        final var probe = newSession();
+        assertFalse(probe.containsResource(AG_ID));
+        probe.abort();
+
+        final var session = newSession();
+        write(binary(AG_ID + "/bar", "test"), session);
+        session.commit();
+
+        assertTrue(newSession().containsResource(AG_ID));
+    }
+
+    @Test
+    public void writeAfterCommitThrows() {
+        final var session = newSession();
+        write(binary(AG_ID + "/bar", "test"), session);
+        session.commit();
+
+        assertThrows(IllegalStateException.class,
+                () -> write(binary(AG_ID + "/bar", "again"), session));
+    }
+
+    @Test
+    public void aclInteractionModelIsUnsupported() {
+        final var headers = headers(AG_ID + "/acl");
+        headers.withInteractionModel(InteractionModel.ACL.getUri());
+        final var session = newSession();
+        assertThrows(UnsupportedOperationException.class,
+                () -> session.writeResource(headers.build(), null));
+    }
+
+    @Test
+    public void missingInteractionModelThrows() {
+        final var headers = headers(AG_ID + "/none");
+        final var session = newSession();
+        assertThrows(IllegalArgumentException.class,
+                () -> session.writeResource(headers.build(), null));
+    }
+
+    @Test
+    public void versionMetadataIsPersisted() {
+        final var session = newSession();
+        session.versionAuthor("Migrator", "info:fedora/migrator");
+        session.versionMessage("initial migration");
+        write(binary(AG_ID + "/bar", "test"), session);
+        session.commit();
+
+        final var versionInfo = ocflRepo.describeVersion(ObjectVersionId.head(AG_ID)).getVersionInfo();
+        assertEquals("initial migration", versionInfo.getMessage());
+        assertEquals("Migrator", versionInfo.getUser().getName());
+    }
+
+    @Test
+    public void writeWithValidChecksumRegistersFixity() throws Exception {
+        final var dsId = "bar";
+        final var resourceId = AG_ID + "/" + dsId;
+        final var value = "checksummed";
+        final var digest = sha512Hex(value);
+
+        final var headers = headers(resourceId);
+        headers.withInteractionModel(InteractionModel.NON_RDF.getUri());
+        headers.withDigests(List.of(URI.create("urn:sha-512:" + digest)));
+        final var content = new ResourceContent(IOUtils.toInputStream(value), headers.build());
+
+        final var session = newSession();
+        write(content, session);
+        session.commit();
+
+        assertEquals(value,
+                IOUtils.toString(ocflRepo.getObject(ObjectVersionId.head(AG_ID)).getFile(dsId).getStream()));
+    }
+
+    @Test
+    public void deleteContentFileRemovesFileOnCommit() {
+        final var dsId = "bar";
+        final var writeSession = newSession();
+        write(binary(AG_ID + "/" + dsId, "test"), writeSession);
+        writeSession.commit();
+        assertTrue(ocflRepo.getObject(ObjectVersionId.head(AG_ID)).containsFile(dsId));
+
+        final var deleteHeaders = headers(AG_ID + "/" + dsId);
+        deleteHeaders.withInteractionModel(InteractionModel.NON_RDF.getUri());
+        final var deleteSession = newSession();
+        deleteSession.deleteContentFile(deleteHeaders.build());
+        deleteSession.commit();
+
+        assertFalse(ocflRepo.getObject(ObjectVersionId.head(AG_ID)).containsFile(dsId));
+    }
+
+    private static String sha512Hex(final String value) throws NoSuchAlgorithmException {
+        final var digest = MessageDigest.getInstance("SHA-512");
+        final var bytes = digest.digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        final var sb = new StringBuilder();
+        for (final byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     private void write(final ResourceContent content, final OcflObjectSession session) {

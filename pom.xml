@@ -326,6 +326,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M3</version>
         <configuration>
+          <argLine>@{argLine} -Xms512m -Xmx1024m</argLine>
           <systemPropertyVariables>
             <test.output.dir>${project.build.directory}</test.output.dir>
           </systemPropertyVariables>
@@ -334,6 +335,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <argLine>@{failsafeArgLine} -Xms512m -Xmx1024m</argLine>
+        </configuration>
         <executions>
           <execution>
             <id>perform-it</id>
@@ -395,9 +399,33 @@
             <goals><goal>prepare-agent</goal></goals>
           </execution>
           <execution>
+            <id>prepare-agent-integration</id>
+            <goals><goal>prepare-agent-integration</goal></goals>
+            <configuration>
+              <propertyName>failsafeArgLine</propertyName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>merge-results</id>
+            <phase>post-integration-test</phase>
+            <goals><goal>merge</goal></goals>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.build.directory}</directory>
+                  <includes><include>*.exec</include></includes>
+                </fileSet>
+              </fileSets>
+              <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+            </configuration>
+          </execution>
+          <execution>
             <id>jacoco-report</id>
-            <phase>prepare-package</phase>
+            <phase>verify</phase>
             <goals><goal>report</goal></goals>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+            </configuration>
           </execution>
         </executions>
       </plugin>
