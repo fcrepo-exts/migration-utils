@@ -43,7 +43,7 @@ General usage of the migration utils CLI is as follows:
 
 ```java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar [various options | --help]```
 
-*Note that the migration utility will only run under Java 11+.*  
+*Note that the migration utility will only run under Java 21+.*  
 
 The following CLI options for specifying details of a given migration are available:
 ```
@@ -221,7 +221,7 @@ java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=legacy 
 
 ### Development
 
-The migration-utils software is built with [Maven 3](https://maven.apache.org) and requires Java 11 and Maven 3.1+.
+The migration-utils software is built with [Maven 3](https://maven.apache.org) and requires Java 21 and Maven 3.1+.
 ```bash
 mvn clean install
 ```
