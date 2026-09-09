@@ -41,7 +41,7 @@ Background work
 
 General usage of the migration utils CLI is as follows:
 
-```java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar [various options | --help]```
+```java -jar target/migration-utils-7.0.0-SNAPSHOT-driver.jar [various options | --help]```
 
 *Note that the migration utility will only run under Java 21+.*  
 
@@ -152,11 +152,11 @@ history of a Fedora 3 object to a single version. This is currently not compatib
 Run a minimal fedora 6 migration from fedora3 legacy foxml
 
 ```shell
-java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=legacy --limit=100 --target-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams
+java -jar target/migration-utils-7.0.0-SNAPSHOT-driver.jar --source-type=legacy --limit=100 --target-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams
 ```
 Run a minimal fedora 6 migration from a fedora3 archival export
 ```shell
-java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=exported --limit=100 --target-dir=target/test/ocfl --exported-dir=src/test/resources/exported
+java -jar target/migration-utils-7.0.0-SNAPSHOT-driver.jar --source-type=exported --limit=100 --target-dir=target/test/ocfl --exported-dir=src/test/resources/exported
 
 ```
 
@@ -170,7 +170,7 @@ migration-utils is running.
 To get setup, follow the directions from the [Migration Utils Metrics](https://wiki.lyrasis.org/display/FEDORA6x/Migration+Utils+Metrics)
 documentation and run a Fedora 6 migration with metrics enabled:
 ```shell
-java -jar target/migration-utils-6.0.0-SNAPSHOT-driver.jar --source-type=legacy --target-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams --enable-metrics
+java -jar target/migration-utils-7.0.0-SNAPSHOT-driver.jar --source-type=legacy --target-dir=target/test/ocfl --objects-dir=src/test/resources/legacyFS/objects --datastreams-dir=src/test/resources/legacyFS/datastreams --enable-metrics
 ```
 
 ## Property Mappings
