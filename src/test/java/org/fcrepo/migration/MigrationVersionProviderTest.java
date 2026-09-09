@@ -17,16 +17,23 @@ import org.junit.Test;
 public class MigrationVersionProviderTest {
 
     @Test
-    public void shouldReportTheImplementationVersionFromTheManifest() {
-        final var expected = MigrationVersionProvider.class.getPackage().getImplementationVersion();
+    public void shouldReportTheVersionSuppliedByTheManifest() {
+        assertEquals("Migration Utils - 7.0.0", MigrationVersionProvider.describe("7.0.0"));
+    }
+
+    @Test
+    public void shouldFallBackWhenTheManifestSuppliesNoVersion() {
+        // The manifest is absent when running from a classes directory rather than a packaged jar.
+        assertEquals("Migration Utils - " + MigrationVersionProvider.UNKNOWN_VERSION,
+                MigrationVersionProvider.describe(null));
+    }
+
+    @Test
+    public void shouldReportASingleVersionLine() {
         final var version = new MigrationVersionProvider().getVersion();
 
         assertEquals(1, version.length);
-        if (expected == null) {
-            // The tests run against target/classes, where there is no manifest to read.
-            assertEquals("Migration Utils - " + MigrationVersionProvider.UNKNOWN_VERSION, version[0]);
-        } else {
-            assertEquals("Migration Utils - " + expected, version[0]);
-        }
+        assertEquals(MigrationVersionProvider.describe(
+                MigrationVersionProvider.class.getPackage().getImplementationVersion()), version[0]);
     }
 }

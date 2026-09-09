@@ -25,11 +25,17 @@ public class MigrationVersionProvider implements IVersionProvider {
 
     @Override
     public String[] getVersion() {
-        return new String[] {"Migration Utils - " + version()};
+        return new String[] {describe(MigrationVersionProvider.class.getPackage().getImplementationVersion())};
     }
 
-    private String version() {
-        final String version = MigrationVersionProvider.class.getPackage().getImplementationVersion();
-        return version == null ? UNKNOWN_VERSION : version;
+    /**
+     * Formats the version for display, substituting a placeholder when the manifest did not
+     * supply one. Separated from the manifest lookup so that both outcomes can be tested.
+     *
+     * @param implementationVersion the manifest's Implementation-Version, or null if unavailable
+     * @return the string reported by the version option
+     */
+    static String describe(final String implementationVersion) {
+        return "Migration Utils - " + (implementationVersion == null ? UNKNOWN_VERSION : implementationVersion);
     }
 }
