@@ -16,6 +16,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
@@ -123,14 +124,16 @@ public abstract class DirectoryScanningIDResolver implements InternalIDResolver 
     public CachedContent resolveInternalID(final String id) {
         try {
             final TopDocs result = searcher.search(new TermQuery(new Term("id", id)), 2);
-            if (result.totalHits == 1) {
-                return new FileCachedContent(new File(searcher.doc(result.scoreDocs[0].doc).get("path")));
-            } else if (result.totalHits < 1) {
+            final StoredFields storedFields = searcher.storedFields();
+            final long totalHits = result.totalHits.value();
+            if (totalHits == 1) {
+                return new FileCachedContent(new File(storedFields.document(result.scoreDocs[0].doc).get("path")));
+            } else if (totalHits < 1) {
                 throw new RuntimeException("Unable to resolve internal ID \"" + id + "\"!");
             } else {
-                throw new IllegalStateException(result.totalHits + " files matched the internal id \"" + id + "\".  ("
-                        + searcher.doc(result.scoreDocs[0].doc).get("path") + ", "
-                        + searcher.doc(result.scoreDocs[1].doc).get("path") + "...)");
+                throw new IllegalStateException(totalHits + " files matched the internal id \"" + id + "\".  ("
+                        + storedFields.document(result.scoreDocs[0].doc).get("path") + ", "
+                        + storedFields.document(result.scoreDocs[1].doc).get("path") + "...)");
             }
         } catch (final IOException e) {
             throw new RuntimeException(e);

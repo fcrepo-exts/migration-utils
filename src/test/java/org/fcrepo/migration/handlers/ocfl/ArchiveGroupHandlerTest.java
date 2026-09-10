@@ -916,6 +916,29 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
+    public void shouldDetectMimeTypeWhenTheDatastreamDoesNotDeclareOne() throws IOException {
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
+
+        final var pid = "obj1";
+        final var dsId = "ds1.txt";
+
+        // A blank mime type sends resolveMimeType() to Tika, which falls back to the datastream id
+        // as the resource name when the content itself is not conclusive.
+        final var ds = datastreamVersion(dsId, true, MANAGED, "", "hello", null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, List.of(ds))
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
+
+        try (final var content = session.readContent(resourceId(ocflObjectId, dsId))) {
+            assertEquals("text/plain", content.getHeaders().getMimeType());
+        }
+    }
+
+    @Test
     public void processObjectSingleVersionF6FormatWithExternalBinary() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 

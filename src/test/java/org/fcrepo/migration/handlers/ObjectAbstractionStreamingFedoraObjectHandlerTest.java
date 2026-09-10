@@ -99,7 +99,7 @@ public class ObjectAbstractionStreamingFedoraObjectHandlerTest {
         handler.processDatastreamVersion(ds1);
         handler.abortObject(objectInfo);
 
-        Mockito.verifyZeroInteractions(versionHandler);
+        Mockito.verifyNoInteractions(versionHandler);
     }
 
     private DatastreamVersion datastreamVersion(final String dsId, final String versionId,
