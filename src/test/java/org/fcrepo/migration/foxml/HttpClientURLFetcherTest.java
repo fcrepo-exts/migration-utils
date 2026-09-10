@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThrows;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import com.sun.net.httpserver.HttpServer;
@@ -66,12 +67,13 @@ public class HttpClientURLFetcherTest {
     }
 
     @Test
-    public void shouldReleaseTheResponseWhenTheContentCannotBeRead() {
-        // A 204 carries no entity, so the fetch fails after the response has been opened.
-        assertThrows(Exception.class, () -> fetcher.getContentAtUrl(url("/empty")));
+    public void shouldFailWithAnIOExceptionWhenTheResponseHasNoContent() throws IOException {
+        // A 204 carries no entity, so there is no stream to hand back to the caller.
+        final var e = assertThrows(IOException.class, () -> fetcher.getContentAtUrl(url("/empty")));
+        assertEquals("No content returned from " + url("/empty"), e.getMessage());
     }
 
-    private java.net.URL url(final String path) throws IOException {
+    private URL url(final String path) throws IOException {
         return URI.create("http://localhost:" + server.getAddress().getPort() + path).toURL();
     }
 }

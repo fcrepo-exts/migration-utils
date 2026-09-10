@@ -15,6 +15,7 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
 /**
  *
  * @author mdurbin
@@ -37,7 +38,11 @@ public class HttpClientURLFetcher implements URLFetcher {
         // stream takes ownership of the response and closes it when the stream itself is closed.
         final ClassicHttpResponse response = httpClient.executeOpen(null, new HttpGet(String.valueOf(url)), null);
         try {
-            return new FilterInputStream(response.getEntity().getContent()) {
+            final HttpEntity entity = response.getEntity();
+            if (entity == null) {
+                throw new IOException("No content returned from " + url);
+            }
+            return new FilterInputStream(entity.getContent()) {
                 @Override
                 public void close() throws IOException {
                     try {
