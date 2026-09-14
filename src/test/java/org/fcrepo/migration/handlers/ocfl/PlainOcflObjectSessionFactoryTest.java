@@ -16,6 +16,8 @@
 
 package org.fcrepo.migration.handlers.ocfl;
 
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 import io.ocfl.api.MutableOcflRepository;
 import io.ocfl.core.OcflRepositoryBuilder;
 import io.ocfl.core.extension.storage.layout.config.HashedNTupleLayoutConfig;
@@ -23,23 +25,21 @@ import io.ocfl.core.path.mapper.LogicalPathMappers;
 import io.ocfl.core.storage.OcflStorageBuilder;
 import org.apache.commons.lang3.SystemUtils;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * @author pwinckles
  */
 public class PlainOcflObjectSessionFactoryTest {
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public Path tempDir;
 
     private Path ocflRoot;
     private Path staging;
@@ -47,10 +47,10 @@ public class PlainOcflObjectSessionFactoryTest {
     private MutableOcflRepository ocflRepo;
     private OcflObjectSessionFactory sessionFactory;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
-        ocflRoot = tempDir.newFolder("ocfl").toPath();
-        staging = tempDir.newFolder("staging").toPath();
+        ocflRoot = Files.createDirectory(tempDir.resolve("ocfl"));
+        staging = Files.createDirectory(tempDir.resolve("staging"));
 
         final var logicalPathMapper = SystemUtils.IS_OS_WINDOWS ?
                 LogicalPathMappers.percentEncodingWindowsMapper() : LogicalPathMappers.percentEncodingLinuxMapper();
@@ -73,5 +73,4 @@ public class PlainOcflObjectSessionFactoryTest {
 
         assertNotEquals(session1.sessionId(), session2.sessionId());
     }
-
 }

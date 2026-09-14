@@ -6,9 +6,9 @@
  */
 package org.fcrepo.migration.pidlist;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -31,7 +31,7 @@ public class UserProvidedPidListManagerTest {
 
     private File pidListFile;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         // Test PIDs
         pidList = Arrays.asList("pid:1", "pid:2", "pid:3", "pid:4");
@@ -53,38 +53,39 @@ public class UserProvidedPidListManagerTest {
 
     @Test
     public void accept() {
-        pidList.forEach(pid -> Assert.assertTrue(pid + " should be accepted", manager.accept(pid)));
+        pidList.forEach(pid -> Assertions.assertTrue(manager.accept(pid), pid + " should be accepted"));
     }
 
     @Test
     public void acceptAll() {
         manager = new UserProvidedPidListManager(null);
-        pidList.forEach(pid -> Assert.assertTrue(pid + " should be accepted", manager.accept(pid)));
+        pidList.forEach(pid -> Assertions.assertTrue(manager.accept(pid), pid + " should be accepted"));
     }
 
 
     @Test
     public void acceptNotFound() {
-        Assert.assertFalse("'bad' should NOT be accepted", manager.accept("bad"));
-        Assert.assertFalse("'junk' should NOT be accepted", manager.accept("junk"));
+        Assertions.assertFalse(manager.accept("bad"), "'bad' should NOT be accepted");
+        Assertions.assertFalse(manager.accept("junk"), "'junk' should NOT be accepted");
     }
 
     @Test
     public void finishedProcessingAllPids() {
-        Assert.assertFalse("not finished before processing", manager.finishedProcessingAllPids());
+        Assertions.assertFalse(manager.finishedProcessingAllPids(), "not finished before processing");
         pidList.forEach(pid -> manager.accept(pid));
-        Assert.assertTrue("finished once every pid is processed", manager.finishedProcessingAllPids());
+        Assertions.assertTrue(manager.finishedProcessingAllPids(), "finished once every pid is processed");
     }
 
     @Test
     public void acceptAllNeverFinishes() {
         final UserProvidedPidListManager acceptAll = new UserProvidedPidListManager(null);
         acceptAll.accept("pid:1");
-        Assert.assertFalse("accept-all mode has no completion state", acceptAll.finishedProcessingAllPids());
+        Assertions.assertFalse(acceptAll.finishedProcessingAllPids(), "accept-all mode has no completion state");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingFileThrows() {
-        new UserProvidedPidListManager(new File("does-not-exist-98765.txt"));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> new UserProvidedPidListManager(new File("does-not-exist-98765.txt")));
     }
 }

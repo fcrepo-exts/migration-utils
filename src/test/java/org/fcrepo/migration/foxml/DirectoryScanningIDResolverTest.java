@@ -5,15 +5,16 @@
  */
 package org.fcrepo.migration.foxml;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Exercises the shared indexing and lookup behaviour of {@link DirectoryScanningIDResolver}
@@ -23,8 +24,8 @@ import org.junit.rules.TemporaryFolder;
  */
 public class DirectoryScanningIDResolverTest {
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public Path tempDir;
 
     /**
      * Resolver that treats each file's name as its internal id.
@@ -55,7 +56,7 @@ public class DirectoryScanningIDResolverTest {
     }
 
     private File datastreamTree() throws IOException {
-        final File dsRoot = tempDir.newFolder("datastreams");
+        final File dsRoot = Files.createDirectory(tempDir.resolve("datastreams")).toFile();
         final File sub = new File(dsRoot, "sub");
         sub.mkdir();
         new File(sub, "fileA").createNewFile();
@@ -77,7 +78,7 @@ public class DirectoryScanningIDResolverTest {
 
     @Test
     public void ambiguousIdThrows() throws IOException {
-        final File indexDir = tempDir.newFolder("index-dup");
+        final File indexDir = Files.createDirectory(tempDir.resolve("index-dup")).toFile();
         final ConstantResolver resolver = new ConstantResolver(indexDir, datastreamTree());
         try {
             assertThrows(IllegalStateException.class, () -> resolver.resolveInternalID("dup"));
@@ -88,7 +89,7 @@ public class DirectoryScanningIDResolverTest {
 
     @Test
     public void reusesExistingIndex() throws IOException {
-        final File indexDir = tempDir.newFolder("index-cache");
+        final File indexDir = Files.createDirectory(tempDir.resolve("index-cache")).toFile();
         final File dsRoot = datastreamTree();
 
         final NameResolver first = new NameResolver(indexDir, dsRoot);

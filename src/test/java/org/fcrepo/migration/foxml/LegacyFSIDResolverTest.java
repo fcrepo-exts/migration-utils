@@ -7,10 +7,10 @@
 package org.fcrepo.migration.foxml;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class LegacyFSIDResolverTest {
 
     private File tempDir;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         tempDir = File.createTempFile("tempfile", "basedir");
         tempDir.delete();
@@ -35,10 +35,11 @@ public class LegacyFSIDResolverTest {
 
     @Test
     public void testIDMapping() throws UnsupportedEncodingException {
-        Assert.assertEquals("example:1+DS2+DS2.0", idResolver.getInternalIdForFile(new File("example_1+DS2+DS2.0")));
+        Assertions.assertEquals("example:1+DS2+DS2.0",
+                idResolver.getInternalIdForFile(new File("example_1+DS2+DS2.0")));
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws IOException {
         FileUtils.deleteDirectory(tempDir);
     }

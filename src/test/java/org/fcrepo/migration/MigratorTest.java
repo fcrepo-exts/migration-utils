@@ -5,6 +5,8 @@
  */
 package org.fcrepo.migration;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -13,12 +15,12 @@ import javax.xml.stream.XMLStreamException;
 
 import org.fcrepo.migration.pidlist.ResumePidListManager;
 import org.fcrepo.migration.pidlist.UserProvidedPidListManager;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link Migrator#run()} covering limit handling, pid filtering
@@ -26,7 +28,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  *
  * @author Dan Field
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MigratorTest {
 
     @Mock
@@ -43,7 +45,7 @@ public class MigratorTest {
 
     private Migrator migrator;
 
-    @Before
+    @BeforeEach
     public void setup() {
         migrator = new Migrator();
         migrator.setHandler(handler);
@@ -113,13 +115,13 @@ public class MigratorTest {
         Mockito.verify(p2).processObject(handler);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void processingFailureThrowsWhenNotContinuing() throws Exception {
         final var p1 = processor("obj:1");
         Mockito.doThrow(new XMLStreamException("boom")).when(p1).processObject(handler);
         sourceReturns(p1);
 
-        migrator.run();
+        assertThrows(RuntimeException.class, migrator::run);
     }
 
     @Test
@@ -136,7 +138,7 @@ public class MigratorTest {
         Mockito.verify(iterator, Mockito.times(2)).hasNext();
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void unreadableObjectThrowsWhenNotContinuing() throws Exception {
         @SuppressWarnings("unchecked")
         final Iterator<FedoraObjectProcessor> iterator = Mockito.mock(Iterator.class);
@@ -144,7 +146,7 @@ public class MigratorTest {
         Mockito.when(iterator.next()).thenThrow(new RuntimeException("unreadable"));
         Mockito.when(source.iterator()).thenReturn(iterator);
 
-        migrator.run();
+        assertThrows(RuntimeException.class, migrator::run);
     }
 
     @Test

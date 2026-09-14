@@ -6,8 +6,8 @@
  */
 package org.fcrepo.migration.foxml;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -39,7 +39,7 @@ public class AkubraFSIDResolverIT {
         resolver = new AkubraFSIDResolver(indexDir, dsRoot);
 
         final File[] files = indexDir.listFiles();
-        Assert.assertTrue("There should be index files in the previously empty dir", files.length > 0);
+        Assertions.assertTrue(files.length > 0, "There should be index files in the previously empty dir");
     }
 
 }

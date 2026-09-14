@@ -6,12 +6,14 @@
  */
 package org.fcrepo.migration;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.IOException;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -26,7 +28,7 @@ public class ExportedArchiveFoxmlMigratorTest extends Example1TestSuite {
 
     private static DummyURLFetcher fetcher;
 
-    @Before
+    @BeforeEach
     public synchronized void processFoxml() throws XMLStreamException, IOException {
         if (getResult() == null) {
             final ConfigurableApplicationContext context =
@@ -49,8 +51,9 @@ public class ExportedArchiveFoxmlMigratorTest extends Example1TestSuite {
         return fetcher;
     }
 
-    @Test (expected = IllegalStateException.class)
+    @Test
     public void testTempFileRemoval() throws IOException {
-        getResult().dsVersions.get(4).getContent();
+        assertThrows(IllegalStateException.class, () ->
+            getResult().dsVersions.get(4).getContent());
     }
 }

@@ -5,15 +5,16 @@
  */
 package org.fcrepo.migration.foxml;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.filefilter.RegexFileFilter;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Covers the {@code setFileFilter} configuration hooks of the directory-based object sources.
@@ -22,15 +23,16 @@ import org.junit.rules.TemporaryFolder;
  */
 public class ObjectSourceFileFilterTest {
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public Path tempDir;
 
     private static final RegexFileFilter FILTER = new RegexFileFilter(Pattern.compile(".*"));
 
     @Test
     public void nativeSourceAcceptsFileFilter() throws IOException {
         final var source =
-                new NativeFoxmlDirectoryObjectSource(tempDir.newFolder("native"), null, "localhost:8080");
+                new NativeFoxmlDirectoryObjectSource(
+                        Files.createDirectory(tempDir.resolve("native")).toFile(), null, "localhost:8080");
         source.setFileFilter(FILTER);
         assertNotNull(source);
     }
@@ -38,7 +40,8 @@ public class ObjectSourceFileFilterTest {
     @Test
     public void exportedSourceAcceptsFileFilter() throws IOException {
         final var source =
-                new ArchiveExportedFoxmlDirectoryObjectSource(tempDir.newFolder("exported"), "localhost:8080");
+                new ArchiveExportedFoxmlDirectoryObjectSource(
+                        Files.createDirectory(tempDir.resolve("exported")).toFile(), "localhost:8080");
         source.setFileFilter(FILTER);
         assertNotNull(source);
     }

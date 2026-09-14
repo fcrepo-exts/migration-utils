@@ -12,12 +12,12 @@ import org.fcrepo.migration.DatastreamVersion;
 import org.fcrepo.migration.ObjectInfo;
 import org.fcrepo.migration.ObjectProperties;
 import org.fcrepo.migration.ObjectProperty;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Exercises every callback of the console logging handler to ensure the
@@ -25,7 +25,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  *
  * @author Dan Field
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ConsoleLoggingStreamingFedoraObjectHandlerTest {
 
     @Mock
@@ -45,7 +45,7 @@ public class ConsoleLoggingStreamingFedoraObjectHandlerTest {
 
     private ConsoleLoggingStreamingFedoraObjectHandler handler;
 
-    @Before
+    @BeforeEach
     public void setup() {
         handler = new ConsoleLoggingStreamingFedoraObjectHandler();
         Mockito.when(objectInfo.getPid()).thenReturn("object:1");

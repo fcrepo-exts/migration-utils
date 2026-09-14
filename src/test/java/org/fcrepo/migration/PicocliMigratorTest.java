@@ -5,17 +5,16 @@
  */
 package org.fcrepo.migration;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Drives {@link PicocliMigrator#main(String[])} through failure paths to exercise the
@@ -25,20 +24,20 @@ import org.junit.rules.TemporaryFolder;
  */
 public class PicocliMigratorTest {
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public File tempDir;
 
     private PrintStream originalErr;
     private ByteArrayOutputStream err;
 
-    @Before
+    @BeforeEach
     public void captureErr() {
         originalErr = System.err;
         err = new ByteArrayOutputStream();
         System.setErr(new PrintStream(err, true, StandardCharsets.UTF_8));
     }
 
-    @After
+    @AfterEach
     public void restoreErr() {
         System.setErr(originalErr);
     }
@@ -51,7 +50,7 @@ public class PicocliMigratorTest {
     public void invalidAlgorithmIsHandledWithDebug() {
         PicocliMigrator.main(new String[] {
             "-t", "legacy",
-            "-a", tempDir.getRoot().getAbsolutePath(),
+            "-a", tempDir.getAbsolutePath(),
             "--algorithm", "not-an-algorithm",
             "--debug"
         });
@@ -63,7 +62,7 @@ public class PicocliMigratorTest {
     public void invalidAlgorithmIsHandledWithoutDebug() {
         PicocliMigrator.main(new String[] {
             "-t", "legacy",
-            "-a", tempDir.getRoot().getAbsolutePath(),
+            "-a", tempDir.getAbsolutePath(),
             "--algorithm", "not-an-algorithm"
         });
 
@@ -74,7 +73,7 @@ public class PicocliMigratorTest {
     public void unknownSourceTypeIsRejected() {
         PicocliMigrator.main(new String[] {
             "-t", "bogus",
-            "-a", tempDir.getRoot().getAbsolutePath()
+            "-a", tempDir.getAbsolutePath()
         });
 
         // The custom converter throws while parsing an unknown source type.

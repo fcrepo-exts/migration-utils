@@ -5,9 +5,9 @@
  */
 package org.fcrepo.migration;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Verifies that the version reported by the CLI is derived from the jar manifest.

@@ -6,7 +6,7 @@
  */
 package org.fcrepo.migration;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -22,7 +22,7 @@ public class LegacyFoxmlStorageMigratorTest extends Example1TestSuite {
 
     private static DummyURLFetcher fetcher;
 
-    @Before
+    @BeforeEach
     public synchronized void processFoxml() throws XMLStreamException, IOException {
         if (getResult() == null) {
             final ConfigurableApplicationContext context =

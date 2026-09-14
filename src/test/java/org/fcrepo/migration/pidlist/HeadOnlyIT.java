@@ -1,6 +1,6 @@
 package org.fcrepo.migration.pidlist;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.util.Map;
@@ -10,6 +10,7 @@ import javax.xml.stream.XMLStreamException;
 
 import io.ocfl.api.OcflRepository;
 import io.ocfl.api.model.DigestAlgorithm;
+
 import io.ocfl.api.DigestAlgorithmRegistry;
 import io.ocfl.api.model.FileDetails;
 import io.ocfl.api.model.ObjectDetails;
@@ -28,8 +29,8 @@ import org.fcrepo.migration.foxml.NativeFoxmlDirectoryObjectSource;
 import org.fcrepo.migration.handlers.ObjectAbstractionStreamingFedoraObjectHandler;
 import org.fcrepo.migration.handlers.ocfl.ArchiveGroupHandler;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Integration tests to test migration of head only datastream cases
@@ -55,7 +56,7 @@ public class HeadOnlyIT {
     private File staging;
     private File workingDir;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         // Create directories expected in this test
         storage = new File("target/test/ocfl/head-it/storage");

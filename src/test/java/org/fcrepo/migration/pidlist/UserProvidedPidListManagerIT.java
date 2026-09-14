@@ -18,10 +18,10 @@ package org.fcrepo.migration.pidlist;
 
 import org.apache.commons.io.FileUtils;
 import org.fcrepo.migration.Migrator;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -49,7 +49,7 @@ public class UserProvidedPidListManagerIT {
     private File staging;
     private File pidFile;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         // Create directories expected in this test (based on `spring/ocfl-user-it-setup.xml`)
         storage = new File("target/test/ocfl/user-it/storage");
@@ -73,7 +73,7 @@ public class UserProvidedPidListManagerIT {
         migrator = (Migrator) context.getBean("migrator");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         context.close();
     }
@@ -96,7 +96,7 @@ public class UserProvidedPidListManagerIT {
         migrator.setUserProvidedPidListManager(manager);
         migrator.run();
 
-        Assert.assertEquals(3, countDirectories(storage.toPath())) ;
+        Assertions.assertEquals(3, countDirectories(storage.toPath())) ;
     }
 
     @Test
@@ -114,7 +114,7 @@ public class UserProvidedPidListManagerIT {
         migrator.run();
         context.close();
 
-        Assert.assertEquals(2, countDirectories(storage.toPath()));
+        Assertions.assertEquals(2, countDirectories(storage.toPath()));
     }
 
     private long countDirectories(final Path path) {

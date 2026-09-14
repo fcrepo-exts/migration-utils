@@ -7,8 +7,8 @@ package org.fcrepo.migration.foxml;
 
 import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -18,9 +18,9 @@ import java.nio.charset.StandardCharsets;
 
 import com.sun.net.httpserver.HttpServer;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Exercises {@link HttpClientURLFetcher} against a local HTTP server.
@@ -34,7 +34,7 @@ public class HttpClientURLFetcherTest {
     private HttpServer server;
     private HttpClientURLFetcher fetcher;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         server.createContext("/content", handler -> {
@@ -52,7 +52,7 @@ public class HttpClientURLFetcherTest {
         fetcher = new HttpClientURLFetcher();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         server.stop(0);
     }

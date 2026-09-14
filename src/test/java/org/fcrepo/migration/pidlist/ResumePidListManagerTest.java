@@ -6,10 +6,10 @@
  */
 package org.fcrepo.migration.pidlist;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
@@ -28,7 +28,7 @@ public class ResumePidListManagerTest {
 
     private List<String> pidList;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Test PIDs
         pidList = Arrays.asList("pid:1", "pid:2", "pid:3", "pid:4");
@@ -39,51 +39,51 @@ public class ResumePidListManagerTest {
         manager = new ResumePidListManager(new File(testDir), false);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         manager.reset();
     }
 
     @Test
     public void accept() {
-        pidList.forEach(pid -> Assert.assertTrue(pid + " should be accepted", manager.accept(pid)));
+        pidList.forEach(pid -> Assertions.assertTrue(manager.accept(pid), pid + " should be accepted"));
     }
 
     @Test
     public void acceptIncrementalRuns() {
-        Assert.assertTrue("pid:1 should be accepted", manager.accept("pid:1"));
-        Assert.assertTrue("pid:2 should be accepted", manager.accept("pid:2"));
+        Assertions.assertTrue(manager.accept("pid:1"), "pid:1 should be accepted");
+        Assertions.assertTrue(manager.accept("pid:2"), "pid:2 should be accepted");
 
         // Simulate stopping the migration process... and start over
         manager = new ResumePidListManager(new File(testDir), false);
-        Assert.assertFalse("pid:1 should NOT be accepted", manager.accept("pid:1"));
-        Assert.assertFalse("pid:2 should NOT be accepted", manager.accept("pid:2"));
+        Assertions.assertFalse(manager.accept("pid:1"), "pid:1 should NOT be accepted");
+        Assertions.assertFalse(manager.accept("pid:2"), "pid:2 should NOT be accepted");
 
         // ..however, unprocessed PIDs should be "accepted"
-        Assert.assertTrue("pid:3 should be accepted", manager.accept("pid:3"));
-        Assert.assertTrue("pid:4 should be accepted", manager.accept("pid:4"));
+        Assertions.assertTrue(manager.accept("pid:3"), "pid:3 should be accepted");
+        Assertions.assertTrue(manager.accept("pid:4"), "pid:4 should be accepted");
 
         // Starting over again... no PIDs should be accepted
         manager = new ResumePidListManager(new File(testDir), false);
-        pidList.forEach(pid -> Assert.assertFalse(pid + " should NOT be accepted", manager.accept(pid)));
+        pidList.forEach(pid -> Assertions.assertFalse(manager.accept(pid), pid + " should NOT be accepted"));
     }
 
     @Test
     public void acceptAll() {
-        Assert.assertTrue("pid:1 should be accepted", manager.accept("pid:1"));
-        Assert.assertTrue("pid:2 should be accepted", manager.accept("pid:2"));
+        Assertions.assertTrue(manager.accept("pid:1"), "pid:1 should be accepted");
+        Assertions.assertTrue(manager.accept("pid:2"), "pid:2 should be accepted");
 
         // Simulate stopping the migration process... and start over - but accept all
         manager = new ResumePidListManager(new File(testDir), true);
-        Assert.assertTrue("pid:1 should be accepted", manager.accept("pid:1"));
-        Assert.assertTrue("pid:2 should be accepted", manager.accept("pid:2"));
+        Assertions.assertTrue(manager.accept("pid:1"), "pid:1 should be accepted");
+        Assertions.assertTrue(manager.accept("pid:2"), "pid:2 should be accepted");
 
         // ..however, unprocessed PIDs should be "accepted" - accept all
-        Assert.assertTrue("pid:3 should be accepted", manager.accept("pid:3"));
-        Assert.assertTrue("pid:4 should be accepted", manager.accept("pid:4"));
+        Assertions.assertTrue(manager.accept("pid:3"), "pid:3 should be accepted");
+        Assertions.assertTrue(manager.accept("pid:4"), "pid:4 should be accepted");
 
         // Starting over again... no PIDs should be accepted - but, accept all
         manager = new ResumePidListManager(new File(testDir), true);
-        pidList.forEach(pid -> Assert.assertTrue(pid + " should be accepted", manager.accept(pid)));
+        pidList.forEach(pid -> Assertions.assertTrue(manager.accept(pid), pid + " should be accepted"));
     }
 }

@@ -20,10 +20,11 @@ import org.fcrepo.migration.FedoraObjectVersionHandler;
 import org.fcrepo.migration.Migrator;
 import org.fcrepo.migration.ObjectVersionReference;
 import org.fcrepo.migration.ObjectInfo;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 /**
  *
  * @author mdurbin
@@ -39,25 +40,25 @@ public class VersionAbstractionFedoraObjectHandlerTest {
         final Migrator m = (Migrator) context.getBean("migrator");
         m.run();
 
-        Assert.assertEquals("Six versions should have been gleaned.", 6, vh.versions.size());
-        Assert.assertEquals("2015-01-27T19:07:33.120Z", vh.versions.get(0).getVersionDate());
-        Assert.assertEquals("AUDIT.0", vh.versions.get(0).listChangedDatastreams().get(0).getVersionId());
-        Assert.assertEquals("DC1.0", vh.versions.get(0).listChangedDatastreams().get(1).getVersionId());
+        Assertions.assertEquals(6, vh.versions.size(), "Six versions should have been gleaned.");
+        Assertions.assertEquals("2015-01-27T19:07:33.120Z", vh.versions.get(0).getVersionDate());
+        Assertions.assertEquals("AUDIT.0", vh.versions.get(0).listChangedDatastreams().get(0).getVersionId());
+        Assertions.assertEquals("DC1.0", vh.versions.get(0).listChangedDatastreams().get(1).getVersionId());
 
-        Assert.assertEquals("2015-01-27T19:08:43.701Z", vh.versions.get(1).getVersionDate());
-        Assert.assertEquals("DS1.0", vh.versions.get(1).listChangedDatastreams().get(0).getVersionId());
+        Assertions.assertEquals("2015-01-27T19:08:43.701Z", vh.versions.get(1).getVersionDate());
+        Assertions.assertEquals("DS1.0", vh.versions.get(1).listChangedDatastreams().get(0).getVersionId());
 
-        Assert.assertEquals("2015-01-27T19:09:18.112Z", vh.versions.get(2).getVersionDate());
-        Assert.assertEquals("DS2.0", vh.versions.get(2).listChangedDatastreams().get(0).getVersionId());
+        Assertions.assertEquals("2015-01-27T19:09:18.112Z", vh.versions.get(2).getVersionDate());
+        Assertions.assertEquals("DS2.0", vh.versions.get(2).listChangedDatastreams().get(0).getVersionId());
 
-        Assert.assertEquals("2015-01-27T19:14:05.948Z", vh.versions.get(3).getVersionDate());
-        Assert.assertEquals("DS3.0", vh.versions.get(3).listChangedDatastreams().get(0).getVersionId());
+        Assertions.assertEquals("2015-01-27T19:14:05.948Z", vh.versions.get(3).getVersionDate());
+        Assertions.assertEquals("DS3.0", vh.versions.get(3).listChangedDatastreams().get(0).getVersionId());
 
-        Assert.assertEquals("2015-01-27T19:14:38.999Z", vh.versions.get(4).getVersionDate());
-        Assert.assertEquals("DS4.0", vh.versions.get(4).listChangedDatastreams().get(0).getVersionId());
+        Assertions.assertEquals("2015-01-27T19:14:38.999Z", vh.versions.get(4).getVersionDate());
+        Assertions.assertEquals("DS4.0", vh.versions.get(4).listChangedDatastreams().get(0).getVersionId());
 
-        Assert.assertEquals("2015-01-27T19:20:40.678Z", vh.versions.get(5).getVersionDate());
-        Assert.assertEquals("DS1.1", vh.versions.get(5).listChangedDatastreams().get(0).getVersionId());
+        Assertions.assertEquals("2015-01-27T19:20:40.678Z", vh.versions.get(5).getVersionDate());
+        Assertions.assertEquals("DS1.1", vh.versions.get(5).listChangedDatastreams().get(0).getVersionId());
     }
 
     /**
@@ -102,7 +103,7 @@ public class VersionAbstractionFedoraObjectHandlerTest {
             } finally {
                 fos.close();
             }
-            Assert.assertEquals(v.getSize(), temp.length());
+            Assertions.assertEquals(v.getSize(), temp.length());
             temp.delete();
         }
     }
