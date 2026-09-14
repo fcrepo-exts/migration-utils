@@ -25,8 +25,8 @@ import org.fcrepo.migration.foxml.CachedContent;
 import org.fcrepo.migration.foxml.FoxmlInputStreamFedoraObjectProcessor;
 import org.fcrepo.migration.foxml.InternalIDResolver;
 import org.fcrepo.migration.foxml.URLFetcher;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * An abstract base class that defines some dummy classes useful for
@@ -44,162 +44,163 @@ public abstract class Example1TestSuite {
 
     @Test
     public void testObjectInfoParsing() {
-        Assert.assertEquals("example:1", getResult().objectInfo.getPid());
-        Assert.assertNull(getResult().objectInfo.getFedoraURI());
+        Assertions.assertEquals("example:1", getResult().objectInfo.getPid());
+        Assertions.assertNull(getResult().objectInfo.getFedoraURI());
     }
 
     @Test
     public void testPropertiesParsing() {
         final List<? extends ObjectProperty> propertyList = getResult().properties.listProperties();
-        Assert.assertEquals(5, propertyList.size());
-        Assert.assertEquals("info:fedora/fedora-system:def/model#state", propertyList.get(0).getName());
-        Assert.assertEquals("Active", propertyList.get(0).getValue());
-        Assert.assertEquals("info:fedora/fedora-system:def/model#label", propertyList.get(1).getName());
-        Assert.assertEquals("This is an example object.", propertyList.get(1).getValue());
-        Assert.assertEquals("info:fedora/fedora-system:def/model#ownerId", propertyList.get(2).getName());
-        Assert.assertEquals("exampleOwner", propertyList.get(2).getValue());
-        Assert.assertEquals("info:fedora/fedora-system:def/model#createdDate", propertyList.get(3).getName());
-        Assert.assertEquals("2015-01-27T19:07:33.120Z", propertyList.get(3).getValue());
-        Assert.assertEquals("info:fedora/fedora-system:def/view#lastModifiedDate", propertyList.get(4).getName());
-        Assert.assertEquals("2015-01-27T20:26:16.998Z", propertyList.get(4).getValue());
+        Assertions.assertEquals(5, propertyList.size());
+        Assertions.assertEquals("info:fedora/fedora-system:def/model#state", propertyList.get(0).getName());
+        Assertions.assertEquals("Active", propertyList.get(0).getValue());
+        Assertions.assertEquals("info:fedora/fedora-system:def/model#label", propertyList.get(1).getName());
+        Assertions.assertEquals("This is an example object.", propertyList.get(1).getValue());
+        Assertions.assertEquals("info:fedora/fedora-system:def/model#ownerId", propertyList.get(2).getName());
+        Assertions.assertEquals("exampleOwner", propertyList.get(2).getValue());
+        Assertions.assertEquals("info:fedora/fedora-system:def/model#createdDate", propertyList.get(3).getName());
+        Assertions.assertEquals("2015-01-27T19:07:33.120Z", propertyList.get(3).getValue());
+        Assertions.assertEquals("info:fedora/fedora-system:def/view#lastModifiedDate", propertyList.get(4).getName());
+        Assertions.assertEquals("2015-01-27T20:26:16.998Z", propertyList.get(4).getValue());
     }
 
     @Test
     public void testDatastreamParsing() throws XMLStreamException, IOException {
-        Assert.assertEquals(7, getResult().dsVersions.size());
+        Assertions.assertEquals(7, getResult().dsVersions.size());
     }
 
     @Test
     public void testAuditDatastreamParsing() {
         final DatastreamVersion audit0 = getResult().dsVersions.get(0);
-        Assert.assertEquals("AUDIT", audit0.getDatastreamInfo().getDatastreamId());
-        Assert.assertEquals("A", audit0.getDatastreamInfo().getState());
-        Assert.assertEquals("X", audit0.getDatastreamInfo().getControlGroup());
-        Assert.assertFalse(audit0.getDatastreamInfo().getVersionable());
-        Assert.assertEquals("AUDIT.0", audit0.getVersionId());
-        Assert.assertEquals("Audit Trail for this object", audit0.getLabel());
-        Assert.assertEquals("2015-01-27T19:07:33.120Z", audit0.getCreated());
-        Assert.assertEquals("text/xml", audit0.getMimeType());
-        Assert.assertEquals("info:fedora/fedora-system:format/xml.fedora.audit", audit0.getFormatUri());
-        Assert.assertTrue(audit0.getFile().isEmpty());
+        Assertions.assertEquals("AUDIT", audit0.getDatastreamInfo().getDatastreamId());
+        Assertions.assertEquals("A", audit0.getDatastreamInfo().getState());
+        Assertions.assertEquals("X", audit0.getDatastreamInfo().getControlGroup());
+        Assertions.assertFalse(audit0.getDatastreamInfo().getVersionable());
+        Assertions.assertEquals("AUDIT.0", audit0.getVersionId());
+        Assertions.assertEquals("Audit Trail for this object", audit0.getLabel());
+        Assertions.assertEquals("2015-01-27T19:07:33.120Z", audit0.getCreated());
+        Assertions.assertEquals("text/xml", audit0.getMimeType());
+        Assertions.assertEquals("info:fedora/fedora-system:format/xml.fedora.audit", audit0.getFormatUri());
+        Assertions.assertTrue(audit0.getFile().isEmpty());
     }
 
     @Test
     public void testDCDatastreamParsing() throws IOException {
         final DatastreamVersion dc0 = getResult().dsVersions.get(1);
-        Assert.assertEquals("DC", dc0.getDatastreamInfo().getDatastreamId());
-        Assert.assertEquals("A", dc0.getDatastreamInfo().getState());
-        Assert.assertEquals("X", dc0.getDatastreamInfo().getControlGroup());
-        Assert.assertTrue(dc0.getDatastreamInfo().getVersionable());
-        Assert.assertEquals("DC1.0", dc0.getVersionId());
-        Assert.assertEquals("Dublin Core Record for this object", dc0.getLabel());
-        Assert.assertEquals("2015-01-27T19:07:33.120Z", dc0.getCreated());
-        Assert.assertEquals("text/xml", dc0.getMimeType());
-        Assert.assertEquals("http://www.openarchives.org/OAI/2.0/oai_dc/", dc0.getFormatUri());
-        Assert.assertEquals(dc0.getSize(), IOUtils.toByteArray(dc0.getContent()).length);
-        Assert.assertEquals("<oai_dc:dc xmlns:oai_dc=\"http://www.openarchives.org/OAI/2.0/oai_dc/\"\n" +
+        Assertions.assertEquals("DC", dc0.getDatastreamInfo().getDatastreamId());
+        Assertions.assertEquals("A", dc0.getDatastreamInfo().getState());
+        Assertions.assertEquals("X", dc0.getDatastreamInfo().getControlGroup());
+        Assertions.assertTrue(dc0.getDatastreamInfo().getVersionable());
+        Assertions.assertEquals("DC1.0", dc0.getVersionId());
+        Assertions.assertEquals("Dublin Core Record for this object", dc0.getLabel());
+        Assertions.assertEquals("2015-01-27T19:07:33.120Z", dc0.getCreated());
+        Assertions.assertEquals("text/xml", dc0.getMimeType());
+        Assertions.assertEquals("http://www.openarchives.org/OAI/2.0/oai_dc/", dc0.getFormatUri());
+        Assertions.assertEquals(dc0.getSize(), IOUtils.toByteArray(dc0.getContent()).length);
+        Assertions.assertEquals("<oai_dc:dc xmlns:oai_dc=\"http://www.openarchives.org/OAI/2.0/oai_dc/\"\n" +
                 "xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n" +
                 "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
                 "xsi:schemaLocation=\"http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd\">\n" +
                 "  <dc:title>This is an example object.</dc:title>\n" +
                 "  <dc:identifier>example:1</dc:identifier>\n" +
                 "</oai_dc:dc>", IOUtils.toString(dc0.getContent()).trim());
-        Assert.assertTrue(dc0.getFile().isEmpty());
+        Assertions.assertTrue(dc0.getFile().isEmpty());
     }
 
     @Test
     public void testDS1VersionedDatastreamParsing() throws IOException {
         final DatastreamVersion ds1 = getResult().dsVersions.get(2);
-        Assert.assertEquals("DS1", ds1.getDatastreamInfo().getDatastreamId());
-        Assert.assertEquals("A", ds1.getDatastreamInfo().getState());
-        Assert.assertEquals("X", ds1.getDatastreamInfo().getControlGroup());
-        Assert.assertTrue(ds1.getDatastreamInfo().getVersionable());
-        Assert.assertEquals("DS1.0", ds1.getVersionId());
-        Assert.assertEquals("Example inline XML datastream", ds1.getLabel());
-        Assert.assertEquals("2015-01-27T19:08:43.701Z", ds1.getCreated());
-        Assert.assertEquals("text/xml", ds1.getMimeType());
-        Assert.assertEquals("alternate_id", ds1.getAltIds());
-        Assert.assertEquals("format:uri", ds1.getFormatUri());
-        Assert.assertEquals(34, ds1.getSize());
-        Assert.assertEquals("<test>\n" +
+        Assertions.assertEquals("DS1", ds1.getDatastreamInfo().getDatastreamId());
+        Assertions.assertEquals("A", ds1.getDatastreamInfo().getState());
+        Assertions.assertEquals("X", ds1.getDatastreamInfo().getControlGroup());
+        Assertions.assertTrue(ds1.getDatastreamInfo().getVersionable());
+        Assertions.assertEquals("DS1.0", ds1.getVersionId());
+        Assertions.assertEquals("Example inline XML datastream", ds1.getLabel());
+        Assertions.assertEquals("2015-01-27T19:08:43.701Z", ds1.getCreated());
+        Assertions.assertEquals("text/xml", ds1.getMimeType());
+        Assertions.assertEquals("alternate_id", ds1.getAltIds());
+        Assertions.assertEquals("format:uri", ds1.getFormatUri());
+        Assertions.assertEquals(34, ds1.getSize());
+        Assertions.assertEquals("<test>\n" +
                 "  This is a test.\n" +
                 "</test>", IOUtils.toString(ds1.getContent()).trim());
-        Assert.assertTrue(ds1.getFile().isEmpty());
+        Assertions.assertTrue(ds1.getFile().isEmpty());
 
         final DatastreamVersion ds2 = getResult().dsVersions.get(3);
-        Assert.assertEquals("DS1", ds2.getDatastreamInfo().getDatastreamId());
-        Assert.assertEquals("A", ds2.getDatastreamInfo().getState());
-        Assert.assertEquals("X", ds2.getDatastreamInfo().getControlGroup());
-        Assert.assertTrue(ds2.getDatastreamInfo().getVersionable());
-        Assert.assertEquals("DS1.1", ds2.getVersionId());
-        Assert.assertEquals("Example inline XML datastream", ds2.getLabel());
-        Assert.assertEquals("2015-01-27T19:20:40.678Z", ds2.getCreated());
-        Assert.assertEquals("text/xml", ds2.getMimeType());
-        Assert.assertEquals("alternate_id", ds2.getAltIds());
-        Assert.assertEquals("format:uri", ds2.getFormatUri());
-        Assert.assertEquals(50, ds2.getSize());
-        Assert.assertNull(ds2.getContentDigest());
-        Assert.assertEquals("<test>\n" +
+        Assertions.assertEquals("DS1", ds2.getDatastreamInfo().getDatastreamId());
+        Assertions.assertEquals("A", ds2.getDatastreamInfo().getState());
+        Assertions.assertEquals("X", ds2.getDatastreamInfo().getControlGroup());
+        Assertions.assertTrue(ds2.getDatastreamInfo().getVersionable());
+        Assertions.assertEquals("DS1.1", ds2.getVersionId());
+        Assertions.assertEquals("Example inline XML datastream", ds2.getLabel());
+        Assertions.assertEquals("2015-01-27T19:20:40.678Z", ds2.getCreated());
+        Assertions.assertEquals("text/xml", ds2.getMimeType());
+        Assertions.assertEquals("alternate_id", ds2.getAltIds());
+        Assertions.assertEquals("format:uri", ds2.getFormatUri());
+        Assertions.assertEquals(50, ds2.getSize());
+        Assertions.assertNull(ds2.getContentDigest());
+        Assertions.assertEquals("<test>\n" +
                 "  This is a test that was edited.\n" +
                 "</test>", IOUtils.toString(ds2.getContent()).trim());
-        Assert.assertTrue(ds2.getFile().isEmpty());
+        Assertions.assertTrue(ds2.getFile().isEmpty());
     }
 
     @Test
     public void testDS2BinaryParsing() throws IOException {
         final DatastreamVersion ds2 = getResult().dsVersions.get(4);
-        Assert.assertEquals("DS2", ds2.getDatastreamInfo().getDatastreamId());
-        Assert.assertEquals("A", ds2.getDatastreamInfo().getState());
-        Assert.assertEquals("M", ds2.getDatastreamInfo().getControlGroup());
-        Assert.assertFalse(ds2.getDatastreamInfo().getVersionable());
-        Assert.assertEquals("DS2.0", ds2.getVersionId());
-        Assert.assertEquals("Example Managed binary datastream", ds2.getLabel());
-        Assert.assertEquals("2015-01-27T19:09:18.112Z", ds2.getCreated());
-        Assert.assertEquals("image/jpeg", ds2.getMimeType());
-        Assert.assertEquals(46168, ds2.getSize());
-        Assert.assertEquals("MD5", ds2.getContentDigest().getType());
-        Assert.assertEquals("d4f18b8b9c64466819ddaad46228fb9b", ds2.getContentDigest().getDigest());
-        Assert.assertTrue("Managed Base64 encoded datastream must be preserved.", IOUtils.contentEquals(
+        Assertions.assertEquals("DS2", ds2.getDatastreamInfo().getDatastreamId());
+        Assertions.assertEquals("A", ds2.getDatastreamInfo().getState());
+        Assertions.assertEquals("M", ds2.getDatastreamInfo().getControlGroup());
+        Assertions.assertFalse(ds2.getDatastreamInfo().getVersionable());
+        Assertions.assertEquals("DS2.0", ds2.getVersionId());
+        Assertions.assertEquals("Example Managed binary datastream", ds2.getLabel());
+        Assertions.assertEquals("2015-01-27T19:09:18.112Z", ds2.getCreated());
+        Assertions.assertEquals("image/jpeg", ds2.getMimeType());
+        Assertions.assertEquals(46168, ds2.getSize());
+        Assertions.assertEquals("MD5", ds2.getContentDigest().getType());
+        Assertions.assertEquals("d4f18b8b9c64466819ddaad46228fb9b", ds2.getContentDigest().getDigest());
+        Assertions.assertTrue(IOUtils.contentEquals(
                 getClass().getClassLoader().getResourceAsStream("small-mountains.jpg"),
-                new ByteArrayInputStream(getResult().cachedDsVersionBinaries.get(4))));
-        Assert.assertTrue(ds2.getFile().isPresent());
+                new ByteArrayInputStream(getResult().cachedDsVersionBinaries.get(4))),
+                "Managed Base64 encoded datastream must be preserved.");
+        Assertions.assertTrue(ds2.getFile().isPresent());
     }
 
     @Test
     public void testDS3RedirectParsing() throws IOException {
         final DatastreamVersion ds3 = getResult().dsVersions.get(5);
-        Assert.assertEquals("DS3", ds3.getDatastreamInfo().getDatastreamId());
-        Assert.assertEquals("A", ds3.getDatastreamInfo().getState());
-        Assert.assertEquals("R", ds3.getDatastreamInfo().getControlGroup());
-        Assert.assertTrue(ds3.getDatastreamInfo().getVersionable());
-        Assert.assertEquals("DS3.0", ds3.getVersionId());
-        Assert.assertEquals("Example Redirect \u007Fdatastream.", ds3.getLabel());
-        Assert.assertEquals("2015-01-27T19:14:05.948Z", ds3.getCreated());
-        Assert.assertEquals("image/jpeg", ds3.getMimeType());
-        Assert.assertEquals(-1, ds3.getSize());
+        Assertions.assertEquals("DS3", ds3.getDatastreamInfo().getDatastreamId());
+        Assertions.assertEquals("A", ds3.getDatastreamInfo().getState());
+        Assertions.assertEquals("R", ds3.getDatastreamInfo().getControlGroup());
+        Assertions.assertTrue(ds3.getDatastreamInfo().getVersionable());
+        Assertions.assertEquals("DS3.0", ds3.getVersionId());
+        Assertions.assertEquals("Example Redirect \u007Fdatastream.", ds3.getLabel());
+        Assertions.assertEquals("2015-01-27T19:14:05.948Z", ds3.getCreated());
+        Assertions.assertEquals("image/jpeg", ds3.getMimeType());
+        Assertions.assertEquals(-1, ds3.getSize());
         ds3.getContent().close();
-        Assert.assertEquals("http://" + SimpleObjectSource.LOCAL_FEDORA_SERVER + "/fedora/get/example:1/DS2",
+        Assertions.assertEquals("http://" + SimpleObjectSource.LOCAL_FEDORA_SERVER + "/fedora/get/example:1/DS2",
                 getFetcher().getLastUrl().toExternalForm());
-        Assert.assertTrue(ds3.getFile().isEmpty());
+        Assertions.assertTrue(ds3.getFile().isEmpty());
     }
 
     @Test
     public void testDS4ExternalParsing() throws IOException {
         final DatastreamVersion ds4 = getResult().dsVersions.get(6);
-        Assert.assertEquals("DS4", ds4.getDatastreamInfo().getDatastreamId());
-        Assert.assertEquals("A", ds4.getDatastreamInfo().getState());
-        Assert.assertEquals("E", ds4.getDatastreamInfo().getControlGroup());
-        Assert.assertTrue(ds4.getDatastreamInfo().getVersionable());
-        Assert.assertEquals("DS4.0", ds4.getVersionId());
-        Assert.assertEquals("Example External datastream.", ds4.getLabel());
-        Assert.assertEquals("2015-01-27T19:14:38.999Z", ds4.getCreated());
-        Assert.assertEquals("image/jpeg", ds4.getMimeType());
-        Assert.assertEquals(-1, ds4.getSize());
+        Assertions.assertEquals("DS4", ds4.getDatastreamInfo().getDatastreamId());
+        Assertions.assertEquals("A", ds4.getDatastreamInfo().getState());
+        Assertions.assertEquals("E", ds4.getDatastreamInfo().getControlGroup());
+        Assertions.assertTrue(ds4.getDatastreamInfo().getVersionable());
+        Assertions.assertEquals("DS4.0", ds4.getVersionId());
+        Assertions.assertEquals("Example External datastream.", ds4.getLabel());
+        Assertions.assertEquals("2015-01-27T19:14:38.999Z", ds4.getCreated());
+        Assertions.assertEquals("image/jpeg", ds4.getMimeType());
+        Assertions.assertEquals(-1, ds4.getSize());
         ds4.getContent().close();
-        Assert.assertEquals("http://" + SimpleObjectSource.LOCAL_FEDORA_SERVER
+        Assertions.assertEquals("http://" + SimpleObjectSource.LOCAL_FEDORA_SERVER
                         + "/fedora/objects/example:1/datastreams/DS2/content",
                 getFetcher().getLastUrl().toExternalForm());
-        Assert.assertTrue(ds4.getFile().isEmpty());
+        Assertions.assertTrue(ds4.getFile().isEmpty());
     }
 
     public static class SimpleObjectSource implements ObjectSource {

@@ -18,10 +18,10 @@ package org.fcrepo.migration.pidlist;
 
 import org.apache.commons.io.FileUtils;
 import org.fcrepo.migration.Migrator;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -47,7 +47,7 @@ public class ResumePidListManagerIT {
     private File staging;
     private File pidDir;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         // Create directories expected in this test (based on `spring/ocfl-pid-it-setup.xml`)
         storage = new File("target/test/ocfl/pid-it/storage");
@@ -72,7 +72,7 @@ public class ResumePidListManagerIT {
         migrator = (Migrator) context.getBean("migrator");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         context.close();
     }
@@ -86,7 +86,7 @@ public class ResumePidListManagerIT {
         migrator.setResumePidListManager(manager);
         migrator.run();
 
-        Assert.assertEquals(3, countDirectories(storage.toPath()));
+        Assertions.assertEquals(3, countDirectories(storage.toPath()));
     }
 
     @Test
@@ -100,7 +100,7 @@ public class ResumePidListManagerIT {
         migrator.run();
         context.close();
 
-        Assert.assertEquals(2, countDirectories(storage.toPath()));
+        Assertions.assertEquals(2, countDirectories(storage.toPath()));
 
         // Remove the previously exported objects, and resume the migration
         FileUtils.forceDelete(storage);
@@ -114,7 +114,7 @@ public class ResumePidListManagerIT {
         migrator.setLimit(-1); // migrate all
         migrator.run();
 
-        Assert.assertEquals(1, countDirectories(storage.toPath()));
+        Assertions.assertEquals(1, countDirectories(storage.toPath()));
     }
 
     private long countDirectories(final Path path) {

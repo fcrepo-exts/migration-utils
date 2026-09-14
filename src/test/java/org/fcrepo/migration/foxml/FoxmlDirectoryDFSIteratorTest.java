@@ -13,22 +13,22 @@ import java.io.File;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.filefilter.RegexFileFilter;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FoxmlDirectoryDFSIteratorTest {
 
     @Mock private File root;
 
     @Mock private File f1;
 
-    @Before
+    @BeforeEach
     public void setup() {
         Mockito.when(root.listFiles()).thenReturn(new File[] { f1 });
 
@@ -41,14 +41,14 @@ public class FoxmlDirectoryDFSIteratorTest {
     public void testNonHiddenInclusionPattern() {
         final FoxmlDirectoryDFSIterator i
                = new FoxmlDirectoryDFSIterator(root, null, null, new RegexFileFilter(Pattern.compile("^[^\\.].*$")));
-        Assert.assertFalse("There must not be a matching file.", i.hasNext());
+        Assertions.assertFalse(i.hasNext(), "There must not be a matching file.");
     }
 
     @Test
     public void testIncludeAllPattern() {
         final FoxmlDirectoryDFSIterator i
                = new FoxmlDirectoryDFSIterator(root, null, null, new RegexFileFilter(Pattern.compile(".*")));
-        Assert.assertTrue("There should be a matching file.", i.hasNext());
+        Assertions.assertTrue(i.hasNext(), "There should be a matching file.");
     }
 
 }

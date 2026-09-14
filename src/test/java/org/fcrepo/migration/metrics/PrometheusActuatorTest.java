@@ -5,8 +5,8 @@
  */
 package org.fcrepo.migration.metrics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Timer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Dan Field
@@ -51,7 +51,7 @@ public class PrometheusActuatorTest {
             try (InputStream is = connection.getInputStream()) {
                 body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             }
-            assertTrue("scrape output should contain registered metrics", body.contains("jvm_"));
+            assertTrue(body.contains("jvm_"), "scrape output should contain registered metrics");
         } finally {
             actuator.stop();
         }

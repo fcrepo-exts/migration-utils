@@ -1,7 +1,7 @@
 package org.fcrepo.migration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -27,10 +27,9 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -47,14 +46,14 @@ public class PicocliIT {
     private Path targetDir;
     private Path workingDir;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         tmpDir = Files.createTempDirectory("migration-utils");
         targetDir = tmpDir.resolve("target");
         workingDir = tmpDir.resolve("working");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         try {
             FileUtils.forceDelete(tmpDir.toFile());

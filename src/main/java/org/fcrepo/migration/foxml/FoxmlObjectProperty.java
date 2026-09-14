@@ -6,7 +6,7 @@
  */
 package org.fcrepo.migration.foxml;
 
-import javax.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlAttribute;
 
 import org.fcrepo.migration.ObjectProperty;
 

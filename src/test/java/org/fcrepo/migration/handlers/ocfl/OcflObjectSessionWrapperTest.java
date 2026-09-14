@@ -5,8 +5,8 @@
  */
 package org.fcrepo.migration.handlers.ocfl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,18 +23,18 @@ import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflVersionInfo;
 import org.fcrepo.storage.ocfl.ResourceContent;
 import org.fcrepo.storage.ocfl.ResourceHeaders;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Verifies that {@link OcflObjectSessionWrapper} delegates every operation to the wrapped session.
  *
  * @author Dan Field
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OcflObjectSessionWrapperTest {
 
     @Mock
@@ -48,7 +48,7 @@ public class OcflObjectSessionWrapperTest {
 
     private OcflObjectSessionWrapper wrapper;
 
-    @Before
+    @BeforeEach
     public void setup() {
         wrapper = new OcflObjectSessionWrapper(inner);
     }

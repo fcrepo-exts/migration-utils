@@ -5,17 +5,18 @@
  */
 package org.fcrepo.migration.foxml;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.filefilter.RegexFileFilter;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Exercises the depth-first traversal of {@link FoxmlDirectoryDFSIterator} over a real
@@ -25,14 +26,14 @@ import org.junit.rules.TemporaryFolder;
  */
 public class FoxmlDirectoryDFSIteratorTreeTest {
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public Path tempDir;
 
     private static final Pattern MATCH_NONE = Pattern.compile("match-nothing-xyz");
 
     @Test
     public void descendsDirectoriesWhenFilterRejectsEverything() throws IOException {
-        final File root = tempDir.newFolder("root");
+        final File root = Files.createDirectory(tempDir.resolve("root")).toFile();
         final File sub = new File(root, "sub");
         sub.mkdir();
         new File(sub, "child.txt").createNewFile();
@@ -46,7 +47,7 @@ public class FoxmlDirectoryDFSIteratorTreeTest {
 
     @Test
     public void nextThrowsWhenExhausted() throws IOException {
-        final File root = tempDir.newFolder("empty");
+        final File root = Files.createDirectory(tempDir.resolve("empty")).toFile();
         final var iterator =
                 new FoxmlDirectoryDFSIterator(root, null, null, new RegexFileFilter(Pattern.compile(".*")));
         assertThrows(IllegalStateException.class, iterator::next);
@@ -54,7 +55,7 @@ public class FoxmlDirectoryDFSIteratorTreeTest {
 
     @Test
     public void removeIsUnsupported() throws IOException {
-        final File root = tempDir.newFolder("root");
+        final File root = Files.createDirectory(tempDir.resolve("root")).toFile();
         final var iterator =
                 new FoxmlDirectoryDFSIterator(root, null, null, new RegexFileFilter(Pattern.compile(".*")));
         assertThrows(UnsupportedOperationException.class, iterator::remove);

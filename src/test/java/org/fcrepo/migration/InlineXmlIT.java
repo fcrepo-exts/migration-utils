@@ -19,8 +19,8 @@ package org.fcrepo.migration;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -33,9 +33,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author pwinckles
@@ -59,7 +59,7 @@ public class InlineXmlIT {
     private Migrator migrator;
     private OcflObjectSessionFactory sessionFactory;
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (context != null) {
             context.close();
@@ -112,7 +112,7 @@ public class InlineXmlIT {
             final var content = session.readContent(id);
             try {
                 final var actual = DigestUtils.md5Hex(content.getContentStream().get());
-                assertEquals(id, expected, actual);
+                assertEquals(expected, actual, id);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

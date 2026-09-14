@@ -32,10 +32,12 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Statement;
 
-import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.parser.ParseContext;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
@@ -183,11 +185,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         this.headOnly = headOnly;
         this.disableChecksumValidation = disableChecksumValidation;
         this.disableDc = disableDc;
-        try {
-            this.mimeDetector = new TikaConfig().getDetector();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        this.mimeDetector = new DefaultDetector();
     }
 
     @Override
@@ -316,10 +314,10 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                         final var model = ModelFactory.createDefaultModel();
                         for (String uri : dc.getRepresentedElementURIs()) {
                             for (String value : dc.getValuesForURI(uri)) {
-                                final Triple dcTriple = new Triple(
+                                final Triple dcTriple = Triple.create(
                                     NodeFactory.createURI(f6ObjectId),
                                     NodeFactory.createURI(uri),
-                                    NodeFactory.createLiteral(value, XSDDatatype.XSDstring));
+                                    NodeFactory.createLiteralDT(value, XSDDatatype.XSDstring));
                                 final Statement statement = model.asStatement(dcTriple);
                                 model.add(statement);
                                 LOGGER.debug(dcTriple.toString());
@@ -736,9 +734,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
 
         if (Strings.isNullOrEmpty(mime)) {
             final var meta = new Metadata();
-            meta.set(Metadata.RESOURCE_NAME_KEY, dv.getDatastreamInfo().getDatastreamId());
+            meta.set(TikaCoreProperties.RESOURCE_NAME_KEY, dv.getDatastreamInfo().getDatastreamId());
             try (var content = TikaInputStream.get(dv.getContent())) {
-                mime = mimeDetector.detect(content, meta).toString();
+                mime = mimeDetector.detect(content, meta, new ParseContext()).toString();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

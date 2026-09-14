@@ -5,12 +5,15 @@
  */
 package org.fcrepo.migration.pidlist;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Covers the constructor validation and the resume-state mismatch handling of
@@ -20,18 +23,18 @@ import org.junit.rules.TemporaryFolder;
  */
 public class ResumePidListManagerResumeTest {
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public Path tempDir;
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void constructorRejectsNonDirectory() throws IOException {
-        final File notADir = tempDir.newFile("not-a-dir.txt");
-        new ResumePidListManager(notADir, false);
+        final File notADir = Files.createFile(tempDir.resolve("not-a-dir.txt")).toFile();
+        assertThrows(IllegalArgumentException.class, () -> new ResumePidListManager(notADir, false));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void mismatchedResumeStateThrows() throws IOException {
-        final File pidDir = tempDir.newFolder("pids");
+        final File pidDir = Files.createDirectory(tempDir.resolve("pids")).toFile();
 
         // First run establishes a resume file at index 2 with value "pid:2".
         final ResumePidListManager first = new ResumePidListManager(pidDir, false);
@@ -39,9 +42,11 @@ public class ResumePidListManagerResumeTest {
         first.accept("pid:2");
 
         // Resuming and then diverging from the recorded ordering must fail.
-        final ResumePidListManager resumed = new ResumePidListManager(pidDir, false);
-        resumed.accept("pid:1");
-        resumed.accept("divergent");
-        resumed.accept("pid:3");
+        assertThrows(IllegalStateException.class, () -> {
+            final ResumePidListManager resumed = new ResumePidListManager(pidDir, false);
+            resumed.accept("pid:1");
+            resumed.accept("divergent");
+            resumed.accept("pid:3");
+        });
     }
 }

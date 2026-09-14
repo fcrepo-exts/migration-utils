@@ -6,12 +6,13 @@
  */
 package org.fcrepo.migration.foxml;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class AkubraFSIDResolverTest {
 
     private File tempDir;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         tempDir = File.createTempFile("tempfile", "basedir");
         tempDir.delete();
@@ -40,13 +41,14 @@ public class AkubraFSIDResolverTest {
                 idResolver.getInternalIdForFile(new File("info%3Afedora%2Fexample%3A1%2FDS2%2FDS2.0")));
     }
 
-    @Test (expected = IllegalArgumentException.class)
+    @Test
     public void testBadFileIDMapping() throws UnsupportedEncodingException {
-        idResolver.getInternalIdForFile(new File("example%3A1%2FDS2%2FDS2.0"));
+        assertThrows(IllegalArgumentException.class, () ->
+            idResolver.getInternalIdForFile(new File("example%3A1%2FDS2%2FDS2.0")));
     }
 
 
-    @After
+    @AfterEach
     public void cleanup() throws IOException {
         FileUtils.deleteDirectory(tempDir);
     }

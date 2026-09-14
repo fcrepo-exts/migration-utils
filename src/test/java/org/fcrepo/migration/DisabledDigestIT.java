@@ -16,17 +16,17 @@
 
 package org.fcrepo.migration;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Dan Field
@@ -37,7 +37,7 @@ public class DisabledDigestIT {
     private Migrator migrator;
     private OcflObjectSessionFactory sessionFactory;
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (context != null) {
             context.close();

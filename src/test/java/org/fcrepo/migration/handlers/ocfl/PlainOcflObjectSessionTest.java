@@ -29,10 +29,9 @@ import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.fcrepo.storage.ocfl.ResourceContent;
 import org.fcrepo.storage.ocfl.ResourceHeaders;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.net.URI;
@@ -42,18 +41,18 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author pwinckles
  */
 public class PlainOcflObjectSessionTest {
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public Path tempDir;
 
     private Path ocflRoot;
     private Path staging;
@@ -63,10 +62,10 @@ public class PlainOcflObjectSessionTest {
 
     private static final String AG_ID = "info:fedora/foo";
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
-        ocflRoot = tempDir.newFolder("ocfl").toPath();
-        staging = tempDir.newFolder("staging").toPath();
+        ocflRoot = Files.createDirectory(tempDir.resolve("ocfl"));
+        staging = Files.createDirectory(tempDir.resolve("staging"));
 
         final var logicalPathMapper = SystemUtils.IS_OS_WINDOWS ?
                 LogicalPathMappers.percentEncodingWindowsMapper() : LogicalPathMappers.percentEncodingLinuxMapper();
@@ -326,5 +325,4 @@ public class PlainOcflObjectSessionTest {
         headers.withParent(AG_ID);
         return headers;
     }
-
 }

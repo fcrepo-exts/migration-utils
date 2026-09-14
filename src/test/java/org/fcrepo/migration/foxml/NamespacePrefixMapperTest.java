@@ -11,9 +11,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.apache.jena.update.UpdateRequest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Dan Field
@@ -22,7 +23,7 @@ public class NamespacePrefixMapperTest {
 
     private File namespaceFile;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         namespaceFile = File.createTempFile("namespaces", ".properties");
         namespaceFile.deleteOnExit();
@@ -39,14 +40,15 @@ public class NamespacePrefixMapperTest {
 
         mapper.setPrefixes(updateRequest);
 
-        Assert.assertEquals("http://purl.org/dc/elements/1.1/",
+        Assertions.assertEquals("http://purl.org/dc/elements/1.1/",
                 updateRequest.getPrefixMapping().getNsPrefixURI("dc"));
-        Assert.assertEquals("info:fedora/fedora-system:def/relations-external#",
+        Assertions.assertEquals("info:fedora/fedora-system:def/relations-external#",
                 updateRequest.getPrefixMapping().getNsPrefixURI("fedora"));
     }
 
-    @Test(expected = IOException.class)
-    public void testMissingFileThrows() throws IOException {
-        new NamespacePrefixMapper(new File("does-not-exist-12345.properties"));
+    @Test
+    public void testMissingFileThrows() {
+        Assertions.assertThrows(IOException.class,
+                () -> new NamespacePrefixMapper(new File("does-not-exist-12345.properties")));
     }
 }

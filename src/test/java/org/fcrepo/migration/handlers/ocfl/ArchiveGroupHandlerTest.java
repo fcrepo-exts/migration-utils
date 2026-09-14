@@ -30,10 +30,9 @@ import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.fcrepo.storage.ocfl.PersistencePaths;
 import org.fcrepo.storage.ocfl.ResourceHeadersVersion;
 import org.fcrepo.storage.ocfl.cache.NoOpCache;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
@@ -53,11 +52,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -81,8 +80,8 @@ public class ArchiveGroupHandlerTest {
     private static final String RELS_INT = "RELS-INT";
     private static final String RELS_EXT = "RELS-EXT";
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public Path tempDir;
 
     private Path ocflRoot;
     private Path staging;
@@ -95,10 +94,10 @@ public class ArchiveGroupHandlerTest {
     private String date;
     private ResourceMigrationType resourceMigrationType;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
-        ocflRoot = tempDir.newFolder("ocfl").toPath();
-        staging = tempDir.newFolder("staging").toPath();
+        ocflRoot = Files.createDirectory(tempDir.resolve("ocfl"));
+        staging = Files.createDirectory(tempDir.resolve("staging"));
 
         final var logicalPathMapper = SystemUtils.IS_OS_WINDOWS ?
                 LogicalPathMappers.percentEncodingWindowsMapper() : LogicalPathMappers.percentEncodingLinuxMapper();
@@ -140,7 +139,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -175,7 +174,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -216,7 +215,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var objectSession = sessionFactory.newSession(ocflObjectId);
@@ -261,7 +260,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1)),
                 objectVersionReference(pid, false, List.of(relsIntV1))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -304,7 +303,7 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, true, List.of(ds1V1)),
                 objectVersionReference(pid, false, List.of(relsIntV1)),
                 objectVersionReference(pid, false, List.of(relsIntV2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -355,7 +354,7 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, true, List.of(ds1V1)),
                 objectVersionReference(pid, false, List.of(relsIntV1)),
                 objectVersionReference(pid, false, List.of(relsIntV2, ds1V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -436,7 +435,7 @@ public class ArchiveGroupHandlerTest {
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1, relsExtV1, relsIntV1)),
                 objectVersionReference(pid, false, List.of(ds2V2, relsExtV2)),
                 objectVersionReference(pid, false, List.of(relsIntV2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -493,7 +492,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -539,7 +538,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -584,7 +583,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, OBJ_DELETED, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, OBJ_DELETED, List.of(ds2V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -630,7 +629,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, OBJ_INACTIVE, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, OBJ_INACTIVE, List.of(ds2V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -676,7 +675,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -725,7 +724,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, List.of(ds2V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -778,7 +777,7 @@ public class ArchiveGroupHandlerTest {
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, OBJ_INACTIVE, List.of(ds1V1, ds2V1)),
                 objectVersionReference(pid, false, OBJ_INACTIVE, List.of(ds2V2))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -839,7 +838,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -878,7 +877,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -916,6 +915,29 @@ public class ArchiveGroupHandlerTest {
     }
 
     @Test
+    public void shouldDetectMimeTypeWhenTheDatastreamDoesNotDeclareOne() throws IOException {
+        final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
+
+        final var pid = "obj1";
+        final var dsId = "ds1.txt";
+
+        // A blank mime type sends resolveMimeType() to Tika, which falls back to the datastream id
+        // as the resource name when the content itself is not conclusive.
+        final var ds = datastreamVersion(dsId, true, MANAGED, "", "hello", null);
+
+        handler.processObjectVersions(List.of(
+                objectVersionReference(pid, true, List.of(ds))
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
+
+        final var ocflObjectId = addPrefix(pid);
+        final var session = sessionFactory.newSession(ocflObjectId);
+
+        try (final var content = session.readContent(resourceId(ocflObjectId, dsId))) {
+            assertEquals("text/plain", content.getHeaders().getMimeType());
+        }
+    }
+
+    @Test
     public void processObjectSingleVersionF6FormatWithExternalBinary() throws IOException {
         final var handler = createHandler(MigrationType.FEDORA_OCFL, false, false, false);
 
@@ -930,7 +952,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var ocflObjectId = addPrefix(pid);
         final var session = sessionFactory.newSession(ocflObjectId);
@@ -969,7 +991,7 @@ public class ArchiveGroupHandlerTest {
 
         handler.processObjectVersions(List.of(
                 objectVersionReference(pid, true, List.of(ds1, ds2, ds3))
-        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir.getRoot().toPath(), "foxml", "xml")));
+        ), new DefaultObjectInfo(pid, pid, Files.createTempFile(tempDir, "foxml", "xml")));
 
         final var rootResourceId = addPrefix(pid);
 
@@ -1038,14 +1060,14 @@ public class ArchiveGroupHandlerTest {
             assertEquals(ocflObjectId, headers.getParent());
             if (ResourceMigrationType.ARCHIVAL == resourceMigrationType) {
                 assertEquals(ocflObjectId, headers.getArchivalGroupId());
-                assertFalse("not root", headers.isObjectRoot());
+                assertFalse(headers.isObjectRoot(), "not root");
             } else {
-                assertNull("no AG", headers.getArchivalGroupId());
-                assertTrue("is root", headers.isObjectRoot());
+                assertNull(headers.getArchivalGroupId(), "no AG");
+                assertTrue(headers.isObjectRoot(), "is root");
             }
             assertEquals(InteractionModel.NON_RDF.getUri(), headers.getInteractionModel());
-            assertFalse("not AG", headers.isArchivalGroup());
-            assertFalse("not deleted", headers.isDeleted());
+            assertFalse(headers.isArchivalGroup(), "not AG");
+            assertFalse(headers.isDeleted(), "not deleted");
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
@@ -1095,12 +1117,12 @@ public class ArchiveGroupHandlerTest {
             if (ResourceMigrationType.ARCHIVAL == resourceMigrationType) {
                 assertEquals(ocflObjectId, headers.getArchivalGroupId());
             } else {
-                assertNull("no AG", headers.getArchivalGroupId());
+                assertNull(headers.getArchivalGroupId(), "no AG");
             }
             assertEquals(InteractionModel.NON_RDF_DESCRIPTION.getUri(), headers.getInteractionModel());
-            assertFalse("not AG", headers.isArchivalGroup());
-            assertFalse("not root", headers.isObjectRoot());
-            assertFalse("not deleted", headers.isDeleted());
+            assertFalse(headers.isArchivalGroup(), "not AG");
+            assertFalse(headers.isObjectRoot(), "not root");
+            assertFalse(headers.isDeleted(), "not deleted");
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
@@ -1125,10 +1147,10 @@ public class ArchiveGroupHandlerTest {
             assertEquals(ocflObjectId, headers.getId());
             assertEquals(FCREPO_ROOT, headers.getParent());
             assertEquals(InteractionModel.BASIC_CONTAINER.getUri(), headers.getInteractionModel());
-            assertEquals("is AG", ResourceMigrationType.ARCHIVAL == resourceMigrationType,
-                    headers.isArchivalGroup());
-            assertTrue("is root", headers.isObjectRoot());
-            assertFalse("not deleted", headers.isDeleted());
+            assertEquals(ResourceMigrationType.ARCHIVAL == resourceMigrationType, headers.isArchivalGroup(),
+                    "is AG");
+            assertTrue(headers.isObjectRoot(), "is root");
+            assertFalse(headers.isDeleted(), "not deleted");
             assertEquals(USER, headers.getCreatedBy());
             assertEquals(USER, headers.getLastModifiedBy());
             assertThat(headers.getLastModifiedDate().toString(), containsString(date));
@@ -1234,8 +1256,8 @@ public class ArchiveGroupHandlerTest {
     }
 
     private void rawVerifyDoesNotExist(final String ocflObjectId, final String path) {
-        assertFalse(String.format("object %s not contain path %s", ocflObjectId, path),
-                ocflRepo.describeVersion(ObjectVersionId.head(ocflObjectId)).containsFile(path));
+        assertFalse(ocflRepo.describeVersion(ObjectVersionId.head(ocflObjectId)).containsFile(path),
+                String.format("object %s not contain path %s", ocflObjectId, path));
     }
 
     private ArchiveGroupHandler createHandler(final MigrationType migrationType,
@@ -1384,7 +1406,7 @@ public class ArchiveGroupHandlerTest {
 
     private void verifyContentNotExists(final OcflObjectSession session, final String ocflObjectId) {
         try (final var content = session.readContent(ocflObjectId)) {
-            assertTrue("Content should not exist", content.getContentStream().isEmpty());
+            assertTrue(content.getContentStream().isEmpty(), "Content should not exist");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -1392,8 +1414,7 @@ public class ArchiveGroupHandlerTest {
 
     private void verifyResourceDeleted(final OcflObjectSession session, final String ocflObjectId) {
         final var headers = session.readHeaders(ocflObjectId);
-        assertTrue("resource " + ocflObjectId + " should be deleted", headers.isDeleted());
+        assertTrue(headers.isDeleted(), "resource " + ocflObjectId + " should be deleted");
         verifyContentNotExists(session, ocflObjectId);
     }
-
 }
