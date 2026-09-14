@@ -10,7 +10,6 @@ import javax.xml.stream.XMLStreamException;
 
 import io.ocfl.api.OcflRepository;
 import io.ocfl.api.model.DigestAlgorithm;
-
 import io.ocfl.api.DigestAlgorithmRegistry;
 import io.ocfl.api.model.FileDetails;
 import io.ocfl.api.model.ObjectDetails;
