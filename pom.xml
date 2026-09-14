@@ -42,7 +42,6 @@
     <shade.plugin.version>3.6.2</shade.plugin.version>
     <surefire.plugin.version>3.5.4</surefire.plugin.version>
     <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
-    <sonatype.host>s01.oss.sonatype.org</sonatype.host>
   </properties>
 
   <scm>
@@ -185,8 +184,8 @@
 
     <repository>
       <id>sonatype-nexus-snapshots</id>
-      <name>Sonatype Nexus Snapshots</name>
-      <url>https://${sonatype.host}/content/repositories/snapshots</url>
+      <name>Sonatype Central Snapshots</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
       <releases>
         <enabled>false</enabled>
       </releases>
@@ -200,20 +199,16 @@
   <distributionManagement>
     <snapshotRepository>
       <id>sonatype-nexus-snapshots</id>
-      <name>Sonatype Nexus Shapshots</name>
-      <url>https://${sonatype.host}/content/repositories/snapshots/</url>
+      <name>Sonatype Central Snapshots</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </snapshotRepository>
-    <repository>
-      <id>sonatype-nexus-staging</id>
-      <url>https://${sonatype.host}/service/local/staging/deploy/maven2/</url>
-    </repository>
   </distributionManagement>
 
   <pluginRepositories>
     <pluginRepository>
       <id>sonatype-nexus-snapshots</id>
-      <name>Sonatype Nexus Snapshots</name>
-      <url>https://${sonatype.host}/content/repositories/snapshots</url>
+      <name>Sonatype Central Snapshots</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
       <releases>
         <enabled>false</enabled>
       </releases>
