@@ -223,6 +223,15 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <!-- Release plugin 3.x no longer sets performRelease; it activates GPG signing
+               (fcrepo-parent) and source/javadoc jars (Maven super POM) required by Central -->
+          <arguments>-DperformRelease=true</arguments>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
